@@ -1,0 +1,44 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "pretty": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2017",
+        "module": "commonjs",
+        "jsx": "preserve",
+        "jsxFactory": "h",
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": false,
+        "noImplicitReturns": false,
+        "noImplicitThis": false,
+        "resolveJsonModule": true,
+        "noImplicitUseStrict": false,
+        "declaration": true,
+        "declarationDir": "dist",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "typeRoots": [
+            "node_modules/@types",
+            "../../../node_modules/@types"
+        ],
+        "lib": [
+            "esnext",
+            "scripthost",
+            "DOM"
+        ]
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "test",
+        "dist"
+    ]
+}
