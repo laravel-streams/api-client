@@ -1,13 +1,47 @@
 import { Field } from './Field';
 
+export interface IMethod {
 
-export interface StreamsConfiguration {
-    url: string
-    authentication?:any
-    http?:RequestInit
+}
+export type MethodName =keyof typeof Method
+export enum Method {
+    connect = 'CONNECT',
+    delete  = 'DELETE',
+    get     = 'GET',
+    head    = 'HEAD',
+    options = 'OPTIONS',
+    patch   = 'PATCH',
+    post    = 'POST',
+    put     = 'PUT',
+    trace   = 'TRACE',
 }
 
-export type Request = Partial<RequestInfo>
+
+export type URLSearchParamsFunctionName = keyof URLSearchParams
+export type URLSearchParamsInit =
+    string[][]
+    | Record<string, string>
+    | string
+    | URLSearchParams
+
+
+export interface ClientConfiguration {
+    baseURL: string;
+    headers?: Record<string, string>;
+    request?: RequestInit;
+}
+
+
+export interface StreamsConfiguration extends ClientConfiguration{
+}
+
+
+export interface RequestConfig extends RequestInit {
+    params?:URLSearchParamsInit
+    url?:string
+    method?: MethodName|Method
+    data?:object
+}
 
 export interface IStreamMeta {
     parameters: Record<string, string>;

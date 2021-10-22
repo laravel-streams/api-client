@@ -3,7 +3,7 @@ const config = {
     entryPoints: ['./src/index.ts'],
     exclude    : 'test/**/*.ts',
     out        : './docs',
-    tsconfig   : './typedoc.tsconfig.json',
+    tsconfig   : './tsconfig.typedoc.json',
     theme      : 'default',
     //https://marked.js.org/using_advanced#options
     markedOptions : {

@@ -18,22 +18,16 @@
         "noImplicitThis": false,
         "resolveJsonModule": true,
         "noImplicitUseStrict": false,
-        "declaration": true,
-        "declarationDir": "dist",
-        "outDir": "dist",
         "baseUrl": ".",
         "typeRoots": [
             "node_modules/@types",
             "../../../node_modules/@types"
         ],
         "lib": [
-            "esnext",
+            "ES2020",
             "scripthost",
-            "DOM"
+            "DOM",
         ],
-        "types": [
-            "webpack-env"
-        ]
     },
     "include": [
         "src",

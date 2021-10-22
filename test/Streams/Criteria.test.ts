@@ -1,6 +1,6 @@
 import { suite, test } from '@testdeck/mocha';
 import { TestCase } from '../TestCase';
-import { Criteria, Stream } from '../../resources/lib/Streams';
+import { Criteria, Stream } from '../../src';
 import { mock } from 'sinon';
 import f from 'faker';
 

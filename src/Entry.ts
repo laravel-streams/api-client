@@ -1,31 +1,31 @@
-import { Stream } from '../Streams/Stream';
-import { inject } from '../Foundation';
-import { Http } from '../Streams/Http';
-import { config } from 'process';
+import { Http, Stream } from '../src';
 
 // export interface Entry<ID extends string = string> {
 //     id: string;
 // }
-export type IEntry<T, ID extends string = string> = Entry<ID> & T;
+export type IEntry<T, ID extends string = string> =
+    Entry<ID>
+    & T;
+
 export class Entry<ID extends string = string> {
-    @inject('streams.http') http: Http;
+    get http(): Http {return this._stream.streams.http;}
 
     constructor(
         protected _stream: Stream<ID>,
-        protected _data: any = {},
+        protected _data: any      = {},
         protected _fresh: boolean = true,
     ) {
         let proxy = new Proxy(this, {
             get(target: Entry<ID>, p: string | symbol, receiver: any): any {
-                if (Reflect.has(target, p)) {
+                if ( Reflect.has(target, p) ) {
                     return Reflect.get(target, p, receiver);
                 }
-                if (Reflect.has(target._data, p)) {
+                if ( Reflect.has(target._data, p) ) {
                     return Reflect.get(target._data, p);
                 }
             },
             set(target: Entry<ID>, p: string | symbol, value: any, receiver: any): boolean {
-                if (Reflect.has(target, p)) {
+                if ( Reflect.has(target, p) ) {
                     return Reflect.set(target, p, value, receiver);
                 }
                 return Reflect.set(target._data, p, value);

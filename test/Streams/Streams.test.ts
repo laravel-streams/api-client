@@ -1,6 +1,6 @@
 import { params, suite, test } from '@testdeck/mocha';
 import { TestCase } from '../TestCase';
-import { Entry, Streams } from '../../resources/lib/Streams';
+import { Entry, Streams } from '../../src';
 
 
 @suite
@@ -8,7 +8,7 @@ export class StreamsTest extends TestCase {
 
     @test
     async resolveStreamsInstanceTest() {
-        const streams = this.app.get<Streams>('streams');
+        const streams = this.getStreams()
         streams.should.be.instanceof(Streams);
     }
 

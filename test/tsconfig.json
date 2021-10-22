@@ -1,0 +1,46 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "pretty": true,
+        "sourceMap": true,
+        "target": "es2017",
+        "module": "commonjs",
+        "jsx": "preserve",
+        "jsxFactory": "h",
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": false,
+        "noImplicitReturns": false,
+        "noImplicitThis": false,
+        "resolveJsonModule": true,
+        "noImplicitUseStrict": false,
+        "declaration": true,
+        "declarationDir": "dist",
+        "outDir": "dist",
+        "baseUrl": ".",
+        "typeRoots": [
+            "../node_modules/@types",
+            "../../../../node_modules/@types"
+        ],
+        "lib": [
+            "ES2020",
+            "scripthost",
+            "DOM"
+        ],
+        "types": [
+            "webpack-env"
+        ]
+    },
+    "include": [
+        "."
+    ],
+    "exclude": [
+        "node_modules",
+        "test",
+        "dist"
+    ]
+}

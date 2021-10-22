@@ -1,20 +1,15 @@
 import { Field } from './Field';
 import { Repository } from './Repository';
 import { Criteria } from './Criteria';
-import { IBaseStream, IStreamLinks, IStreamMeta } from '../types/streams';
+import { IBaseStream, IStreamLinks, IStreamMeta } from './types';
+import { Streams } from './Streams';
 
 export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> { }
 
 export class Stream<ID extends string = string> {
 
-    /**
-     * Create a new stream instance.
-     *
-     * @param stream
-     * @param meta
-     * @param links
-     */
     constructor(
+        public readonly streams:Streams,
         stream: IBaseStream<ID>,
         public readonly meta?: IStreamMeta,
         public readonly links?: IStreamLinks<'self' | 'entries'>,

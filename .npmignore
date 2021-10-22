@@ -7,3 +7,14 @@ typedoc.js
 webpack.mix.js
 mix-manifest.json
 .mocharc.json
+docs
+package-lock.json
+yarn.lock
+rollup.config.ts
+
+tsconfig.build.json
+tsconfig.json
+tsconfig.test.json
+tsconfig.typedoc.json
+typedoc.js
+.mocharc.json

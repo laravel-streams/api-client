@@ -1,64 +1,36 @@
 import { bootstrap } from './_support/bootstrap';
-import { app, Application, CoreServiceProvider, Http, HttpServiceProvider, Stream, Streams, StreamsServiceProvider } from '../resources/lib';
+import { Http, Stream, Streams} from '../src';
 import { FS, getEnv, ProxyEnv } from './_support/utils';
-
-declare module '../resources/lib/Foundation/Application' {
-    export interface Application {
-        env: ProxyEnv<any>;
-    }
-}
+import { env} from './_support/bootstrap';
+import 'node-fetch'
 
 export abstract class TestCase {
-    get env(): ProxyEnv<any> {return app.env;}
 
+    static env:ProxyEnv<any>=env
+    env:ProxyEnv<any>=env
     fs: FS;
-    app: Application = app;
 
     async before() {
         this.fs = new FS();
+        this.env = env
     }
 
     static async before() {
-        const {env} = bootstrap();
-        await this.createApp(env);
+         bootstrap();
     }
 
-    protected static async createApp(env) {
-        if(!app.isBound('env')) {
-            app.instance('env', env).addBindingGetter('env');
-        }
-        if(app.isBooted()){
-            return app;
-        }
-        await app
-        .initialize({
-            providers: [
-                CoreServiceProvider
-            ],
-            config   : {
-                http   : {
-                    baseURL: app.env.get('APP_URL', 'http://localhost') + '/' + app.env.get('STREAMS_API_PREFIX', 'api'),
-                },
-                streams: {
-                    xdebug: true,
-                },
-            },
-        })
-        .then(app.boot.bind(app))
-        .then(app.start.bind(app));
-
-        return app;
-    }
 
     protected async getHttp(): Promise<Http> {
-        return this.app.get<Http>('streams.http');
+        return this.getStreams().http
     }
 
-    protected async getStreams(): Promise<Streams> {
-        return this.app.get<Streams>('streams');
+    protected getStreams():Streams {
+        return new Streams({
+            baseURL: this.env.get('APP_URL', 'http://localhost') + '/' + this.env.get('STREAMS_API_PREFIX', 'api'),
+        })
     }
     protected async getStream(id:string): Promise<Stream> {
-        return await this.app.get<Streams>('streams').make(id);
+        return await this.getStreams().make(id);
     }
 
     protected getStreamData(id: string) {

@@ -16,9 +16,9 @@ import btoa from 'btoa'
 import {JSDOM} from 'jsdom';
 import { getEnv } from './utils';
 
-const env = getEnv()
+export const env = getEnv()
 
-const dom = new JSDOM(``,{
+export const dom = new JSDOM(``,{
     url: env.get('APP_URL', 'http://localhost') + '/' + env.get('STREAMS_API_PREFIX', 'api'),
     contentType: "text/html",
     includeNodeLocations: true,
@@ -26,8 +26,6 @@ const dom = new JSDOM(``,{
 
 
 })
-
-global['window'] = dom.window as any;
 global.btoa = btoa;
 
 chai.use(sinonChai);

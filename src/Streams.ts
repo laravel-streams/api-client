@@ -3,12 +3,15 @@ import { Criteria } from './Criteria';
 import { Repository } from './Repository';
 import { StreamsConfiguration } from './types';
 import { Http } from './Http';
+import { Client } from './Client';
 
 export class Streams {
-    protected http:Http
+    public readonly http: Http;
+    public readonly client: Client;
 
     constructor(public config: StreamsConfiguration) {
-        this.http = new Http(this)
+        this.client = new Client(this.config)
+        this.http = new Http(this);
     }
 
 
@@ -21,7 +24,7 @@ export class Streams {
 
         const data = await this.http.getStreams();
 
-        return data.data.map(data => new Stream(data));
+        return data.data.map(data => new Stream(this, data));
     }
 
     /**
@@ -34,7 +37,7 @@ export class Streams {
 
         const data = await this.http.getStream(id);
 
-        return new Stream(data.data, data.meta, data.links);
+        return new Stream(this, data.data, data.meta, data.links);
     }
 
     public async create(id: string, stream: any): Promise<Stream> {
@@ -45,7 +48,7 @@ export class Streams {
             ...stream,
         });
 
-        return new Stream(data.data, data.meta, data.links);
+        return new Stream(this, data.data, data.meta, data.links);
     }
 
     /**

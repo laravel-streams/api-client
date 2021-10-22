@@ -1,13 +1,12 @@
 import { Stream } from './Stream';
 import { Entry } from './Entry';
 import { EntryCollection, PaginatedEntryCollection } from './EntryCollection';
-import { IBaseStream, streams } from '../types';
-import { IStreams } from '../types/streams';
-import { injectable } from 'inversify';
-import { inject } from '../Foundation';
-import { Http } from '../Streams/Http';
+import { IBaseStream } from './types';
+import { Http } from './Http';
 
-export type OrderByDirection = 'asc' | 'desc';
+export type OrderByDirection =
+    'asc'
+    | 'desc';
 
 export type ComparisonOperator =
     | '>'
@@ -20,7 +19,7 @@ export type ComparisonOperator =
     | '!>'
     | '<>';
 
-export const comparisonOperators: ComparisonOperator[] = ['>', '<', '==', '!=', '>=', '<=', '!<', '!>', '<>'];
+export const comparisonOperators: ComparisonOperator[] = [ '>', '<', '==', '!=', '>=', '<=', '!<', '!>', '<>' ];
 
 export type LogicalOperator =
     | 'BETWEEN'
@@ -35,28 +34,27 @@ export type LogicalOperator =
     | 'IS NULL'
     | 'UNIQUE';
 
-export const logicalOperators: LogicalOperator[] = ['BETWEEN', 'EXISTS', 'OR', 'AND', 'NOT', 'IN', 'ALL', 'ANY', 'LIKE', 'IS NULL', 'UNIQUE'];
+export const logicalOperators: LogicalOperator[] = [ 'BETWEEN', 'EXISTS', 'OR', 'AND', 'NOT', 'IN', 'ALL', 'ANY', 'LIKE', 'IS NULL', 'UNIQUE' ];
 
 export const operators: Operator[] = [].concat(comparisonOperators).concat(logicalOperators);
 
-export type Operator = ComparisonOperator | LogicalOperator;
+export type Operator =
+    ComparisonOperator
+    | LogicalOperator;
 
 const isOperator = (value: any): value is Operator => operators.includes(value);
 
-const ensureArray = (value: any) => Array.isArray(value) ? value : [value];
+const ensureArray = (value: any) => Array.isArray(value) ? value : [ value ];
 
 export interface CriteriaParameter {
-    name: string
-    value: any
+    name: string;
+    value: any;
     // [key:string]: any
 }
 
-@injectable()
 export class Criteria<ID extends string = string> {
 
-    @inject('streams.http') http: Http
-
-    parameters: CriteriaParameter[] = []
+    parameters: CriteriaParameter[] = [];
 
     /**
      * Create a new instance.
@@ -64,6 +62,8 @@ export class Criteria<ID extends string = string> {
      * @param stream
      */
     constructor(protected stream: Stream) { }
+
+    get http():Http{return this.stream.streams.http}
 
     /**
      * Find an entry by ID.
@@ -84,7 +84,7 @@ export class Criteria<ID extends string = string> {
 
         let collection = await this.limit(1).get();
 
-        return collection[0];
+        return collection[ 0 ];
     }
 
     cache(): this { return this; }
@@ -98,7 +98,7 @@ export class Criteria<ID extends string = string> {
      */
     orderBy(key: string, direction: OrderByDirection = 'desc'): this {
 
-        this.addParameter('orderBy', [key, direction]);
+        this.addParameter('orderBy', [ key, direction ]);
 
         return this;
     }
@@ -133,26 +133,26 @@ export class Criteria<ID extends string = string> {
             value: any,
             nested: null;
 
-        if (args.length === 2) {
-            key = args[0];
-            operator = '=='
-            value = args[1];
-        } else if (args.length === 3) {
-            key = args[0];
-            operator = args[1]
-            value = args[2];
-        } else if (args.length === 4) {
-            key = args[0];
-            operator = args[1]
-            value = args[2];
-            nested = args[3];
+        if ( args.length === 2 ) {
+            key      = args[ 0 ];
+            operator = '==';
+            value    = args[ 1 ];
+        } else if ( args.length === 3 ) {
+            key      = args[ 0 ];
+            operator = args[ 1 ];
+            value    = args[ 2 ];
+        } else if ( args.length === 4 ) {
+            key      = args[ 0 ];
+            operator = args[ 1 ];
+            value    = args[ 2 ];
+            nested   = args[ 3 ];
         }
 
-        if (!isOperator(operator)) {
+        if ( !isOperator(operator) ) {
             throw new Error(`Criteria where() operator "${operator}" not valid `);
         }
 
-        this.addParameter('where', [key, operator, value, nested]);
+        this.addParameter('where', [ key, operator, value, nested ]);
 
         return this;
     }
@@ -165,21 +165,21 @@ export class Criteria<ID extends string = string> {
             operator: Operator,
             value: any;
 
-        if (args.length === 2) {
-            key = args[0];
-            operator = '=='
-            value = args[1];
+        if ( args.length === 2 ) {
+            key      = args[ 0 ];
+            operator = '==';
+            value    = args[ 1 ];
         } else {
-            key = args[0];
-            operator = args[1]
-            value = args[2];
+            key      = args[ 0 ];
+            operator = args[ 1 ];
+            value    = args[ 2 ];
         }
 
-        if (!isOperator(operator)) {
+        if ( !isOperator(operator) ) {
             throw new Error(`Criteria orWhere() operator "${operator}" not valid `);
         }
 
-        this.addParameter('where', [key, operator, value, 'or']);
+        this.addParameter('where', [ key, operator, value, 'or' ]);
 
         return this;
     }
@@ -195,7 +195,7 @@ export class Criteria<ID extends string = string> {
 
         const response = await this.http.getEntries<T[], 'entries'>(this.stream.id, { query }, {});
 
-        return EntryCollection.fromResponse<T>(response, this.stream)
+        return EntryCollection.fromResponse<T>(response, this.stream);
     }
 
     //count(): number { return 0; }
@@ -206,11 +206,11 @@ export class Criteria<ID extends string = string> {
      * @param attributes
      * @returns
      */
-     async create(attributes: any): Promise<Entry> {
+    async create(attributes: any): Promise<Entry> {
 
         let entry = this.newInstance(attributes);
 
-        await entry.save()
+        await entry.save();
 
         return entry;
     }
@@ -221,7 +221,7 @@ export class Criteria<ID extends string = string> {
      * @param entry
      * @returns
      */
-     async save(entry: Entry): Promise<Boolean> {
+    async save(entry: Entry): Promise<Boolean> {
 
         let result = await entry.save();
 
@@ -289,7 +289,7 @@ export class Criteria<ID extends string = string> {
      */
     protected addParameter(name: string, value: any | any[]) {
 
-        this.parameters.push({ name, value })
+        this.parameters.push({ name, value });
 
         return this;
     }
@@ -300,6 +300,6 @@ export class Criteria<ID extends string = string> {
      * @returns
      */
     public compileStatements() {
-        return this.parameters.map(statement => ({ [statement.name]: ensureArray(statement.value) }));
+        return this.parameters.map(statement => ({ [ statement.name ]: ensureArray(statement.value) }));
     }
 }

@@ -1,0 +1,39 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "pretty": true,
+        "sourceMap": true,
+        "target": "ES6",
+        "module": "commonjs",
+        "jsx": "preserve",
+        "jsxFactory": "h",
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitAny": false,
+        "noImplicitReturns": false,
+        "noImplicitThis": false,
+        "resolveJsonModule": true,
+        "noImplicitUseStrict": false,
+        "baseUrl": ".",
+        "typeRoots": [
+            "node_modules/@types",
+            "../../../node_modules/@types"
+        ],
+        "lib": [
+            "ES2020",
+            "scripthost",
+            "DOM",
+        ]
+    },
+    "include": [
+        "src",
+        "test"
+    ],
+    "exclude": [
+        "node_modules",
+    ]
+}

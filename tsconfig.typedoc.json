@@ -1,7 +1,7 @@
 {
     "extends": "./tsconfig.json",
     "include": [
-        "resources/lib"
+        "src"
     ],
     "exclude": [
         "node_modules",

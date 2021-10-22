@@ -2,10 +2,9 @@
     "compileOnSave": false,
     "compilerOptions": {
         "pretty": true,
-        "sourceMap": true,
-        "strict": true,
-        "target": "es2017",
-        "module": "commonjs",
+        "sourceMap": false,
+        "target": "es5",
+        "module": "ESNext",
         "jsx": "preserve",
         "jsxFactory": "h",
         "moduleResolution": "node",
@@ -19,9 +18,6 @@
         "noImplicitThis": false,
         "resolveJsonModule": true,
         "noImplicitUseStrict": false,
-        "declaration": true,
-        "declarationDir": "dist",
-        "outDir": "dist",
         "baseUrl": ".",
         "typeRoots": [
             "node_modules/@types",
