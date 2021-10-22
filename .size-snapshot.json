@@ -1,79 +1,79 @@
 {
   "streams-api.esm-bundler.js": {
-    "bundled": 97959,
-    "minified": 51096,
-    "gzipped": 13112,
+    "bundled": 68111,
+    "minified": 35873,
+    "gzipped": 8842,
     "treeshaked": {
       "rollup": {
-        "code": 40180,
-        "import_statements": 0
+        "code": 18043,
+        "import_statements": 38
       },
       "webpack": {
-        "code": 46756
+        "code": 32711
       }
     }
   },
   "streams-api.esm-bundler.prod.js": {
-    "bundled": 97959,
-    "minified": 51096,
-    "gzipped": 13112,
+    "bundled": 68111,
+    "minified": 35873,
+    "gzipped": 8842,
     "treeshaked": {
       "rollup": {
-        "code": 40180,
-        "import_statements": 0
+        "code": 18043,
+        "import_statements": 38
       },
       "webpack": {
-        "code": 46756
+        "code": 32711
       }
     }
   },
   "streams-api.esm-browser.js": {
-    "bundled": 97959,
-    "minified": 51096,
-    "gzipped": 13112,
+    "bundled": 68111,
+    "minified": 35873,
+    "gzipped": 8842,
     "treeshaked": {
       "rollup": {
-        "code": 40180,
-        "import_statements": 0
+        "code": 18043,
+        "import_statements": 38
       },
       "webpack": {
-        "code": 46756
+        "code": 32711
       }
     }
   },
   "streams-api.esm-browser.prod.js": {
-    "bundled": 97959,
-    "minified": 51096,
-    "gzipped": 13112,
+    "bundled": 68111,
+    "minified": 35873,
+    "gzipped": 8842,
     "treeshaked": {
       "rollup": {
-        "code": 40180,
-        "import_statements": 0
+        "code": 18043,
+        "import_statements": 38
       },
       "webpack": {
-        "code": 46756
+        "code": 32711
       }
     }
   },
   "streams-api.cjs.js": {
-    "bundled": 98405,
-    "minified": 51506,
-    "gzipped": 13190
+    "bundled": 68906,
+    "minified": 35739,
+    "gzipped": 8506
   },
   "streams-api.cjs.prod.js": {
-    "bundled": 98405,
-    "minified": 51506,
-    "gzipped": 13190
+    "bundled": 68906,
+    "minified": 35739,
+    "gzipped": 8506
   },
   "streams-api.global.js": {
-    "bundled": 110562,
-    "minified": 46272,
-    "gzipped": 12635
+    "bundled": 77308,
+    "minified": 32192,
+    "gzipped": 8152
   },
   "streams-api.global.prod.js": {
-    "bundled": 110562,
-    "minified": 46272,
-    "gzipped": 12635
+    "bundled": 77308,
+    "minified": 32192,
+    "gzipped": 8152
   },
   "streams-api.esm.js": {
     "bundled": 97959,

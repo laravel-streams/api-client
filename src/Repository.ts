@@ -92,13 +92,11 @@ export class Repository<ID extends string = string> {
      * @param attributes
      * @returns
      */
-    async create(attributes: any): Promise<Entry> {
+    async create(attributes: any): Promise<Boolean> {
 
         let entry = this.newCriteria().newInstance(attributes);
 
-        await entry.save();
-
-        return entry;
+        return entry.save();
     }
 
     /**
@@ -109,9 +107,7 @@ export class Repository<ID extends string = string> {
      */
     async save(entry: Entry): Promise<Boolean> {
 
-        let result = await entry.save();
-
-        return result;
+        return entry.save();
     }
 
     /**

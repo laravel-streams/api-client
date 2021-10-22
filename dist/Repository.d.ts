@@ -54,7 +54,7 @@ export declare class Repository<ID extends string = string> {
      * @param attributes
      * @returns
      */
-    create(attributes: any): Promise<Entry>;
+    create(attributes: any): Promise<Boolean>;
     /**
      * Save an entry.
      *

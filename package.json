@@ -12,7 +12,7 @@
         "clean:dist": "rimraf ./dist",
         "clean:js": "rimraf ./{src,test}/**/*.js",
         "clean:doc": "rimraf ./docs",
-        "build": "npm-run-all clean build:dist build:doc",
+        "build": "npm-run-all clean build:dist",
         "build:doc": "typedoc --options ./typedoc.js",
         "build:dist": "rollup --config rollup.config.ts --configPlugin typescript",
         "test": "TS_NODE_PROJECT=./tsconfig.test.json mocha"
@@ -43,6 +43,7 @@
         "@babel/plugin-syntax-dynamic-import": "^7.8.3",
         "@babel/preset-env": "^7.15.6",
         "@rollup/plugin-commonjs": "^21.0.1",
+        "@rollup/plugin-typescript": "^8.3.0",
         "@rollup/plugin-node-resolve": "^13.0.6",
         "@testdeck/mocha": "^0.1.2",
         "@types/btoa": "^1.2.3",
