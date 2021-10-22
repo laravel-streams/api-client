@@ -1742,8 +1742,12 @@ var streamsApi = (function (exports, deepmerge, require$$0) {
             if (config === void 0) { config = {}; }
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
-                    config.params = params;
-                    return [2 /*return*/, this.get("/streams/" + stream, config)];
+                    switch (_a.label) {
+                        case 0:
+                            config.params = params;
+                            return [4 /*yield*/, this.get("/streams/" + stream, config)];
+                        case 1: return [2 /*return*/, _a.sent()];
+                    }
                 });
             });
         };
