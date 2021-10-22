@@ -11,10 +11,10 @@
         "clean": "npm-run-all clean:dist clean:js clean:doc",
         "clean:dist": "rimraf ./dist",
         "clean:js": "rimraf ./{src,test}/**/*.js",
-        "clean:doc": "rimraf ./doc",
-        "build": "npm-run-all clean build:rollup build:doc",
+        "clean:doc": "rimraf ./docs",
+        "build": "npm-run-all clean build:dist build:doc",
         "build:doc": "typedoc --options ./typedoc.js",
-        "build:rollup": "rollup --config rollup.config.ts --configPlugin typescript",
+        "build:dist": "rollup --config rollup.config.ts --configPlugin typescript",
         "test": "TS_NODE_PROJECT=./tsconfig.test.json mocha"
     },
     "nyc": {
