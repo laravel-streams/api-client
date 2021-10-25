@@ -11,7 +11,7 @@ const resolve = (...parts) => path.resolve(__dirname, ...parts);
 
 const name = 'streams-api';
 
-const outputConfigs:Record<string,OutputOptions>  = {
+const outputConfigs: Record<string, OutputOptions> = {
     'esm-bundler': {
         file  : resolve(`dist/${name}.esm-bundler.js`),
         format: `es`,
@@ -27,10 +27,10 @@ const outputConfigs:Record<string,OutputOptions>  = {
     global       : {
         file  : resolve(`dist/${name}.global.js`),
         format: `iife`,
-        name: 'streamsApi'
+        name  : 'streamsApi',
     },
 };
-const globalPlugins  = [
+const globalPlugins                                = [
     visualizer({
         filename: 'dist/stats.html',
         gzipSize: true,
@@ -43,18 +43,20 @@ const globalPlugins  = [
         clearLine: true,
     }),
 ];
-const packageConfigs = [];
+const packageConfigs                               = [];
 
 const formats = Object.keys(outputConfigs);
 
 formats.forEach(format => {
-    packageConfigs.push(createConfig(format));
+    packageConfigs.push(createConfig(format, { output: { sourcemap: true } }));
     packageConfigs.push(createMinifiedConfig(format));
 });
-export default packageConfigs
-function createConfig(format: string, options: RollupOptions = {}) {
-    const output = outputConfigs[ format ];
-    const config = defineConfig({
+export default packageConfigs;
+
+function createConfig(format: string, options: Partial<RollupOptions> = {}) {
+    const output: OutputOptions = deepmerge(outputConfigs[ format ], (options.output as OutputOptions) || {});
+    output.sourcemap            = output.sourcemap === undefined ? false : output.sourcemap;
+    const config                = defineConfig({
         input  : 'src/index.ts',
         output,
         onwarn : (msg, warn) => {
@@ -65,12 +67,12 @@ function createConfig(format: string, options: RollupOptions = {}) {
         plugins: [
             require('@rollup/plugin-node-resolve').nodeResolve({
                     moduleDirectories: [ resolve('node_modules'), resolve('../../../node_modules') ],
-                    preferBuiltins   : false,
+                    preferBuiltins   : true,
                 },
             ),
-            // require('rollup-plugin-polyfill-node')(),
+            require('rollup-plugin-polyfill-node')(),
             require('@rollup/plugin-commonjs')({
-                sourceMap: false,
+                sourceMap: output.sourcemap,
             }),
             ts({
                 check           : false,
@@ -78,8 +80,8 @@ function createConfig(format: string, options: RollupOptions = {}) {
                 cacheRoot       : resolve(__dirname, 'node_modules/.rts2_cache'),
                 tsconfigOverride: {
                     compilerOptions: {
-                        sourceMap  : false,
-                        declaration: true,
+                        sourceMap  : output.sourcemap,
+                        declaration: false,
                     },
                     exclude        : [ '**/__tests__', 'test-dts' ],
                 },
@@ -105,8 +107,9 @@ function createMinifiedConfig(format) {
     const { terser } = require('rollup-plugin-terser');
     return createConfig(format, {
         output : {
-            file  : outputConfigs[ format ].file.replace(/\.js$/, '.prod.js'),
-            format: outputConfigs[ format ].format,
+            file     : outputConfigs[ format ].file.replace(/\.js$/, '.prod.js'),
+            format   : outputConfigs[ format ].format,
+            sourcemap: false,
         },
         plugins: [
             terser({

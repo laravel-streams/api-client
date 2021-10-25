@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { bootstrap } from './_support/bootstrap';
 import { Http, Stream, Streams} from '../src';
 import { FS, getEnv, ProxyEnv } from './_support/utils';

@@ -10,3 +10,4 @@
 composer.lock
 mix-manifest.json
 package-lock.json
+.size-snapshot.json

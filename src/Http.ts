@@ -1,5 +1,5 @@
 import { IEntriesLinks, IEntriesMeta, IPaginatedEntriesLinks, IPaginatedEntriesMeta } from './EntryCollection';
-import { IBaseStream, IStreamLinks, IStreamMeta, IStreamResponse, MethodName, RequestConfig, StreamsConfiguration } from './types';
+import { IBaseStream, IStreamLinks, IStreamMeta, IStreamResponse, MethodName, RequestConfig, ApiConfiguration } from './types';
 import { Streams } from './Streams';
 import { Str } from './utils';
 import { Client } from './Client';
@@ -10,7 +10,7 @@ export class Http {
 
     get client(): Client {return this.streams.client;}
 
-    get config(): StreamsConfiguration { return this.streams.config; }
+    get config(): ApiConfiguration { return this.streams.config; }
 
     async getStreams(params: any = {}, config: RequestConfig = {}) {
         config.params = params;

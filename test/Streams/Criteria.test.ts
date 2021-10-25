@@ -1,5 +1,6 @@
-import { suite, test } from '@testdeck/mocha';
+import 'reflect-metadata'
 import { TestCase } from '../TestCase';
+import { suite, test } from '@testdeck/mocha';
 import { Criteria, Stream } from '../../src';
 import { mock } from 'sinon';
 import f from 'faker';

@@ -9,7 +9,7 @@
         "jsxFactory": "h",
         "moduleResolution": "node",
         "experimentalDecorators": true,
-
+        "skipDefaultLibCheck": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
@@ -26,7 +26,7 @@
         "lib": [
             "ES2020",
             "scripthost",
-            "DOM",
+            "DOM"
         ]
     },
     "include": [
@@ -34,6 +34,6 @@
         "test"
     ],
     "exclude": [
-        "node_modules",
+        "node_modules"
     ]
 }

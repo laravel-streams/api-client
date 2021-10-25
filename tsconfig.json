@@ -3,12 +3,13 @@
     "compilerOptions": {
         "pretty": true,
         "sourceMap": true,
-        "target": "es2017",
-        "module": "commonjs",
+        "target": "es6",
+        "module": "CommonJS",
         "jsx": "preserve",
         "jsxFactory": "h",
         "moduleResolution": "node",
         "experimentalDecorators": true,
+
 
         "skipLibCheck": true,
         "esModuleInterop": true,
@@ -31,11 +32,11 @@
     },
     "include": [
         "src",
+        "test",
         "rollup.config.ts"
     ],
     "exclude": [
         "node_modules",
-        "test",
         "dist"
     ]
 }

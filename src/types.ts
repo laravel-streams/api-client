@@ -3,7 +3,9 @@ import { Field } from './Field';
 export interface IMethod {
 
 }
-export type MethodName =keyof typeof Method
+
+export type MethodName = keyof typeof Method
+
 export enum Method {
     connect = 'CONNECT',
     delete  = 'DELETE',
@@ -29,18 +31,24 @@ export interface ClientConfiguration {
     baseURL: string;
     headers?: Record<string, string>;
     request?: RequestInit;
+
 }
 
+export type Constructor<Type = any> = new (...args: any[]) => Type
 
-export interface StreamsConfiguration extends ClientConfiguration{
+
+export interface ApiConfiguration extends ClientConfiguration {
+
+    Client?: Constructor<any>;
+    Http?: Constructor<any>;
 }
 
 
 export interface RequestConfig extends RequestInit {
-    params?:URLSearchParamsInit
-    url?:string
-    method?: MethodName|Method
-    data?:object
+    params?: URLSearchParamsInit;
+    url?: string;
+    method?: MethodName | Method;
+    data?: object;
 }
 
 export interface IStreamMeta {
@@ -52,11 +60,11 @@ export type IStreamLinks<K> = {
     [T in keyof K]: string
 }
 
-export interface IStreamResponse<T extends any=any, META extends IStreamMeta=IStreamMeta,LINKS=IStreamLinks<'self' | 'entries'>> {
+export interface IStreamResponse<T extends any = any, META extends IStreamMeta = IStreamMeta, LINKS = IStreamLinks<'self' | 'entries'>> {
     data: T;
     meta: META;
     links: LINKS;
-    errors?: string[]|Record<string, string|string[]>
+    errors?: string[] | Record<string, string | string[]>;
 }
 
 export interface IBaseStream<ID extends string = string> {
@@ -68,7 +76,7 @@ export interface IBaseStream<ID extends string = string> {
         type: string
         [ key: string ]: any
     },
-    fields: Record<string, fields.Type|Field>
+    fields: Record<string, fields.Type | Field>
     rules?: Record<string, string | object>
 }
 

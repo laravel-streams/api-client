@@ -1,5 +1,5 @@
-import { Http, Stream } from '../src';
-
+import { Http } from './Http';
+import {  Stream } from './Stream';
 // export interface Entry<ID extends string = string> {
 //     id: string;
 // }

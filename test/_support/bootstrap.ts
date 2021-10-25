@@ -5,7 +5,7 @@
 // export function bootstrap(): void {
 //
 // }
-
+import 'reflect-metadata'
 import 'chai/register-assert'; // Using Assert style
 import 'chai/register-expect'; // Using Expect style
 import 'chai/register-should'; // Using Should style
@@ -15,6 +15,8 @@ import sinonChai from 'sinon-chai';
 import btoa from 'btoa'
 import {JSDOM} from 'jsdom';
 import { getEnv } from './utils';
+import * as nodeFetch from 'node-fetch'
+Object.keys(nodeFetch).forEach(key => global[key]=nodeFetch[key])
 
 export const env = getEnv()
 
