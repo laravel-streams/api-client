@@ -23,7 +23,7 @@ export class Http {
 
     async getStream<ID extends string>(stream: ID, params: any = {}, config: RequestConfig = {}) {
         config.params = params;
-        return this.get<IBaseStream<ID>>(`/streams/${stream}`, config);
+        return await this.get<IBaseStream<ID>>(`/streams/${stream}`, config);
     }
 
     async patchStream<ID extends string>(stream: ID, data: any = {}, config: RequestConfig = {}) {
