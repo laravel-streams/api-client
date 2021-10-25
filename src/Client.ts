@@ -2,8 +2,31 @@ import deepmerge from 'deepmerge';
 import { AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
 import { ClientConfiguration, Constructor, Method, MethodName, RequestConfig, URLSearchParamsInit } from './types';
 import { HTTPError } from './HTTPError';
-import { Str } from './utils';
+import { objectify, Str } from './utils';
+import camelcase from 'camelcase';
 
+export interface ClientHeaders extends Headers {
+    [key:string]:any
+}
+
+export interface ClientResponse extends Response {
+    readonly headers:ClientHeaders
+}
+
+function transformResponse(response:Response):ClientResponse {
+    const transformed:ClientResponse = response.clone();
+    let headerEntries = Array.from(response.headers['entries']());
+    Object.entries(deepmerge.all([
+        headerEntries.map(([key,value]) => ([camelcase(key), value])).reduce(objectify, {}),
+        headerEntries.map(([key,value]) => ([key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value])).reduce(objectify, {}),
+        headerEntries.reduce(objectify, {})
+    ])).forEach(([key,value]) => {
+        transformed.headers[key] = value;
+        transformed.headers.set(key,value);
+    })
+
+    return transformed;
+}
 
 export class Client {
     public readonly hooks = {
@@ -29,16 +52,18 @@ export class Client {
     public async request(method: MethodName, uri: string, config: RequestConfig = {}): Promise<Response> {
         let request  = this.createRequest(method, uri, config);
         request      = this.hooks.request.call(request);
-        let response = await fetch(request);
+        let res = await fetch(request);
+        let response = transformResponse(res);
         response     = await this.hooks.response.promise(response, request);
         if ( !response.ok ) {
-            throw new HTTPError(response);
+            throw new HTTPError(response, request);
         }
         return response;
     }
 
     protected createRequest(method: MethodName, uri: string, config: RequestConfig = {}): Request {
         let factory = this.createRequestFactory(method, uri, config);
+        factory.headers(this.config.headers);
         factory     = this.hooks.createRequest.call(factory);
         return factory.make();
     }
@@ -46,6 +71,7 @@ export class Client {
     protected createRequestFactory(method: MethodName, uri: string, config: RequestConfig = {}): RequestConfigSetter {
         config        = this.getRequestConfig(config);
         config.method = Method[ method ];
+        config.url = uri;
 
         return createRequestFactory(this.config).merge(config);
     }

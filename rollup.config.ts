@@ -79,7 +79,9 @@ function createConfig(format: string, options: Partial<RollupOptions> = {}) {
                 tsconfig        : resolve(__dirname, 'tsconfig.build.json'),
                 cacheRoot       : resolve(__dirname, 'node_modules/.rts2_cache'),
                 tsconfigOverride: {
+
                     compilerOptions: {
+                        module: 'esnext',
                         sourceMap  : output.sourcemap,
                         declaration: false,
                     },

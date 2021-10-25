@@ -1,6 +1,4 @@
-import 'reflect-metadata'
-///<reference path="globals.d.ts"/>
-
+import 'reflect-metadata';
 export * from './Client';
 export * from './Collection';
 export * from './Criteria';

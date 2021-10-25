@@ -19,7 +19,7 @@
     },
     "types": "dist/index.d.ts",
     "main": "dist/streams-api.cjs.js",
-    "module": "dist/streams-api.esm.js",
+    "module": "dist/streams-api.esm-bundler.js",
     "scripts": {
         "clean": "npm-run-all clean:dist clean:doc",
         "clean:dist": "rm -rf ./dist",
@@ -32,6 +32,7 @@
         "test": "TS_NODE_PROJECT=./tsconfig.test.json mocha"
     },
     "dependencies": {
+        "camelcase": "^6.2.0",
         "deepmerge": "^4.2.2",
         "tapable": "^2.2.1"
     },
