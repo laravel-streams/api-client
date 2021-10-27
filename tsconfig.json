@@ -27,8 +27,7 @@
         "lib": [
             "ES2020",
             "scripthost",
-            "DOM",
-            "WebWorker"
+            "DOM"
         ],
     },
     "include": [

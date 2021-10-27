@@ -5,6 +5,8 @@ import { IBaseStream, IStream, IStreamResponse, ApiConfiguration } from './types
 import { Http } from './Http';
 import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
+export interface Streams {
+}
 export declare class Streams {
     config: ApiConfiguration;
     readonly hooks: {

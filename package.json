@@ -4,19 +4,6 @@
     "publishConfig": {
         "access": "public"
     },
-    "streams": {
-        "output": {
-            "type": "module"
-        },
-        "src": "src",
-        "bundler": "rollup",
-        "scripts": {
-            "dev": "bundle",
-            "prod": "build",
-            "watch": "watch",
-            "test": "test"
-        }
-    },
     "types": "dist/index.d.ts",
     "main": "dist/streams-api.cjs.js",
     "module": "dist/streams-api.esm-bundler.js",
@@ -38,5 +25,18 @@
     },
     "devDependencies": {
         "reflect-metadata": "^0.1.13"
+    },
+    "streams": {
+        "output": {
+            "type": "module"
+        },
+        "src": "src",
+        "bundler": "rollup",
+        "scripts": {
+            "dev": "bundle",
+            "prod": "build",
+            "watch": "watch",
+            "test": "test"
+        }
     }
 }

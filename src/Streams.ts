@@ -6,6 +6,9 @@ import { Http } from './Http';
 import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
 
+export interface Streams {
+
+}
 
 export class Streams {
     public readonly hooks = {

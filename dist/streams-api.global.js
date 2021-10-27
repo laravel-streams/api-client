@@ -1154,33 +1154,6 @@ var streamsApi = (function (exports, require$$0) {
 	OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 	PERFORMANCE OF THIS SOFTWARE.
 	***************************************************************************** */
-	/* global Reflect, Promise */
-
-	var extendStatics = function(d, b) {
-	    extendStatics = Object.setPrototypeOf ||
-	        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-	        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-	    return extendStatics(d, b);
-	};
-
-	function __extends(d, b) {
-	    if (typeof b !== "function" && b !== null)
-	        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-	    extendStatics(d, b);
-	    function __() { this.constructor = d; }
-	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-	}
-
-	var __assign = function() {
-	    __assign = Object.assign || function __assign(t) {
-	        for (var s, i = 1, n = arguments.length; i < n; i++) {
-	            s = arguments[i];
-	            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-	        }
-	        return t;
-	    };
-	    return __assign.apply(this, arguments);
-	};
 
 	function __awaiter(thisArg, _arguments, P, generator) {
 	    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1190,34 +1163,6 @@ var streamsApi = (function (exports, require$$0) {
 	        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
 	        step((generator = generator.apply(thisArg, _arguments || [])).next());
 	    });
-	}
-
-	function __generator(thisArg, body) {
-	    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-	    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-	    function verb(n) { return function (v) { return step([n, v]); }; }
-	    function step(op) {
-	        if (f) throw new TypeError("Generator is already executing.");
-	        while (_) try {
-	            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-	            if (y = 0, t) op = [op[0] & 2, t.value];
-	            switch (op[0]) {
-	                case 0: case 1: t = op; break;
-	                case 4: _.label++; return { value: op[1], done: false };
-	                case 5: _.label++; y = op[1]; op = [0]; continue;
-	                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-	                default:
-	                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-	                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-	                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-	                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-	                    if (t[2]) _.ops.pop();
-	                    _.trys.pop(); continue;
-	            }
-	            op = body.call(thisArg, _);
-	        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-	        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-	    }
 	}
 
 	var isMergeableObject = function isMergeableObject(value) {
@@ -2404,69 +2349,59 @@ var streamsApi = (function (exports, require$$0) {
 	    Method["trace"] = "TRACE";
 	})(exports.Method || (exports.Method = {}));
 
-	var HTTPError = /** @class */ (function (_super) {
-	    __extends(HTTPError, _super);
-	    function HTTPError(response, request) {
-	        var _this = _super.call(this, "HTTP " + response.status + " Error: " + response.statusText) || this;
-	        _this.response = response;
-	        _this.request = request;
-	        _this.name = 'HTTPError';
-	        return _this;
+	class HTTPError extends Error {
+	    constructor(response, request) {
+	        super(`HTTP ${response.status} Error: ${response.statusText}`);
+	        this.response = response;
+	        this.request = request;
+	        this.name = 'HTTPError';
 	    }
-	    return HTTPError;
-	}(Error));
+	}
 
-	var Str = /** @class */ (function () {
-	    function Str() {
-	    }
-	    Str.random = function (length) {
-	        if (length === void 0) { length = 15; }
-	        var text = '';
-	        var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	        for (var i = 0; i < length; i++) {
+	class Str {
+	    static random(length = 15) {
+	        let text = '';
+	        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	        for (let i = 0; i < length; i++) {
 	            text += possible.charAt(Math.floor(Math.random() * possible.length));
 	        }
 	        return text;
-	    };
-	    Str.ensureLeft = function (str, left) {
+	    }
+	    static ensureLeft(str, left) {
 	        if (false === str.startsWith(left)) {
 	            return left + str;
 	        }
 	        return str;
-	    };
-	    Str.ensureRight = function (str, right) {
+	    }
+	    static ensureRight(str, right) {
 	        if (false === str.endsWith(right)) {
 	            return str + right;
 	        }
 	        return str;
-	    };
-	    Str.stripLeft = function (str, left) {
+	    }
+	    static stripLeft(str, left) {
 	        if (str.startsWith(left)) {
 	            return str.substr(left.length);
 	        }
 	        return str;
-	    };
-	    Str.stripRight = function (str, right) {
+	    }
+	    static stripRight(str, right) {
 	        if (str.endsWith(right)) {
 	            return str.substr(0, str.length - right.length);
 	        }
 	        return str;
-	    };
-	    Str.ucfirst = function (string) {
+	    }
+	    static ucfirst(string) {
 	        return string[0].toUpperCase() + string.slice(1);
-	    };
-	    Str.lcfirst = function (string) {
+	    }
+	    static lcfirst(string) {
 	        return string[0].toLowerCase() + string.slice(1);
-	    };
-	    Str.parameters = function (str, params) {
-	        Object.entries(params).forEach(function (_a) {
-	            var key = _a[0], value = _a[1];
-	            return str = str.replace(new RegExp(':' + key, 'g'), value);
-	        });
+	    }
+	    static parameters(str, params) {
+	        Object.entries(params).forEach(([key, value]) => str = str.replace(new RegExp(':' + key, 'g'), value));
 	        return str;
-	    };
-	    return Str;
-	}());
+	    }
+	}
 	/**
 	 *
 	 * @param obj
@@ -2479,11 +2414,7 @@ var streamsApi = (function (exports, require$$0) {
 	 * }).reduce(utils.objectify, {});
 	 *
 	 */
-	var objectify = function (obj, _a) {
-	    var _b;
-	    var k = _a[0], v = _a[1];
-	    return (__assign(__assign({}, obj), (_b = {}, _b[k] = v, _b)));
-	};
+	const objectify = (obj, [k, v]) => (Object.assign(Object.assign({}, obj), { [k]: v }));
 
 	var camelcase$1 = {exports: {}};
 
@@ -2580,27 +2511,20 @@ var streamsApi = (function (exports, require$$0) {
 	var camelcase = camelcase$1.exports;
 
 	function transformResponse(response) {
-	    var transformed = response.clone();
-	    var headerEntries = Array.from(response.headers['entries']());
+	    const transformed = response.clone();
+	    let headerEntries = Array.from(response.headers['entries']());
 	    Object.entries(cjs.all([
-	        headerEntries.map(function (_a) {
-	            var key = _a[0], value = _a[1];
-	            return ([camelcase(key), value]);
-	        }).reduce(objectify, {}),
-	        headerEntries.map(function (_a) {
-	            var key = _a[0], value = _a[1];
-	            return ([key.split('-').map(function (seg) { return Str.ucfirst(seg); }).join('-'), value]);
-	        }).reduce(objectify, {}),
+	        headerEntries.map(([key, value]) => ([camelcase(key), value])).reduce(objectify, {}),
+	        headerEntries.map(([key, value]) => ([key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value])).reduce(objectify, {}),
 	        headerEntries.reduce(objectify, {})
-	    ])).forEach(function (_a) {
-	        var key = _a[0], value = _a[1];
+	    ])).forEach(([key, value]) => {
 	        transformed.headers[key] = value;
 	        transformed.headers.set(key, value);
 	    });
 	    return transformed;
 	}
-	var Client = /** @class */ (function () {
-	    function Client(config) {
+	class Client {
+	    constructor(config) {
 	        this.hooks = {
 	            createRequest: new SyncWaterfallHook(['factory']),
 	            request: new SyncWaterfallHook(['request']),
@@ -2616,69 +2540,54 @@ var streamsApi = (function (exports, require$$0) {
 	            },
 	        }, config);
 	    }
-	    Client.prototype.request = function (method, uri, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            var request, res, response;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        request = this.createRequest(method, uri, config);
-	                        request = this.hooks.request.call(request);
-	                        return [4 /*yield*/, fetch(request)];
-	                    case 1:
-	                        res = _a.sent();
-	                        response = transformResponse(res);
-	                        return [4 /*yield*/, this.hooks.response.promise(response, request)];
-	                    case 2:
-	                        response = _a.sent();
-	                        if (!response.ok) {
-	                            throw new HTTPError(response, request);
-	                        }
-	                        return [2 /*return*/, response];
-	                }
-	            });
+	    request(method, uri, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let request = this.createRequest(method, uri, config);
+	            request = this.hooks.request.call(request);
+	            let res = yield fetch(request);
+	            let response = transformResponse(res);
+	            response = yield this.hooks.response.promise(response, request);
+	            if (!response.ok) {
+	                throw new HTTPError(response, request);
+	            }
+	            return response;
 	        });
-	    };
-	    Client.prototype.createRequest = function (method, uri, config) {
-	        if (config === void 0) { config = {}; }
-	        var factory = this.createRequestFactory(method, uri, config);
+	    }
+	    createRequest(method, uri, config = {}) {
+	        let factory = this.createRequestFactory(method, uri, config);
 	        factory.headers(this.config.headers);
 	        factory = this.hooks.createRequest.call(factory);
 	        return factory.make();
-	    };
-	    Client.prototype.createRequestFactory = function (method, uri, config) {
-	        if (config === void 0) { config = {}; }
+	    }
+	    createRequestFactory(method, uri, config = {}) {
 	        config = this.getRequestConfig(config);
 	        config.method = exports.Method[method];
 	        config.url = uri;
 	        return createRequestFactory(this.config).merge(config);
-	    };
-	    Client.prototype.getRequestConfig = function (config) {
-	        if (config === void 0) { config = {}; }
+	    }
+	    getRequestConfig(config = {}) {
 	        return cjs(this.config.request, config, { clone: true });
-	    };
-	    return Client;
-	}());
-	var RequestFactory = /** @class */ (function () {
-	    function RequestFactory(_clientConfig, _Request) {
+	    }
+	}
+	class RequestFactory {
+	    constructor(_clientConfig, _Request) {
 	        this._clientConfig = _clientConfig;
 	        this._Request = _Request;
 	        this._config = {};
 	        this._params = new URLSearchParams();
 	        this._headers = new Headers();
 	        return new Proxy(this, {
-	            get: function (target, p, receiver) {
+	            get(target, p, receiver) {
 	                if (Reflect.has(target, p)) {
 	                    return Reflect.get(target, p, receiver);
 	                }
 	                //@formatter:on
-	                return function (value) {
+	                return (value) => {
 	                    target._config[p] = value;
 	                    return target;
 	                };
 	            },
-	            set: function (target, p, value, receiver) {
+	            set(target, p, value, receiver) {
 	                if (typeof target[p] === 'function') {
 	                    return target[p](value);
 	                }
@@ -2686,102 +2595,87 @@ var streamsApi = (function (exports, require$$0) {
 	            },
 	        });
 	    }
-	    RequestFactory.prototype.merge = function (config) {
-	        var _this = this;
-	        Object.entries(config).forEach(function (_a) {
-	            var key = _a[0], value = _a[1];
-	            return _this[key](value);
-	        });
+	    merge(config) {
+	        Object.entries(config).forEach(([key, value]) => this[key](value));
 	        return this;
-	    };
-	    RequestFactory.prototype.getConfig = function () {
-	        return __assign(__assign({}, this._config), { headers: this._headers, params: this._params, url: this._config.url ? this.getUri(this._config.url) : this._config.url });
-	    };
-	    RequestFactory.prototype.header = function (name, value) {
+	    }
+	    getConfig() {
+	        return Object.assign(Object.assign({}, this._config), { headers: this._headers, params: this._params, url: this._config.url ? this.getUri(this._config.url) : this._config.url });
+	    }
+	    header(name, value) {
 	        this._headers.set(name, value);
 	        return this;
-	    };
-	    RequestFactory.prototype.param = function (name, value) {
+	    }
+	    param(name, value) {
 	        this._headers.set(name, value);
 	        return this;
-	    };
-	    RequestFactory.prototype.headers = function (headers) {
+	    }
+	    headers(headers) {
 	        mergeHeaders(headers, this._headers);
 	        return this;
-	    };
-	    RequestFactory.prototype.params = function (params) {
+	    }
+	    params(params) {
 	        mergeURLSearchParams(params, this._params);
 	        return this;
-	    };
-	    RequestFactory.prototype.data = function (value) {
+	    }
+	    data(value) {
 	        this._headers.set('Content-Type', 'application/json');
 	        this._config.body = JSON.stringify(value);
 	        return this;
-	    };
-	    RequestFactory.prototype.getUri = function (uri) {
-	        var params = this._params.toString();
+	    }
+	    getUri(uri) {
+	        let params = this._params.toString();
 	        if (params.length) {
 	            params = '?' + params;
 	        }
 	        return Str.ensureRight(this._clientConfig.baseURL, '/') + Str.stripLeft(uri, '/') + params;
-	    };
-	    RequestFactory.prototype.basic = function (username, password) {
+	    }
+	    basic(username, password) {
 	        return this.authorization('Basic', btoa(username + ':' + password));
-	    };
-	    RequestFactory.prototype.bearer = function (token) {
+	    }
+	    bearer(token) {
 	        return this.authorization('Bearer', token);
-	    };
-	    RequestFactory.prototype.authorization = function (key, value) {
+	    }
+	    authorization(key, value) {
 	        this._headers.set('Authorization', key + ' ' + value);
 	        return this;
-	    };
-	    RequestFactory.prototype.make = function () {
-	        var config = this.getConfig();
+	    }
+	    make() {
+	        const config = this.getConfig();
 	        return new this._Request(config.url, config);
-	    };
-	    return RequestFactory;
-	}());
-	function createRequestFactory(clientConfig, _Request) {
-	    if (_Request === void 0) { _Request = Request; }
+	    }
+	}
+	function createRequestFactory(clientConfig, _Request = Request) {
 	    return new RequestFactory(clientConfig, _Request);
 	}
 	function mergeHeaders(source, destination) {
-	    (new Headers(source)).forEach(function (value, key) { return destination.set(key, value); });
+	    (new Headers(source)).forEach((value, key) => destination.set(key, value));
 	    return destination;
 	}
 	function mergeURLSearchParams(source, destination) {
-	    (new URLSearchParams(source)).forEach(function (value, key) { return destination.set(key, value); });
+	    (new URLSearchParams(source)).forEach((value, key) => destination.set(key, value));
 	    return destination;
 	}
 
-	var Collection = /** @class */ (function (_super) {
-	    __extends(Collection, _super);
+	class Collection extends Array {
 	    /**
 	     * Create a new collection instance.
 	     *
 	     * @param items
 	     */
-	    function Collection() {
-	        var items = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            items[_i] = arguments[_i];
-	        }
-	        var _this = _super.apply(this, items) || this;
-	        Object.setPrototypeOf(_this, Array.prototype);
-	        return _this;
+	    constructor(...items) {
+	        super(...items);
+	        Object.setPrototypeOf(this, Array.prototype);
 	    }
-	    return Collection;
-	}(Array));
+	}
 
-	var Entry = /** @class */ (function () {
-	    function Entry(_stream, _data, _fresh) {
-	        if (_data === void 0) { _data = {}; }
-	        if (_fresh === void 0) { _fresh = true; }
+	class Entry {
+	    constructor(_stream, _data = {}, _fresh = true) {
 	        this._stream = _stream;
 	        this._data = _data;
 	        this._fresh = _fresh;
-	        var proxy = new Proxy(this, {
-	            get: function (target, p, receiver) {
+	        let proxy = new Proxy(this, {
+	            get(target, p, receiver) {
 	                if (Reflect.has(target, p)) {
 	                    return Reflect.get(target, p, receiver);
 	                }
@@ -2789,7 +2683,7 @@ var streamsApi = (function (exports, require$$0) {
 	                    return Reflect.get(target._data, p);
 	                }
 	            },
-	            set: function (target, p, value, receiver) {
+	            set(target, p, value, receiver) {
 	                if (Reflect.has(target, p)) {
 	                    return Reflect.set(target, p, value, receiver);
 	                }
@@ -2798,127 +2692,91 @@ var streamsApi = (function (exports, require$$0) {
 	        });
 	        return proxy;
 	    }
-	    Object.defineProperty(Entry.prototype, "http", {
-	        get: function () { return this._stream.streams.http; },
-	        enumerable: false,
-	        configurable: true
-	    });
-	    Object.defineProperty(Entry.prototype, "stream", {
-	        get: function () {
-	            return this._stream;
-	        },
-	        enumerable: false,
-	        configurable: true
-	    });
-	    Entry.prototype.save = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        _a.trys.push([0, 4, , 5]);
-	                        if (!this._fresh) return [3 /*break*/, 2];
-	                        return [4 /*yield*/, this.http.postEntry(this._stream.id, this._data)];
-	                    case 1:
-	                        _a.sent();
-	                        return [2 /*return*/, true];
-	                    case 2: return [4 /*yield*/, this.http.patchEntry(this._stream.id, this._data.id, this._data)];
-	                    case 3:
-	                        _a.sent();
-	                        return [2 /*return*/, true];
-	                    case 4:
-	                        _a.sent();
-	                        return [2 /*return*/, false];
-	                    case 5: return [2 /*return*/];
+	    get http() { return this._stream.streams.http; }
+	    get stream() {
+	        return this._stream;
+	    }
+	    save() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                if (this._fresh) {
+	                    yield this.http.postEntry(this._stream.id, this._data);
+	                    return true;
 	                }
-	            });
+	                yield this.http.patchEntry(this._stream.id, this._data.id, this._data);
+	                return true;
+	            }
+	            catch (e) {
+	                return false;
+	            }
 	        });
-	    };
-	    Entry.prototype.validator = function () {
-	    };
-	    return Entry;
-	}());
-
-	var EntryCollection = /** @class */ (function (_super) {
-	    __extends(EntryCollection, _super);
-	    function EntryCollection(entries, meta, links) {
-	        var _this = _super.apply(this, entries) || this;
-	        _this.meta = meta;
-	        _this.links = links;
-	        return _this;
 	    }
-	    EntryCollection.fromResponse = function (response, stream) {
-	        var entries = Object.values(response.data).map(function (entry) { return new Entry(stream, entry, false); });
+	    validator() {
+	    }
+	}
+
+	class EntryCollection extends Collection {
+	    constructor(entries, meta, links) {
+	        super(...entries);
+	        this.meta = meta;
+	        this.links = links;
+	    }
+	    static fromResponse(response, stream) {
+	        const entries = Object.values(response.data).map(entry => new Entry(stream, entry, false));
 	        return new EntryCollection(entries, response.meta, response.links);
-	    };
-	    return EntryCollection;
-	}(Collection));
-	var PaginatedEntryCollection = /** @class */ (function (_super) {
-	    __extends(PaginatedEntryCollection, _super);
-	    function PaginatedEntryCollection(entries, meta, links) {
-	        var _this = _super.apply(this, entries) || this;
-	        _this.meta = meta;
-	        _this.links = links;
-	        return _this;
 	    }
-	    PaginatedEntryCollection.fromResponse = function (response, stream) {
-	        var entries = Object.values(response.data).map(function (entry) { return new Entry(stream, entry, false); });
+	}
+	class PaginatedEntryCollection extends Collection {
+	    constructor(entries, meta, links) {
+	        super(...entries);
+	        this.meta = meta;
+	        this.links = links;
+	    }
+	    static fromResponse(response, stream) {
+	        const entries = Object.values(response.data).map(entry => new Entry(stream, entry, false));
 	        return new PaginatedEntryCollection(entries, response.meta, response.links);
-	    };
-	    return PaginatedEntryCollection;
-	}(Collection));
+	    }
+	}
 
-	var comparisonOperators = ['>', '<', '==', '!=', '>=', '<=', '!<', '!>', '<>'];
-	var logicalOperators = ['BETWEEN', 'EXISTS', 'OR', 'AND', 'NOT', 'IN', 'ALL', 'ANY', 'LIKE', 'IS NULL', 'UNIQUE'];
-	var operators = [].concat(comparisonOperators).concat(logicalOperators);
-	var isOperator = function (value) { return operators.includes(value); };
-	var ensureArray = function (value) { return Array.isArray(value) ? value : [value]; };
-	var Criteria = /** @class */ (function () {
+	const comparisonOperators = ['>', '<', '==', '!=', '>=', '<=', '!<', '!>', '<>'];
+	const logicalOperators = ['BETWEEN', 'EXISTS', 'OR', 'AND', 'NOT', 'IN', 'ALL', 'ANY', 'LIKE', 'IS NULL', 'UNIQUE'];
+	const operators = [].concat(comparisonOperators).concat(logicalOperators);
+	const isOperator = (value) => operators.includes(value);
+	const ensureArray = (value) => Array.isArray(value) ? value : [value];
+	class Criteria {
 	    /**
 	     * Create a new instance.
 	     *
 	     * @param stream
 	     */
-	    function Criteria(stream) {
+	    constructor(stream) {
 	        this.stream = stream;
 	        this.parameters = [];
 	    }
-	    Object.defineProperty(Criteria.prototype, "http", {
-	        get: function () { return this.stream.streams.http; },
-	        enumerable: false,
-	        configurable: true
-	    });
+	    get http() { return this.stream.streams.http; }
 	    /**
 	     * Find an entry by ID.
 	     *
 	     * @param id
 	     * @returns
 	     */
-	    Criteria.prototype.find = function (id) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.where('id', id).first()];
-	            });
+	    find(id) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.where('id', id).first();
 	        });
-	    };
+	    }
 	    /**
 	     * Return the first result.
 	     *
 	     * @returns
 	     */
-	    Criteria.prototype.first = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var collection;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.limit(1).get()];
-	                    case 1:
-	                        collection = _a.sent();
-	                        return [2 /*return*/, collection[0]];
-	                }
-	            });
+	    first() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let collection = yield this.limit(1).get();
+	            return collection[0];
 	        });
-	    };
-	    Criteria.prototype.cache = function () { return this; };
+	    }
+	    cache() { return this; }
 	    /**
 	     * Order the query by field/direction.
 	     *
@@ -2926,27 +2784,22 @@ var streamsApi = (function (exports, require$$0) {
 	     * @param direction
 	     * @returns
 	     */
-	    Criteria.prototype.orderBy = function (key, direction) {
-	        if (direction === void 0) { direction = 'desc'; }
+	    orderBy(key, direction = 'desc') {
 	        this.addParameter('orderBy', [key, direction]);
 	        return this;
-	    };
+	    }
 	    /**
 	     * Limit the entries returned.
 	     *
 	     * @param value
 	     * @returns
 	     */
-	    Criteria.prototype.limit = function (value) {
+	    limit(value) {
 	        this.addParameter('limit', value);
 	        return this;
-	    };
-	    Criteria.prototype.where = function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        var key, operator, value, nested;
+	    }
+	    where(...args) {
+	        let key, operator, value, nested;
 	        if (args.length === 2) {
 	            key = args[0];
 	            operator = '==';
@@ -2964,17 +2817,13 @@ var streamsApi = (function (exports, require$$0) {
 	            nested = args[3];
 	        }
 	        if (!isOperator(operator)) {
-	            throw new Error("Criteria where() operator \"" + operator + "\" not valid ");
+	            throw new Error(`Criteria where() operator "${operator}" not valid `);
 	        }
 	        this.addParameter('where', [key, operator, value, nested]);
 	        return this;
-	    };
-	    Criteria.prototype.orWhere = function () {
-	        var args = [];
-	        for (var _i = 0; _i < arguments.length; _i++) {
-	            args[_i] = arguments[_i];
-	        }
-	        var key, operator, value;
+	    }
+	    orWhere(...args) {
+	        let key, operator, value;
 	        if (args.length === 2) {
 	            key = args[0];
 	            operator = '==';
@@ -2986,31 +2835,23 @@ var streamsApi = (function (exports, require$$0) {
 	            value = args[2];
 	        }
 	        if (!isOperator(operator)) {
-	            throw new Error("Criteria orWhere() operator \"" + operator + "\" not valid ");
+	            throw new Error(`Criteria orWhere() operator "${operator}" not valid `);
 	        }
 	        this.addParameter('where', [key, operator, value, 'or']);
 	        return this;
-	    };
+	    }
 	    /**
 	     * Get the criteria results.
 	     *
 	     * @returns
 	     */
-	    Criteria.prototype.get = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var query, response;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        query = this.compileStatements();
-	                        return [4 /*yield*/, this.http.getEntries(this.stream.id, { query: query }, {})];
-	                    case 1:
-	                        response = _a.sent();
-	                        return [2 /*return*/, EntryCollection.fromResponse(response, this.stream)];
-	                }
-	            });
+	    get() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let query = this.compileStatements();
+	            const response = yield this.http.getEntries(this.stream.id, { query }, {});
+	            return EntryCollection.fromResponse(response, this.stream);
 	        });
-	    };
+	    }
 	    //count(): number { return 0; }
 	    /**
 	     * Create a new entry.
@@ -3018,41 +2859,26 @@ var streamsApi = (function (exports, require$$0) {
 	     * @param attributes
 	     * @returns
 	     */
-	    Criteria.prototype.create = function (attributes) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var entry;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        entry = this.newInstance(attributes);
-	                        return [4 /*yield*/, entry.save()];
-	                    case 1:
-	                        _a.sent();
-	                        return [2 /*return*/, entry];
-	                }
-	            });
+	    create(attributes) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let entry = this.newInstance(attributes);
+	            yield entry.save();
+	            return entry;
 	        });
-	    };
+	    }
 	    /**
 	     * Save an entry.
 	     *
 	     * @param entry
 	     * @returns
 	     */
-	    Criteria.prototype.save = function (entry) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var result;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, entry.save()];
-	                    case 1:
-	                        result = _a.sent();
-	                        return [2 /*return*/, result];
-	                }
-	            });
+	    save(entry) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let result = yield entry.save();
+	            return result;
 	        });
-	    };
-	    Criteria.prototype.delete = function () { return this; };
+	    }
+	    delete() { return this; }
 	    //truncate(): this { return this; }
 	    /**
 	     * Get paginated criteria results.
@@ -3061,50 +2887,40 @@ var streamsApi = (function (exports, require$$0) {
 	     * @param page
 	     * @returns
 	     */
-	    Criteria.prototype.paginate = function (per_page, page) {
-	        if (per_page === void 0) { per_page = 100; }
-	        if (page === void 0) { page = 1; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            var query, response;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        query = this.compileStatements();
-	                        return [4 /*yield*/, this.http.getEntries(this.stream.id, { query: query }, { paginate: true, per_page: per_page, page: page })];
-	                    case 1:
-	                        response = _a.sent();
-	                        return [2 /*return*/, PaginatedEntryCollection.fromResponse(response, this.stream)];
-	                }
-	            });
+	    paginate(per_page = 100, page = 1) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let query = this.compileStatements();
+	            const response = yield this.http.getEntries(this.stream.id, { query }, { paginate: true, per_page, page });
+	            return PaginatedEntryCollection.fromResponse(response, this.stream);
 	        });
-	    };
+	    }
 	    /**
 	     * Return an entry instance.
 	     *
 	     * @param attributes
 	     * @returns Entry
 	     */
-	    Criteria.prototype.newInstance = function (attributes) {
+	    newInstance(attributes) {
 	        return new Entry(this.stream, attributes, true);
-	    };
+	    }
 	    /**
 	     * Get the parameters.
 	     *
 	     * @returns
 	     */
-	    Criteria.prototype.getParameters = function () {
+	    getParameters() {
 	        return this.parameters;
-	    };
+	    }
 	    /**
 	     * Set the parameters.
 	     *
 	     * @param parameters
 	     * @returns
 	     */
-	    Criteria.prototype.setParameters = function (parameters) {
+	    setParameters(parameters) {
 	        this.parameters = parameters;
 	        return this;
-	    };
+	    }
 	    /**
 	     * Add a statement.
 	     *
@@ -3112,299 +2928,184 @@ var streamsApi = (function (exports, require$$0) {
 	     * @param value
 	     * @returns
 	     */
-	    Criteria.prototype.addParameter = function (name, value) {
-	        this.parameters.push({ name: name, value: value });
+	    addParameter(name, value) {
+	        this.parameters.push({ name, value });
 	        return this;
-	    };
+	    }
 	    /**
 	     * Return standardized parameters.
 	     *
 	     * @returns
 	     */
-	    Criteria.prototype.compileStatements = function () {
-	        return this.parameters.map(function (statement) {
-	            var _a;
-	            return (_a = {}, _a[statement.name] = ensureArray(statement.value), _a);
-	        });
-	    };
-	    return Criteria;
-	}());
+	    compileStatements() {
+	        return this.parameters.map(statement => ({ [statement.name]: ensureArray(statement.value) }));
+	    }
+	}
 
-	var Field = /** @class */ (function () {
-	    function Field(field) {
+	class Field {
+	    constructor(field) {
 	        Object.assign(this, field);
 	    }
-	    return Field;
-	}());
+	}
 
-	var FieldCollection = /** @class */ (function (_super) {
-	    __extends(FieldCollection, _super);
-	    function FieldCollection() {
-	        return _super !== null && _super.apply(this, arguments) || this;
-	    }
-	    return FieldCollection;
-	}(Collection));
+	class FieldCollection extends Collection {
+	}
 
-	var Http = /** @class */ (function () {
-	    function Http(streams) {
+	class Http {
+	    constructor(streams) {
 	        this.streams = streams;
 	    }
-	    Object.defineProperty(Http.prototype, "client", {
-	        get: function () { return this.streams.client; },
-	        enumerable: false,
-	        configurable: true
-	    });
-	    Object.defineProperty(Http.prototype, "config", {
-	        get: function () { return this.streams.config; },
-	        enumerable: false,
-	        configurable: true
-	    });
-	    Http.prototype.getStreams = function (params, config) {
-	        if (params === void 0) { params = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                config.params = params;
-	                return [2 /*return*/, this.get('/streams', config)];
-	            });
+	    get client() { return this.streams.client; }
+	    get config() { return this.streams.config; }
+	    getStreams(params = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            config.params = params;
+	            return this.get('/streams', config);
 	        });
-	    };
-	    Http.prototype.postStream = function (data, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.post('/streams', data, config)];
-	            });
+	    }
+	    postStream(data, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.post('/streams', data, config);
 	        });
-	    };
-	    Http.prototype.getStream = function (stream, params, config) {
-	        if (params === void 0) { params = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        config.params = params;
-	                        return [4 /*yield*/, this.get("/streams/" + stream, config)];
-	                    case 1: return [2 /*return*/, _a.sent()];
-	                }
-	            });
+	    }
+	    getStream(stream, params = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            config.params = params;
+	            return yield this.get(`/streams/${stream}`, config);
 	        });
-	    };
-	    Http.prototype.patchStream = function (stream, data, config) {
-	        if (data === void 0) { data = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.patch("/streams/" + stream, data, config)];
-	            });
+	    }
+	    patchStream(stream, data = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.patch(`/streams/${stream}`, data, config);
 	        });
-	    };
-	    Http.prototype.putStream = function (stream, data, config) {
-	        if (data === void 0) { data = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.put("/streams/" + stream, data, config)];
-	            });
+	    }
+	    putStream(stream, data = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.put(`/streams/${stream}`, data, config);
 	        });
-	    };
-	    Http.prototype.deleteStream = function (stream, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.delete("/streams/" + stream, config)];
-	            });
+	    }
+	    deleteStream(stream, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.delete(`/streams/${stream}`, config);
 	        });
-	    };
-	    Http.prototype.getEntries = function (stream, data, params, config) {
-	        if (data === void 0) { data = {}; }
-	        if (params === void 0) { params = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                config.body = data;
-	                config.params = params;
-	                return [2 /*return*/, this.get("/streams/" + stream + "/entries", __assign(__assign({}, config), { headers: {
-	                            'Content-Type': 'application/json',
-	                        } }))];
-	            });
+	    }
+	    getEntries(stream, data = {}, params = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            config.body = data;
+	            config.params = params;
+	            return this.get(`/streams/${stream}/entries`, Object.assign(Object.assign({}, config), { headers: {
+	                    'Content-Type': 'application/json',
+	                } }));
 	        });
-	    };
-	    Http.prototype.postEntry = function (stream, data, config) {
-	        if (data === void 0) { data = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.post("/streams/" + stream + "/entries", data, config)];
-	            });
+	    }
+	    postEntry(stream, data = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.post(`/streams/${stream}/entries`, data, config);
 	        });
-	    };
-	    Http.prototype.getEntry = function (stream, entry, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.get("/streams/" + stream + "/entries/" + entry, config)];
-	            });
+	    }
+	    getEntry(stream, entry, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.get(`/streams/${stream}/entries/${entry}`, config);
 	        });
-	    };
-	    Http.prototype.patchEntry = function (stream, entry, data, config) {
-	        if (data === void 0) { data = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.patch("/streams/" + stream + "/entries/" + entry, data, config)];
-	            });
+	    }
+	    patchEntry(stream, entry, data = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.patch(`/streams/${stream}/entries/${entry}`, data, config);
 	        });
-	    };
-	    Http.prototype.putEntry = function (stream, entry, data, config) {
-	        if (data === void 0) { data = {}; }
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, this.put("/streams/" + stream + "/entries/" + entry, data, config)];
-	            });
+	    }
+	    putEntry(stream, entry, data = {}, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return this.put(`/streams/${stream}/entries/${entry}`, data, config);
 	        });
-	    };
-	    Http.prototype.deleteEntry = function (stream, entry, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                Str.parameters('/streams/:stream/entries/:entry', { stream: stream, entry: entry });
-	                return [2 /*return*/, this.patch("/streams/" + stream + "/entries/" + entry, config)];
-	            });
+	    }
+	    deleteEntry(stream, entry, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            Str.parameters('/streams/:stream/entries/:entry', { stream, entry });
+	            return this.patch(`/streams/${stream}/entries/${entry}`, config);
 	        });
-	    };
-	    Http.prototype.get = function (url, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('get', url, config)];
-	        }); });
-	    };
-	    Http.prototype.delete = function (url, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('delete', url, config)];
-	        }); });
-	    };
-	    Http.prototype.head = function (url, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('head', url, config)];
-	        }); });
-	    };
-	    Http.prototype.options = function (url, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('options', url, config)];
-	        }); });
-	    };
-	    Http.prototype.post = function (url, data, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('post', url, __assign({ data: data }, config))];
-	        }); });
-	    };
-	    Http.prototype.put = function (url, data, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('put', url, __assign({ data: data }, config))];
-	        }); });
-	    };
-	    Http.prototype.patch = function (url, data, config) {
-	        if (config === void 0) { config = {}; }
-	        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-	            return [2 /*return*/, this.request('patch', url, __assign({ data: data }, config))];
-	        }); });
-	    };
-	    Http.prototype.request = function (method, url, config) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var response, e_1;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0:
-	                        _a.trys.push([0, 2, , 3]);
-	                        return [4 /*yield*/, this.client.request(method, url, config)];
-	                    case 1:
-	                        response = _a.sent();
-	                        return [2 /*return*/, response];
-	                    case 2:
-	                        e_1 = _a.sent();
-	                        throw e_1;
-	                    case 3: return [2 /*return*/];
-	                }
-	            });
+	    }
+	    get(url, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('get', url, config); });
+	    }
+	    delete(url, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('delete', url, config); });
+	    }
+	    head(url, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('head', url, config); });
+	    }
+	    options(url, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('options', url, config); });
+	    }
+	    post(url, data, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('post', url, Object.assign({ data }, config)); });
+	    }
+	    put(url, data, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('put', url, Object.assign({ data }, config)); });
+	    }
+	    patch(url, data, config = {}) {
+	        return __awaiter(this, void 0, void 0, function* () { return this.request('patch', url, Object.assign({ data }, config)); });
+	    }
+	    request(method, url, config) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            try {
+	                const response = yield this.client.request(method, url, config);
+	                return response;
+	            }
+	            catch (e) {
+	                throw e;
+	            }
 	        });
-	    };
-	    return Http;
-	}());
+	    }
+	}
 
-	var Repository = /** @class */ (function () {
+	class Repository {
 	    /**
 	     * Create a new repository instance.
 	     *
 	     * @param stream
 	     */
-	    function Repository(stream) {
+	    constructor(stream) {
 	        this.stream = stream;
 	    }
-	    Object.defineProperty(Repository.prototype, "http", {
-	        get: function () {
-	            return this.stream.streams.http;
-	        },
-	        enumerable: false,
-	        configurable: true
-	    });
+	    get http() {
+	        return this.stream.streams.http;
+	    }
 	    /**
 	     * Return all items.
 	     *
 	     * @returns EntryCollection
 	     */
-	    Repository.prototype.all = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var response, entries;
-	            var _this = this;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.http.getEntries(this.stream.id)];
-	                    case 1:
-	                        response = _a.sent();
-	                        entries = response.data.map(function (entry) { return new Entry(_this.stream, entry, false); });
-	                        return [2 /*return*/, new EntryCollection(entries, response.meta, response.links)];
-	                }
-	            });
+	    all() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let response = yield this.http.getEntries(this.stream.id);
+	            let entries = response.data.map(entry => new Entry(this.stream, entry, false));
+	            return new EntryCollection(entries, response.meta, response.links);
 	        });
-	    };
+	    }
 	    /**
 	     * Find an entry by ID.
 	     *
 	     * @param id
 	     * @returns Entry
 	     */
-	    Repository.prototype.find = function (id) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var criteria;
-	            return __generator(this, function (_a) {
-	                criteria = this.stream.entries();
-	                return [2 /*return*/, criteria.where('id', id).first()];
-	            });
+	    find(id) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let criteria = this.stream.entries();
+	            return criteria.where('id', id).first();
 	        });
-	    };
+	    }
 	    /**
 	     * Find all records by IDs.
 	     *
 	     * @param ids
 	     * @returns EntryCollection
 	     */
-	    Repository.prototype.findAll = function (ids) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var criteria;
-	            return __generator(this, function (_a) {
-	                criteria = this.stream.entries();
-	                return [2 /*return*/, criteria.where('id', 'IN', ids).get()];
-	            });
+	    findAll(ids) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let criteria = this.stream.entries();
+	            return criteria.where('id', 'IN', ids).get();
 	        });
-	    };
+	    }
 	    /**
 	     * Find an entry by a field value.
 	     *
@@ -3412,15 +3113,12 @@ var streamsApi = (function (exports, require$$0) {
 	     * @param value
 	     * @returns Entry
 	     */
-	    Repository.prototype.findBy = function (field, value) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var criteria;
-	            return __generator(this, function (_a) {
-	                criteria = this.stream.entries();
-	                return [2 /*return*/, criteria.where(field, value).first()];
-	            });
+	    findBy(field, value) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let criteria = this.stream.entries();
+	            return criteria.where(field, value).first();
 	        });
-	    };
+	    }
 	    /**
 	     * Find all entries by field value.
 	     *
@@ -3429,124 +3127,103 @@ var streamsApi = (function (exports, require$$0) {
 	     * @param $value
 	     * @return EntryCollection
 	     */
-	    Repository.prototype.findAllWhere = function (field, value) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var criteria;
-	            return __generator(this, function (_a) {
-	                criteria = this.stream.entries();
-	                return [2 /*return*/, criteria.where(field, value).get()];
-	            });
+	    findAllWhere(field, value) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let criteria = this.stream.entries();
+	            return criteria.where(field, value).get();
 	        });
-	    };
+	    }
 	    /**
 	     * Create a new entry.
 	     *
 	     * @param attributes
 	     * @returns
 	     */
-	    Repository.prototype.create = function (attributes) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var entry;
-	            return __generator(this, function (_a) {
-	                entry = this.newCriteria().newInstance(attributes);
-	                return [2 /*return*/, entry.save()];
-	            });
+	    create(attributes) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            let entry = this.newCriteria().newInstance(attributes);
+	            return entry.save();
 	        });
-	    };
+	    }
 	    /**
 	     * Save an entry.
 	     *
 	     * @param entry
 	     * @returns
 	     */
-	    Repository.prototype.save = function (entry) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                return [2 /*return*/, entry.save()];
-	            });
+	    save(entry) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return entry.save();
 	        });
-	    };
+	    }
 	    /**
 	     * Save an entry.
 	     *
 	     * @param entry
 	     * @returns
 	     */
-	    Repository.prototype.delete = function (entry) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.http.deleteEntry(this.stream.id, entry.id)];
-	                    case 1:
-	                        _a.sent();
-	                        return [2 /*return*/, true];
-	                }
-	            });
+	    delete(entry) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            yield this.http.deleteEntry(this.stream.id, entry.id);
+	            return true;
 	        });
-	    };
-	    Repository.prototype.truncate = function () { return this; };
+	    }
+	    truncate() { return this; }
 	    /**
 	     * Return a new instance.
 	     *
 	     * @param attributes
 	     * @returns
 	     */
-	    Repository.prototype.newInstance = function (attributes) {
+	    newInstance(attributes) {
 	        return this.newCriteria().newInstance(attributes);
-	    };
+	    }
 	    /**
 	     * Return a new entry criteria.
 	     *
 	     * @returns Criteria
 	     */
-	    Repository.prototype.newCriteria = function () {
+	    newCriteria() {
 	        return new Criteria(this.stream);
-	    };
-	    return Repository;
-	}());
+	    }
+	}
 
-	var Stream = /** @class */ (function () {
-	    function Stream(streams, stream, meta, links) {
+	class Stream {
+	    constructor(streams, stream, meta, links) {
 	        this.streams = streams;
 	        this.meta = meta;
 	        this.links = links;
 	        if (stream.fields) {
-	            this.fields = new Map(Object.entries(stream.fields).map(function (_a) {
-	                var key = _a[0], field = _a[1];
-	                return [key, new Field(field)];
-	            }));
+	            this.fields = new Map(Object.entries(stream.fields).map(([key, field]) => [key, new Field(field)]));
 	            delete stream.fields;
 	        }
 	        Object.assign(this, stream);
 	    }
-	    Object.defineProperty(Stream.prototype, "repository", {
-	        /**
-	         * Return the entries repository.
-	         *
-	         * @returns Repository
-	         */
-	        get: function () {
-	            if (!this._repository) {
-	                this._repository = new Repository(this);
-	            }
-	            return this._repository;
-	        },
-	        enumerable: false,
-	        configurable: true
-	    });
+	    /**
+	     * Return the entries repository.
+	     *
+	     * @returns Repository
+	     */
+	    get repository() {
+	        if (!this._repository) {
+	            this._repository = new Repository(this);
+	        }
+	        return this._repository;
+	    }
+	    ;
 	    /**
 	     * Return the entries criteria.
 	     *
 	     * @returns Criteria
 	     */
-	    Stream.prototype.entries = function () {
+	    entries() {
 	        return this.repository.newCriteria();
-	    };
-	    return Stream;
-	}());
+	    }
+	    ;
+	}
 
-	var Streams = /** @class */ (function () {
-	    function Streams(config) {
+	class Streams {
+	    constructor(config) {
 	        this.config = config;
 	        this.hooks = {
 	            all: new AsyncSeriesWaterfallHook(['data']),
@@ -3563,116 +3240,67 @@ var streamsApi = (function (exports, require$$0) {
 	     *
 	     * @returns
 	     */
-	    Streams.prototype.all = function () {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var response, streams, _i, _a, data, stream;
-	            return __generator(this, function (_b) {
-	                switch (_b.label) {
-	                    case 0: return [4 /*yield*/, this.http.getStreams()];
-	                    case 1:
-	                        response = _b.sent();
-	                        streams = [];
-	                        _i = 0, _a = response.data;
-	                        _b.label = 2;
-	                    case 2:
-	                        if (!(_i < _a.length)) return [3 /*break*/, 5];
-	                        data = _a[_i];
-	                        return [4 /*yield*/, this.hooks.all.promise(data)];
-	                    case 3:
-	                        data = _b.sent();
-	                        stream = new Stream(this, data);
-	                        streams.push(stream);
-	                        _b.label = 4;
-	                    case 4:
-	                        _i++;
-	                        return [3 /*break*/, 2];
-	                    case 5: return [2 /*return*/, streams];
-	                }
-	            });
+	    all() {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const response = yield this.http.getStreams();
+	            const streams = [];
+	            for (let data of response.data) {
+	                data = yield this.hooks.all.promise(data);
+	                const stream = new Stream(this, data);
+	                streams.push(stream);
+	            }
+	            return streams;
 	        });
-	    };
+	    }
 	    /**
 	     * Make a stream instance.
 	     *
 	     * @param id
 	     * @returns
 	     */
-	    Streams.prototype.make = function (id) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var response, stream;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.http.getStream(id)];
-	                    case 1:
-	                        response = _a.sent();
-	                        return [4 /*yield*/, this.hooks.make.promise(response.data)];
-	                    case 2:
-	                        _a.sent();
-	                        stream = new Stream(this, response.data, response.meta, response.links);
-	                        this.hooks.maked.call(stream);
-	                        return [2 /*return*/, stream];
-	                }
-	            });
+	    make(id) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const response = yield this.http.getStream(id);
+	            yield this.hooks.make.promise(response.data);
+	            const stream = new Stream(this, response.data, response.meta, response.links);
+	            this.hooks.maked.call(stream);
+	            return stream;
 	        });
-	    };
-	    Streams.prototype.create = function (id, streamData) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var response, stream;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.http.postStream(__assign({ id: id, name: id }, streamData))];
-	                    case 1:
-	                        response = _a.sent();
-	                        return [4 /*yield*/, this.hooks.create.promise(response.data)];
-	                    case 2:
-	                        _a.sent();
-	                        stream = new Stream(this, response.data, response.meta, response.links);
-	                        this.hooks.created.call(stream);
-	                        return [2 /*return*/, stream];
-	                }
-	            });
+	    }
+	    create(id, streamData) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const response = yield this.http.postStream(Object.assign({ id, name: id }, streamData));
+	            yield this.hooks.create.promise(response.data);
+	            const stream = new Stream(this, response.data, response.meta, response.links);
+	            this.hooks.created.call(stream);
+	            return stream;
 	        });
-	    };
-	    Streams.prototype.entries = function (id) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var stream;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.make(id)];
-	                    case 1:
-	                        stream = _a.sent();
-	                        return [2 /*return*/, new Criteria(stream)];
-	                }
-	            });
+	    }
+	    entries(id) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const stream = yield this.make(id);
+	            return new Criteria(stream);
 	        });
-	    };
+	    }
 	    /**
 	     * Return an entry repository.
 	     *
 	     * @param id
 	     * @returns
 	     */
-	    Streams.prototype.repository = function (id) {
-	        return __awaiter(this, void 0, void 0, function () {
-	            var stream;
-	            return __generator(this, function (_a) {
-	                switch (_a.label) {
-	                    case 0: return [4 /*yield*/, this.make(id)];
-	                    case 1:
-	                        stream = _a.sent();
-	                        return [2 /*return*/, new Repository(stream)];
-	                }
-	            });
+	    repository(id) {
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const stream = yield this.make(id);
+	            return new Repository(stream);
 	        });
-	    };
+	    }
 	    /**
 	     * Return the Streams collection.
 	     */
-	    Streams.prototype.collection = function () {
+	    collection() {
 	        // return this._collection
-	    };
-	    return Streams;
-	}());
+	    }
+	}
 
 	exports.Client = Client;
 	exports.Collection = Collection;

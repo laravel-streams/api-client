@@ -39,8 +39,8 @@ export type Constructor<Type = any> = new (...args: any[]) => Type
 
 export interface ApiConfiguration extends ClientConfiguration {
 
-    Client: Constructor<any>;
-    Http: Constructor<any>;
+    Client?: Constructor<any>;
+    Http?: Constructor<any>;
 }
 
 

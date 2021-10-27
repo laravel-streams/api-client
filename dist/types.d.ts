@@ -22,8 +22,8 @@ export interface ClientConfiguration {
 }
 export declare type Constructor<Type = any> = new (...args: any[]) => Type;
 export interface ApiConfiguration extends ClientConfiguration {
-    Client: Constructor<any>;
-    Http: Constructor<any>;
+    Client?: Constructor<any>;
+    Http?: Constructor<any>;
 }
 export interface RequestConfig extends RequestInit {
     params?: URLSearchParamsInit;
