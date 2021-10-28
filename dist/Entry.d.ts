@@ -8,6 +8,6 @@ export declare class Entry<ID extends string = string> {
     get http(): Http;
     constructor(_stream: Stream<ID>, _data?: any, _fresh?: boolean);
     get stream(): Stream<ID>;
-    save(): Promise<Boolean>;
+    save(): Promise<boolean>;
     validator(): void;
 }

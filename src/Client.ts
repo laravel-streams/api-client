@@ -1,29 +1,76 @@
 import deepmerge from 'deepmerge';
 import { AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
-import { ClientConfiguration, Constructor, Method, MethodName, RequestConfig, URLSearchParamsInit } from './types';
+import { ClientConfiguration, Constructor, MethodName, RequestConfig, URLSearchParamsInit } from './types';
 import { HTTPError } from './HTTPError';
 import { objectify, Str } from './utils';
 import camelcase from 'camelcase';
+import { IStringifyOptions, stringify } from 'qs';
 
 export interface ClientHeaders extends Headers {
-    [key:string]:any
+    [ key: string ]: any;
 }
 
-export interface ClientResponse extends Response {
-    readonly headers:ClientHeaders
+export interface ClientResponse<T = any> extends Response {
+    readonly headers: ClientHeaders;
+    data: T;
+    request: Request;
+    config: RequestConfig;
+    error?: HTTPError;
+    errorText?: string;
+
 }
 
-function transformResponse(response:Response):ClientResponse {
-    const transformed:ClientResponse = response.clone();
-    let headerEntries = Array.from(response.headers['entries']());
+async function getResponseData(response: Response, config: RequestConfig) {
+
+    try {
+        if ( config.responseType ) {
+            switch(config.responseType){ //@formatter:off
+            case 'blob': return await response.blob();
+            case 'arraybuffer': return await response.arrayBuffer();
+            case 'document': return await response.text()
+            case 'json': return await response.json()
+            case 'stream': return (await response.blob()).stream()
+            case 'text': return await response.text()
+        }//@formatter:on
+        }
+
+        if ( response.headers.get('content-type') === 'application/json' ) {
+            return response.json();
+        }
+
+        return response.text();
+    } catch (e) {
+        return {};
+    }
+}
+
+async function transformResponse(response: Response, request: Request, config: RequestConfig): Promise<ClientResponse> {
+    const transformed: ClientResponse = response.clone() as any;
+
+    transformed.request = request;
+    transformed.config  = config;
+    transformed.data    = await getResponseData(response, config);
+
+    // handle headers
+    let headerEntries = Array.from(response.headers[ 'entries' ]());
     Object.entries(deepmerge.all([
-        headerEntries.map(([key,value]) => ([camelcase(key), value])).reduce(objectify, {}),
-        headerEntries.map(([key,value]) => ([key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value])).reduce(objectify, {}),
-        headerEntries.reduce(objectify, {})
-    ])).forEach(([key,value]) => {
-        transformed.headers[key] = value;
-        transformed.headers.set(key,value);
-    })
+        headerEntries.map(([ key, value ]) => ([ camelcase(key), value ])).reduce(objectify, {}),
+        headerEntries.map(([ key, value ]) => ([ key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value ])).reduce(objectify, {}),
+        headerEntries.reduce(objectify, {}),
+    ])).forEach(([ key, value ]) => {
+        transformed.headers[ key ] = value;
+        transformed.headers.set(key, value);
+    });
+
+    // Include error if needed
+    if ( !response.ok ) {
+        try {
+            transformed.errorText = await response.text();
+        } catch (e) {
+            transformed.errorText = '';
+        }
+        transformed.error = new HTTPError(response, request);
+    }
 
     return transformed;
 }
@@ -32,7 +79,7 @@ export class Client {
     public readonly hooks = {
         createRequest: new SyncWaterfallHook<RequestConfigSetter>([ 'factory' ]),
         request      : new SyncWaterfallHook<Request>([ 'request' ]),
-        response     : new AsyncSeriesWaterfallHook<[Response, Request]>([ 'response', 'request' ]),
+        response     : new AsyncSeriesWaterfallHook<[ ClientResponse, Request ]>([ 'response', 'request' ]),
     };
     public config: ClientConfiguration;
 
@@ -42,45 +89,49 @@ export class Client {
                 'X-Requested-With': 'XMLHttpRequest',
             },
             request: {
-                method     : 'GET',
-                credentials: 'include',
+                method       : 'GET',
+                credentials  : 'include',
+                errorHandling: 'throw',
             },
         }, config);
     }
 
 
-    public async request(method: MethodName, uri: string, config: RequestConfig = {}): Promise<Response> {
-        let request  = this.createRequest(method, uri, config);
+    public async request<T>(method: MethodName, uri: string, config: RequestConfig = {}): Promise<ClientResponse<T>> {
+        config       = this.getRequestConfig(method, uri, config);
+        let request  = this.createRequest(config);
         request      = this.hooks.request.call(request);
-        let res = await fetch(request);
-        let response = transformResponse(res);
+        let res      = await fetch(request);
+        let response = await transformResponse(res, request, config);
         response     = await this.hooks.response.promise(response, request);
-        if ( !response.ok ) {
-            throw new HTTPError(response, request);
+        if ( response.error && config.errorHandling === 'throw' ) {
+            throw response.error;
         }
         return response;
     }
 
-    protected createRequest(method: MethodName, uri: string, config: RequestConfig = {}): Request {
-        let factory = this.createRequestFactory(method, uri, config);
+    protected createRequest(config: RequestConfig = {}): Request {
+        let factory = this.createRequestFactory(config);
         factory.headers(this.config.headers);
-        factory     = this.hooks.createRequest.call(factory);
+        factory = this.hooks.createRequest.call(factory);
         return factory.make();
     }
 
-    protected createRequestFactory(method: MethodName, uri: string, config: RequestConfig = {}): RequestConfigSetter {
-        config        = this.getRequestConfig(config);
-        config.method = Method[ method ];
-        config.url = uri;
-
+    protected createRequestFactory(config: RequestConfig = {}): RequestConfigSetter {
         return createRequestFactory(this.config).merge(config);
     }
 
-    protected getRequestConfig(config: RequestConfig = {}): RequestConfig {
-        return deepmerge(this.config.request as any, config as any, { clone: true }) as RequestConfig;
+    protected getRequestConfig(method: MethodName, url: string, config: RequestConfig = {}): RequestConfig {
+        return this.mergeRequestConfig(config, { method, url });
+    }
+
+    protected mergeRequestConfig(...config: RequestConfig[]): RequestConfig {
+        return deepmerge.all([
+            this.config.request as any,
+            ...config as any[] || [],
+        ], { clone: true }) as RequestConfig;
     }
 }
-
 
 export type RequestConfigSetter<T extends Request = Request, K extends keyof RequestConfig = keyof RequestConfig> =
     {
@@ -89,9 +140,9 @@ export type RequestConfigSetter<T extends Request = Request, K extends keyof Req
     & RequestFactory<T>
 
 export class RequestFactory<T extends Request = Request> {
-    _config: RequestConfig = {};
-    _params                = new URLSearchParams();
-    _headers               = new Headers();
+    protected _config: RequestConfig       = {};
+    protected _params: Record<string, any> = {};
+    protected _headers                     = new Headers();
 
     constructor(protected _clientConfig: ClientConfiguration, protected _Request: Constructor<T>) {
         const self = this;
@@ -116,18 +167,41 @@ export class RequestFactory<T extends Request = Request> {
         });
     }
 
-    merge(config: Partial<RequestConfig>) {
-        Object.entries(config).forEach(([ key, value ]) => this[ key ](value));
-        return this;
-    }
-
-    getConfig(): RequestConfig {
+    protected getConfig(): RequestConfig {
+        if ( this._config.responseType === 'json' ) {
+            if ( !this._headers.has('accept') ) {
+                this._headers.set('accept', 'application/json');
+            }
+        }
         return {
             ...this._config,
             headers: this._headers,
-            params : this._params,
             url    : this._config.url ? this.getUri(this._config.url) : this._config.url,
         };
+    }
+
+    protected hasParams() {
+        return Object.keys(this._params).length > 0;
+    }
+
+    protected stringifyParams(options: IStringifyOptions = {}) {
+        return stringify(this._params, {
+            ...options,
+            arrayFormat: 'indices',
+        });
+    }
+
+    protected getUri(uri: string) {
+        let params = '';
+        if ( this.hasParams() ) {
+            params = this.stringifyParams({ addQueryPrefix: true });
+        }
+        return Str.ensureRight(this._clientConfig.baseURL, '/') + Str.stripLeft(uri, '/') + params;
+    }
+
+    merge(config: Partial<RequestConfig>) {
+        Object.entries(config).forEach(([ key, value ]) => this[ key ](value));
+        return this;
     }
 
     header(name: string, value: string) {
@@ -136,7 +210,7 @@ export class RequestFactory<T extends Request = Request> {
     }
 
     param(name: string, value: string) {
-        this._headers.set(name, value);
+        this._params[ name ] = value;
         return this;
     }
 
@@ -145,8 +219,11 @@ export class RequestFactory<T extends Request = Request> {
         return this;
     }
 
-    params(params: URLSearchParamsInit) {
-        mergeURLSearchParams(params, this._params);
+    params(params: Record<string, any>) {
+        this._params = deepmerge.all([
+            this._params,
+            params,
+        ]);
         return this;
     }
 
@@ -154,14 +231,6 @@ export class RequestFactory<T extends Request = Request> {
         this._headers.set('Content-Type', 'application/json');
         this._config.body = JSON.stringify(value);
         return this;
-    }
-
-    protected getUri(uri: string) {
-        let params = this._params.toString();
-        if ( params.length ) {
-            params = '?' + params;
-        }
-        return Str.ensureRight(this._clientConfig.baseURL, '/') + Str.stripLeft(uri, '/') + params;
     }
 
     basic(username: string, password: string) {
@@ -198,3 +267,4 @@ function mergeURLSearchParams(source: URLSearchParamsInit, destination: URLSearc
     (new URLSearchParams(source)).forEach((value, key) => destination.set(key, value));
     return destination;
 }
+

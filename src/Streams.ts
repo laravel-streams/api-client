@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { IBaseStream, IStream, IStreamResponse, ApiConfiguration } from './types';
+import { IBaseStream, IStream, IStreamResponse, ApiConfiguration, ApiDataResponse } from './types';
 import { Http } from './Http';
 import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
@@ -10,12 +10,13 @@ export interface Streams {
 
 }
 
+
 export class Streams {
     public readonly hooks = {
-        all    : new AsyncSeriesWaterfallHook<IStreamResponse<IBaseStream[]>>([ 'data' ]),
-        make   : new AsyncSeriesWaterfallHook<IStream>([ 'data' ]),
+        all    : new AsyncSeriesWaterfallHook<IBaseStream>([ 'data' ]),
+        make   : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream>>([ 'data' ]),
         maked  : new SyncHook<Stream>([ 'stream' ]),
-        create : new AsyncSeriesWaterfallHook<IStream>([ 'data' ]),
+        create : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream>>([ 'data' ]),
         created: new SyncHook<Stream>([ 'stream' ]),
     };
     public readonly http: Http;
@@ -35,9 +36,9 @@ export class Streams {
 
         const response          = await this.http.getStreams();
         const streams: Stream[] = [];
-        for ( let data of response.data ) {
+        for ( let data of response.data.data ) {
             data         = await this.hooks.all.promise(data);
-            const stream = new Stream(this, data);
+            const stream = new Stream(this, data, response.data.meta, response.data.links);
             streams.push(stream);
         }
         return streams;
@@ -51,17 +52,19 @@ export class Streams {
      */
     public async make(id: string): Promise<Stream> {
 
-        const response = await this.http.getStream(id);
-        const data     = await this.hooks.make.promise(response.data);
-        const stream   = new Stream(this, response.data, response.meta, response.links);
+        let response = await this.http.getStream(id);
+        response.data     = await this.hooks.make.promise(response.data);
+        const {data,meta,links} = response.data
+        const stream   = new Stream(this, data, meta, links);
         this.hooks.maked.call(stream);
         return stream;
     }
 
     public async create(id: string, streamData: any): Promise<Stream> {
-        const response = await this.http.postStream({ id, name: id, ...streamData });
-        const data     = await this.hooks.create.promise(response.data);
-        const stream   = new Stream(this, response.data, response.meta, response.links);
+        let response = await this.http.postStream({ id, name: id, ...streamData });
+        response.data     = await this.hooks.create.promise(response.data);
+        const {data,meta,links} = response.data
+        const stream   = new Stream(this, data, meta, links);
         this.hooks.created.call(stream);
         return stream;
     }

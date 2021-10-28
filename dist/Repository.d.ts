@@ -2,7 +2,7 @@ import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { EntryCollection } from './EntryCollection';
 import { Entry } from './Entry';
-export declare class Repository<ID extends string = string> {
+export declare class Repository {
     protected stream: Stream;
     /**
      * Create a new repository instance.
@@ -23,14 +23,14 @@ export declare class Repository<ID extends string = string> {
      * @param id
      * @returns Entry
      */
-    find<ID extends string>(id: ID): Promise<Entry>;
+    find(id: string | number): Promise<Entry>;
     /**
      * Find all records by IDs.
      *
      * @param ids
      * @returns EntryCollection
      */
-    findAll(ids: any): Promise<EntryCollection>;
+    findAll(ids: Array<string | number>): Promise<EntryCollection>;
     /**
      * Find an entry by a field value.
      *
@@ -38,37 +38,29 @@ export declare class Repository<ID extends string = string> {
      * @param value
      * @returns Entry
      */
-    findBy<ID extends string, VID extends string>(field: ID, value: VID): Promise<Entry>;
-    /**
-     * Find all entries by field value.
-     *
-     * @param $field
-     * @param $operator
-     * @param $value
-     * @return EntryCollection
-     */
-    findAllWhere<ID extends string, VID extends string>(field: ID, value: VID): Promise<EntryCollection>;
+    findBy(field: string, value: any): Promise<Entry>;
+    findAllWhere(field: string, value: any): Promise<EntryCollection>;
     /**
      * Create a new entry.
      *
      * @param attributes
      * @returns
      */
-    create(attributes: any): Promise<Boolean>;
+    create(attributes: any): Promise<Entry>;
     /**
      * Save an entry.
      *
      * @param entry
      * @returns
      */
-    save(entry: Entry): Promise<Boolean>;
+    save(entry: Entry): Promise<boolean>;
     /**
      * Save an entry.
      *
      * @param entry
      * @returns
      */
-    delete(entry: any): Promise<Boolean>;
+    delete(entry: any): Promise<boolean>;
     truncate(): this;
     /**
      * Return a new instance.
@@ -82,5 +74,5 @@ export declare class Repository<ID extends string = string> {
      *
      * @returns Criteria
      */
-    newCriteria(): Criteria<ID>;
+    newCriteria(): Criteria;
 }

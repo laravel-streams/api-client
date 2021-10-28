@@ -4,7 +4,7 @@ import { EntryCollection } from './EntryCollection';
 import { Entry } from './Entry';
 
 
-export class Repository<ID extends string = string> {
+export class Repository{
 
     /**
      * Create a new repository instance.
@@ -23,12 +23,9 @@ export class Repository<ID extends string = string> {
      * @returns EntryCollection
      */
     async all(): Promise<EntryCollection> {
-
         let response = await this.http.getEntries<any>(this.stream.id);
-
-        let entries = response.data.map(entry => new Entry(this.stream, entry, false));
-
-        return new EntryCollection(entries, response.meta as any, response.links as any);
+        let entries = response.data.data.map(entry => new Entry(this.stream, entry, false));
+        return new EntryCollection(entries, response.data.meta, response.data.links);
     }
 
     /**
@@ -37,7 +34,7 @@ export class Repository<ID extends string = string> {
      * @param id
      * @returns Entry
      */
-    async find<ID extends string>(id: ID): Promise<Entry> {
+    async find(id: string|number): Promise<Entry> {
 
         let criteria = this.stream.entries();
 
@@ -50,7 +47,7 @@ export class Repository<ID extends string = string> {
      * @param ids
      * @returns EntryCollection
      */
-    async findAll(ids): Promise<EntryCollection> {
+    async findAll(ids:Array<string|number>): Promise<EntryCollection> {
 
         let criteria = this.stream.entries();
 
@@ -64,22 +61,13 @@ export class Repository<ID extends string = string> {
      * @param value
      * @returns Entry
      */
-    async findBy<ID extends string, VID extends string>(field: ID, value: VID): Promise<Entry> {
+    async findBy(field:string, value:any): Promise<Entry> {
 
         let criteria = this.stream.entries();
 
         return criteria.where(field, value).first();
     }
-
-    /**
-     * Find all entries by field value.
-     *
-     * @param $field
-     * @param $operator
-     * @param $value
-     * @return EntryCollection
-     */
-    async findAllWhere<ID extends string, VID extends string>(field: ID, value: VID): Promise<EntryCollection> {
+    async findAllWhere(field: string, value:any): Promise<EntryCollection> {
 
         let criteria = this.stream.entries();
 
@@ -92,10 +80,23 @@ export class Repository<ID extends string = string> {
      * @param attributes
      * @returns
      */
-    async create(attributes: any): Promise<Boolean> {
+    async create(attributes: any): Promise<Entry> {
 
         let entry = this.newCriteria().newInstance(attributes);
 
+        entry.save();
+
+        return entry;
+    }
+
+    /**
+     * Save an entry.
+     *
+     * @param entry
+     * @returns
+     */
+    async save(entry: Entry): Promise<boolean> {
+
         return entry.save();
     }
 
@@ -105,18 +106,7 @@ export class Repository<ID extends string = string> {
      * @param entry
      * @returns
      */
-    async save(entry: Entry): Promise<Boolean> {
-
-        return entry.save();
-    }
-
-    /**
-     * Save an entry.
-     *
-     * @param entry
-     * @returns
-     */
-    async delete(entry: any): Promise<Boolean> {
+    async delete(entry: any): Promise<boolean> {
 
         await this.http.deleteEntry(this.stream.id, entry.id);
 
@@ -140,7 +130,7 @@ export class Repository<ID extends string = string> {
      *
      * @returns Criteria
      */
-    newCriteria(): Criteria<ID> {
-        return new Criteria<ID>(this.stream);
+    newCriteria(): Criteria {
+        return new Criteria(this.stream);
     }
 }

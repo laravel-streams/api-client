@@ -15,8 +15,7 @@ import sinonChai from 'sinon-chai';
 import btoa from 'btoa'
 import {JSDOM} from 'jsdom';
 import { getEnv } from './utils';
-import * as nodeFetch from 'node-fetch'
-Object.keys(nodeFetch).forEach(key => global[key]=nodeFetch[key])
+import 'whatwg-fetch'
 
 export const env = getEnv()
 
@@ -28,6 +27,7 @@ export const dom = new JSDOM(``,{
 
 
 })
+global.XMLHttpRequest = dom.window.XMLHttpRequest
 global.btoa = btoa;
 
 chai.use(sinonChai);

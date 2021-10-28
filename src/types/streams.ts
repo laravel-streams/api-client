@@ -1,55 +1,5 @@
-import { Field } from './Field';
+import { Field } from '../Field';
 
-export interface IMethod {
-
-}
-
-export type MethodName = keyof typeof Method
-
-export enum Method {
-    connect = 'CONNECT',
-    delete  = 'DELETE',
-    get     = 'GET',
-    head    = 'HEAD',
-    options = 'OPTIONS',
-    patch   = 'PATCH',
-    post    = 'POST',
-    put     = 'PUT',
-    trace   = 'TRACE',
-}
-
-
-export type URLSearchParamsFunctionName = keyof URLSearchParams
-export type URLSearchParamsInit =
-    string[][]
-    | Record<string, string>
-    | string
-    | URLSearchParams
-
-
-export interface ClientConfiguration {
-    baseURL: string;
-    headers?: Record<string, string>;
-    request?: RequestInit;
-
-}
-
-export type Constructor<Type = any> = new (...args: any[]) => Type
-
-
-export interface ApiConfiguration extends ClientConfiguration {
-
-    Client?: Constructor<any>;
-    Http?: Constructor<any>;
-}
-
-
-export interface RequestConfig extends RequestInit {
-    params?: URLSearchParamsInit;
-    url?: string;
-    method?: MethodName | Method;
-    data?: object;
-}
 
 export interface IStreamMeta {
     parameters: Record<string, string>;
@@ -66,6 +16,10 @@ export interface IStreamResponse<T extends any = any, META extends IStreamMeta =
     links: LINKS;
     errors?: string[] | Record<string, string | string[]>;
 }
+
+export type IStreamPost<T, ID extends string = string> =
+    IBaseStream<ID>
+    & T;
 
 export interface IBaseStream<ID extends string = string> {
     id: ID
@@ -190,3 +144,4 @@ export namespace entries {
 
     export interface Pages {}
 }
+

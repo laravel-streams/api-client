@@ -30,7 +30,7 @@ export declare class Criteria<ID extends string = string> {
      * @param id
      * @returns
      */
-    find<ID extends string>(id: ID): Promise<Entry>;
+    find(id: string | number): Promise<Entry>;
     /**
      * Return the first result.
      *
@@ -72,6 +72,14 @@ export declare class Criteria<ID extends string = string> {
      */
     get<T>(): Promise<EntryCollection>;
     /**
+     * Get paginated criteria results.
+     *
+     * @param per_page
+     * @param page
+     * @returns
+     */
+    paginate<T>(per_page?: number, page?: number): Promise<PaginatedEntryCollection>;
+    /**
      * Create a new entry.
      *
      * @param attributes
@@ -84,16 +92,8 @@ export declare class Criteria<ID extends string = string> {
      * @param entry
      * @returns
      */
-    save(entry: Entry): Promise<Boolean>;
+    save(entry: Entry): Promise<boolean>;
     delete(): this;
-    /**
-     * Get paginated criteria results.
-     *
-     * @param per_page
-     * @param page
-     * @returns
-     */
-    paginate<T>(per_page?: number, page?: number): Promise<PaginatedEntryCollection>;
     /**
      * Return an entry instance.
      *
@@ -127,7 +127,7 @@ export declare class Criteria<ID extends string = string> {
      *
      * @returns
      */
-    compileStatements(): {
+    compileParameters(): {
         [x: string]: any[];
     }[];
 }

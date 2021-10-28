@@ -38,7 +38,7 @@ export class Entry<ID extends string = string> {
         return this._stream;
     }
 
-    async save(): Promise<Boolean> {
+    async save(): Promise<boolean> {
         try {
             if ( this._fresh ) {
                 await this.http.postEntry(this._stream.id, this._data);

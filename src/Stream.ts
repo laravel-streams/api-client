@@ -1,7 +1,7 @@
 import { Field } from './Field';
 import { Repository } from './Repository';
 import { Criteria } from './Criteria';
-import { IBaseStream, IStreamLinks, IStreamMeta } from './types';
+import { ApiLinks, ApiMeta, IBaseStream, IStreamLinks, IStreamMeta } from './types';
 import { Streams } from './Streams';
 
 export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> { }
@@ -11,8 +11,8 @@ export class Stream<ID extends string = string> {
     constructor(
         public readonly streams:Streams,
         stream: IBaseStream<ID>,
-        public readonly meta?: IStreamMeta,
-        public readonly links?: IStreamLinks<'self' | 'entries'>,
+        public readonly meta?: ApiMeta,
+        public readonly links?: ApiLinks,
     ) {
 
         if (stream.fields) {
@@ -26,7 +26,7 @@ export class Stream<ID extends string = string> {
     /**
      * The repository instance.
      */
-    protected _repository: Repository<ID>;
+    protected _repository: Repository;
 
     /**
      * Stream validation rules.
@@ -48,10 +48,10 @@ export class Stream<ID extends string = string> {
      *
      * @returns Repository
      */
-     get repository(): Repository<ID> {
+     get repository(): Repository {
 
         if (!this._repository) {
-            this._repository = new Repository<ID>(this);
+            this._repository = new Repository(this);
         }
 
         return this._repository;
@@ -62,7 +62,7 @@ export class Stream<ID extends string = string> {
      *
      * @returns Criteria
      */
-    entries(): Criteria<ID> {
+    entries(): Criteria {
         return this.repository.newCriteria();
     };
 

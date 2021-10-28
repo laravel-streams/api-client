@@ -16,7 +16,7 @@ export class CriteriaTest extends TestCase {
                                .where('b', '>', 2)
                                .orderBy('b', 'asc')
                                .limit(4)
-                               .compileStatements();
+                               .compileParameters();
         compiled.should.be.an('array');
         for ( const stm of compiled ) {
             stm.should.be.an('object');

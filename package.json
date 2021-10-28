@@ -8,15 +8,15 @@
     "main": "dist/streams-api.cjs.js",
     "module": "dist/streams-api.esm-bundler.js",
     "scripts": {
+        "build": "npm-run-all clean test bundle dts doc",
         "clean": "npm-run-all clean:dist clean:doc",
         "clean:dist": "rm -rf ./dist",
         "clean:doc": "rm -rf ./docs",
         "doc": "typedoc --options ./typedoc.js",
-        "build": "npm-run-all clean build dts",
         "bundle": "rollup --config rollup.config.ts --configPlugin typescript",
         "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
         "dts": "tsc -p ./tsconfig.build.json --emitDeclarationOnly  --declaration --declarationDir dist ",
-        "test": "TS_NODE_PROJECT=./tsconfig.test.json mocha"
+        "test": "cd test && mocha"
     },
     "dependencies": {
         "camelcase": "^6.2.0",
@@ -24,7 +24,9 @@
         "tapable": "^2.2.1"
     },
     "devDependencies": {
-        "reflect-metadata": "^0.1.13"
+        "reflect-metadata": "^0.1.13",
+        "isomorphic-fetch": "^3.0.0",
+        "whatwg-fetch": "^3.6.2"
     },
     "streams": {
         "output": {

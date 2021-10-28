@@ -63,7 +63,7 @@ export class Criteria<ID extends string = string> {
      */
     constructor(protected stream: Stream) { }
 
-    get http():Http{return this.stream.streams.http}
+    get http(): Http {return this.stream.streams.http;}
 
     /**
      * Find an entry by ID.
@@ -71,7 +71,7 @@ export class Criteria<ID extends string = string> {
      * @param id
      * @returns
      */
-    async find<ID extends string>(id: ID): Promise<Entry> {
+    async find(id:string|number): Promise<Entry> {
         return this.where('id', id).first();
     }
 
@@ -190,12 +190,25 @@ export class Criteria<ID extends string = string> {
      * @returns
      */
     async get<T>(): Promise<EntryCollection> {
-
-        let query = this.compileStatements();
-
-        const response = await this.http.getEntries<T[], 'entries'>(this.stream.id, { query }, {});
-
+        const parameters = this.compileParameters();
+        const params     = { parameters };
+        const response   = await this.http.getEntries<T[], Http.Responses<T[]>['entries']>(this.stream.id, params);
         return EntryCollection.fromResponse<T>(response, this.stream);
+    }
+
+    /**
+     * Get paginated criteria results.
+     *
+     * @param per_page
+     * @param page
+     * @returns
+     */
+    async paginate<T>(per_page: number = 100, page: number = 1): Promise<PaginatedEntryCollection> {
+
+        let parameters = this.compileParameters();
+        let params     = { parameters, paginate: true, per_page, page };
+        const response = await this.http.getEntries<T[], Http.Responses<T[]>['paginated']>(this.stream.id, params);
+        return PaginatedEntryCollection.fromResponse<T>(response, this.stream);
     }
 
     //count(): number { return 0; }
@@ -221,32 +234,13 @@ export class Criteria<ID extends string = string> {
      * @param entry
      * @returns
      */
-    async save(entry: Entry): Promise<Boolean> {
-
-        let result = await entry.save();
-
-        return result;
+    async save(entry: Entry): Promise<boolean> {
+        return entry.save();
     }
 
     delete(): this { return this; }
 
     //truncate(): this { return this; }
-
-    /**
-     * Get paginated criteria results.
-     *
-     * @param per_page
-     * @param page
-     * @returns
-     */
-    async paginate<T>(per_page: number = 100, page: number = 1): Promise<PaginatedEntryCollection> {
-
-        let query = this.compileStatements();
-
-        const response = await this.http.getEntries<T[], 'paginated'>(this.stream.id, { query }, { paginate: true, per_page, page });
-
-        return PaginatedEntryCollection.fromResponse<T>(response, this.stream);
-    }
 
     /**
      * Return an entry instance.
@@ -299,7 +293,7 @@ export class Criteria<ID extends string = string> {
      *
      * @returns
      */
-    public compileStatements() {
+    public compileParameters() {
         return this.parameters.map(statement => ({ [ statement.name ]: ensureArray(statement.value) }));
     }
 }
