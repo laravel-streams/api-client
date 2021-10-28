@@ -6,6 +6,29 @@ import { Streams } from './Streams';
 
 export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> { }
 
+
+/**
+ *
+ * Represents a stream and can be used to get it's data.
+ *
+ * The example below uses:
+ * - {@linkcode Stream.repository} method returns {@linkcode Repository}
+ * - {@linkcode Stream.entries} method returns {@linkcode Criteria}
+ * ```ts
+ * const repository = await stream.repository()
+ * const client = await repository.find(2);
+ * const clients = await stream.entries()
+ *                                 .where('age', '>', 5)
+ *                                 .where('age', '<', 50)
+ *                                 .orderBy('age', 'asc')
+ *                                 .get();
+ *     for(const client of clients){
+ *         client.email;
+ *         client.age;
+ *     }
+ * }
+ * ```
+ */
 export class Stream<ID extends string = string> {
 
     constructor(
