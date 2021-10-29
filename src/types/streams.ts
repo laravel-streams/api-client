@@ -30,8 +30,9 @@ export interface IBaseStream<ID extends string = string> {
         type: string
         [ key: string ]: any
     },
-    fields: Record<string, fields.Type | Field>
-    rules?: Record<string, string | object>
+    fields: Record<string, fields.Type | Field>|Map<string,Field>
+    rules?: Record<string, string | object | string[]>
+    [ key: string ]: any
 }
 
 
@@ -42,42 +43,8 @@ export interface IStream<ID extends string = string> extends IBaseStream<ID> {
     config?: Record<string, any>
 }
 
-export namespace ui {
-    export namespace table {
-        export interface Button {
-            href?: string;
-        }
-
-        export type Buttons<T extends string[]> = {
-            [P in keyof T]: Button
-        }
-
-        export interface Table<COLUMNS extends string[],
-            BUTTONS extends string[],
-            > {
-            columns: COLUMNS,
-            buttons: Buttons<BUTTONS>
-
-            [ key: string ]: any
-        }
-    }
-}
-
-export interface IStreams {
-    users: streams.Users;
-    pages: streams.Pages;
-    addons: IBaseStream<'addons'>;
-    docs: IBaseStream<'docs'>;
-}
-
-export interface IEntries {
-    users: entries.Users;
-    pages: entries.Pages;
-}
 
 export namespace fields {
-    export type Relationship<RELATED extends keyof IEntries> = IEntries[RELATED]
-
     export interface Types {
         string: string;
         url: string;
@@ -113,35 +80,3 @@ export namespace fields {
 
     export type Type = keyof Types
 }
-
-export namespace streams {
-
-    export interface Users extends IBaseStream<'users'> {
-        ui: {
-            table: ui.table.Table<[ 'id', 'email' ], [ 'edit' ]>
-            form: any[]
-            [ key: string ]: any
-        };
-    }
-
-    export interface Pages extends IBaseStream<'pages'> {
-        ui: {
-            table: ui.table.Table<[ 'id', 'email' ], [ 'edit' ]>
-            form: any[]
-            [ key: string ]: any
-        };
-    }
-}
-
-export namespace entries {
-    export interface Users {
-        id: number;
-        name: string;
-        email: string;
-        password: string;
-        relative: fields.Relationship<'users'>;
-    }
-
-    export interface Pages {}
-}
-

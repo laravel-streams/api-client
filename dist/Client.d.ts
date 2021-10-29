@@ -1,7 +1,7 @@
 import { AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
-import { ClientConfiguration, Constructor, MethodName, RequestConfig } from './types';
+import { ClientConfiguration, MethodName, RequestConfig } from './types';
 import { HTTPError } from './HTTPError';
-import { IStringifyOptions } from 'qs';
+import { RequestConfigSetter } from './RequestFactory';
 export interface ClientHeaders extends Headers {
     [key: string]: any;
 }
@@ -13,6 +13,36 @@ export interface ClientResponse<T = any> extends Response {
     error?: HTTPError;
     errorText?: string;
 }
+/**
+ * Used for creating requests using fetch.
+ * It handles the extra options in the {@linkcode RequestConfig} class and
+ * improves the default {@linkcode Response} by transforming it into {@linkcode ClientResponse}.
+ *
+ * This class contains 3 {@linkcode Client.hooks}, these are provided by the [tapable](https://github.com/webpack/tapable) library and is known
+ * for powering webpack plugins. A few examples of this:
+ * @example
+ * ```ts
+ * client.hooks.createRequest.tap('NAME', factory => {
+ *     factory.headers({
+ *
+ *     }).mode('cors').bearer('token')
+ *     return factory;
+ * })
+ * client.hooks.request.tap('NAME', request => {
+ *
+ *     return request;
+ * })
+ * client.hooks.response.tap('NAME', (response,request) => {
+ *     if(response.headers.has('Content-Type')){
+ *         const contentType = response.headers.get('Content-Type')
+ *         if(contentType === 'application/json'){
+ *             response.json()
+ *         }
+ *     }
+ *     return response;
+ * })
+ * ```
+ */
 export declare class Client {
     readonly hooks: {
         createRequest: SyncWaterfallHook<RequestConfigSetter<Request, keyof RequestConfig>, import("tapable").UnsetAdditionalOptions>;
@@ -26,29 +56,4 @@ export declare class Client {
     protected createRequestFactory(config?: RequestConfig): RequestConfigSetter;
     protected getRequestConfig(method: MethodName, url: string, config?: RequestConfig): RequestConfig;
     protected mergeRequestConfig(...config: RequestConfig[]): RequestConfig;
-}
-export declare type RequestConfigSetter<T extends Request = Request, K extends keyof RequestConfig = keyof RequestConfig> = {
-    [P in K]: (value: RequestConfig[P]) => RequestConfigSetter<T, K>;
-} & RequestFactory<T>;
-export declare class RequestFactory<T extends Request = Request> {
-    protected _clientConfig: ClientConfiguration;
-    protected _Request: Constructor<T>;
-    protected _config: RequestConfig;
-    protected _params: Record<string, any>;
-    protected _headers: Headers;
-    constructor(_clientConfig: ClientConfiguration, _Request: Constructor<T>);
-    protected getConfig(): RequestConfig;
-    protected hasParams(): boolean;
-    protected stringifyParams(options?: IStringifyOptions): string;
-    protected getUri(uri: string): string;
-    merge(config: Partial<RequestConfig>): this;
-    header(name: string, value: string): this;
-    param(name: string, value: string): this;
-    headers(headers: HeadersInit): this;
-    params(params: Record<string, any>): this;
-    data(value: object): this;
-    basic(username: string, password: string): this;
-    bearer(token: string): this;
-    authorization(key: string, value: string): this;
-    make(): T;
 }

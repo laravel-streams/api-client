@@ -1,10 +1,13 @@
 import { Field } from './Field';
 import { Repository } from './Repository';
 import { Criteria } from './Criteria';
-import { ApiLinks, ApiMeta, IBaseStream, IStreamLinks, IStreamMeta } from './types';
+import { ApiLinks, ApiMeta, IBaseStream, IStream } from './types';
 import { Streams } from './Streams';
+import deepmerge from 'deepmerge';
+import { objectify } from './utils';
 
-export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> { }
+// export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> {}
+export interface Stream<ID extends string = string> extends IStream<ID> {}
 
 
 /**
@@ -32,18 +35,29 @@ export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>
 export class Stream<ID extends string = string> {
 
     constructor(
-        public readonly streams:Streams,
-        stream: IBaseStream<ID>,
+        public readonly streams: Streams,
+        protected _stream: IBaseStream<ID>,
         public readonly meta?: ApiMeta,
         public readonly links?: ApiLinks,
     ) {
-
-        if (stream.fields) {
-            this.fields = new Map(Object.entries(stream.fields).map(([key, field]) => [key, new Field(field)]))
-            delete stream.fields;
-        }
-
-        Object.assign(this, stream);
+        this.unserialize(_stream);
+        let proxy = new Proxy(this, {
+            get(target: Stream<ID>, p: string | symbol, receiver: any): any {
+                if ( Reflect.has(target, p) ) {
+                    return Reflect.get(target, p, receiver);
+                }
+                if ( Reflect.has(target._stream, p) ) {
+                    return Reflect.get(target._stream, p);
+                }
+            },
+            set(target: Stream<ID>, p: string | symbol, value: any, receiver: any): boolean {
+                if ( Reflect.has(target, p) ) {
+                    return Reflect.set(target, p, value, receiver);
+                }
+                return Reflect.set(target._stream, p, value);
+            },
+        });
+        return proxy;
     }
 
     /**
@@ -52,33 +66,46 @@ export class Stream<ID extends string = string> {
     protected _repository: Repository;
 
     /**
-     * Stream validation rules.
-     */
-    protected _rules: Array<any>;
-
-    /**
-     * Custom stream validators.
-     */
-    protected _validators: Array<any>;
-
-    /**
      * The stream fields.
      */
-    public fields: Map<string, Field>
+    public fields: Map<string, Field>;
 
     /**
      * Return the entries repository.
      *
      * @returns Repository
      */
-     get repository(): Repository {
+    get repository(): Repository {
 
-        if (!this._repository) {
+        if ( !this._repository ) {
             this._repository = new Repository(this);
         }
 
         return this._repository;
     };
+
+    unserialize(stream: IStream<ID>) {
+        this.fields = new Map(Object.entries(stream.fields || {}).map(([ key, field ]) => [ key, new Field(field) ]));
+    }
+
+    serialize(): IStream<ID> {
+        let stream    = deepmerge({}, this._stream, { clone: true });
+        stream.fields = Object
+        .entries(Object.fromEntries(this.fields.entries()))
+        .map(([ id, field ]) => [ id, field.serialize() ])
+        .reduce(objectify, {});
+
+        return stream;
+    }
+
+    async save(): Promise<boolean> {
+        try {
+            await this.streams.http.patchStream(this._stream.id, this.serialize());
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
 
     /**
      * Return the entries criteria.
@@ -93,22 +120,22 @@ export class Stream<ID extends string = string> {
     // hasRule;
     // getRule;
     // ruleParameters;
-    isRequired;
-    config;
-    cached;
-    cache;
-    forget;
-    flush;
-    toArray;
-    toJson;
-    jsonSerialize;
-    __toString;
-    onInitializing;
-    onInitialized;
-    extendInput;
-    importInput;
-    normalizeInput;
-    fieldsInput;
-    merge;
+    // isRequired;
+    // config;
+    // cached;
+    // cache;
+    // forget;
+    // flush;
+    // toArray;
+    // toJson;
+    // jsonSerialize;
+    // __toString;
+    // onInitializing;
+    // onInitialized;
+    // extendInput;
+    // importInput;
+    // normalizeInput;
+    // fieldsInput;
+    // merge;
 
 }

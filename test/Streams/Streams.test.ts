@@ -1,6 +1,6 @@
 import { params, suite, test } from '@testdeck/mocha';
 import { TestCase } from '../TestCase';
-import { Entry, Streams } from '../../src';
+import { Entry, Streams, Field } from '../../src';
 
 
 @suite
@@ -18,6 +18,8 @@ export class StreamsTest extends TestCase {
         const streams = await this.getStreams();
         const stream  = await streams.make('clients');
         stream.id.should.eq('clients');
+        const fields = Object.fromEntries(stream.fields.entries());
+        fields.id.should.be.instanceof(Field)
         const entry = await stream.repository.create({
             id   : 1,
             name : 'robin',
@@ -27,6 +29,19 @@ export class StreamsTest extends TestCase {
         const entries = await stream.repository.all();
 
         return { entry, entries };
+    }
+
+    @test
+    async saveStreamTest() {
+        this.fs.createStream('clients', this.getStreamData('clients'));
+        const streams = await this.getStreams();
+        const stream  = await streams.make('clients');
+        stream.fields.set('foo',new Field({
+            handle: 'foo',
+            type: 'boolean'
+        }))
+        const saved = await stream.save()
+        saved.should.eq(true);
     }
 
 

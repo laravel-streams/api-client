@@ -7,6 +7,30 @@ import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
 export interface Streams {
 }
+/**
+ * The main class
+ *
+ * @example
+ * ```ts
+ * const streams = new Streams({
+ *     baseURL: 'http://localhost/api',
+ * });
+ *
+ *
+ *  async function run(){
+ *     const stream = await streams.make('clients')
+ *     const clients = await stream.entries()
+ *                                 .where('age', '>', 5)
+ *                                 .where('age', '<', 50)
+ *                                 .orderBy('age', 'asc')
+ *                                 .get();
+ *     for(const client of clients){
+ *         client.email;
+ *         client.age;
+ *     }
+ * }
+ * ```
+ */
 export declare class Streams {
     config: ApiConfiguration;
     readonly hooks: {

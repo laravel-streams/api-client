@@ -1,8 +1,8 @@
 {
   "streams-api.esm-bundler.js": {
-    "bundled": 176019,
-    "minified": 79129,
-    "gzipped": 22034,
+    "bundled": 180761,
+    "minified": 79979,
+    "gzipped": 22162,
     "treeshaked": {
       "rollup": {
         "code": 25937,
@@ -14,9 +14,9 @@
     }
   },
   "streams-api.esm-bundler.prod.js": {
-    "bundled": 176019,
-    "minified": 79129,
-    "gzipped": 22034,
+    "bundled": 180761,
+    "minified": 79979,
+    "gzipped": 22162,
     "treeshaked": {
       "rollup": {
         "code": 25937,
@@ -28,9 +28,9 @@
     }
   },
   "streams-api.esm-browser.js": {
-    "bundled": 176019,
-    "minified": 79129,
-    "gzipped": 22034,
+    "bundled": 180761,
+    "minified": 79979,
+    "gzipped": 22162,
     "treeshaked": {
       "rollup": {
         "code": 25937,
@@ -42,9 +42,9 @@
     }
   },
   "streams-api.esm-browser.prod.js": {
-    "bundled": 176019,
-    "minified": 79129,
-    "gzipped": 22034,
+    "bundled": 180761,
+    "minified": 79979,
+    "gzipped": 22162,
     "treeshaked": {
       "rollup": {
         "code": 25937,
@@ -56,24 +56,24 @@
     }
   },
   "streams-api.cjs.js": {
-    "bundled": 176765,
-    "minified": 78973,
-    "gzipped": 21833
+    "bundled": 181538,
+    "minified": 79852,
+    "gzipped": 21963
   },
   "streams-api.cjs.prod.js": {
-    "bundled": 176765,
-    "minified": 78973,
-    "gzipped": 21833
+    "bundled": 181538,
+    "minified": 79852,
+    "gzipped": 21963
   },
   "streams-api.global.js": {
-    "bundled": 181658,
-    "minified": 69706,
-    "gzipped": 20403
+    "bundled": 186574,
+    "minified": 70549,
+    "gzipped": 20535
   },
   "streams-api.global.prod.js": {
-    "bundled": 181658,
-    "minified": 69706,
-    "gzipped": 20403
+    "bundled": 186574,
+    "minified": 70549,
+    "gzipped": 20535
   },
   "streams-api.esm.js": {
     "bundled": 97959,

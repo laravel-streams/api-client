@@ -1,13 +1,18 @@
 import { fields } from './types';
-export interface Field {
-    config?: Record<string, any>;
+export interface IField {
     handle: string;
-    input: Record<string, any> & {
+    type: fields.Type;
+    input?: Record<string, any> & {
         type: fields.Type;
     };
-    rules: any[];
-    type: fields.Type;
+    rules?: any[];
+    config?: Record<string, any>;
+    [key: string]: any;
+}
+export interface Field extends IField {
 }
 export declare class Field {
-    constructor(field: any);
+    protected _field: IField;
+    constructor(_field: IField);
+    serialize(): IField;
 }

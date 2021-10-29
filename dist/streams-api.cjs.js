@@ -4433,109 +4433,21 @@ var lib = {
     stringify: stringify
 };
 
-function getResponseData(response, config) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            if (config.responseType) {
-                switch (config.responseType) { //@formatter:off
-                    case 'blob': return yield response.blob();
-                    case 'arraybuffer': return yield response.arrayBuffer();
-                    case 'document': return yield response.text();
-                    case 'json': return yield response.json();
-                    case 'stream': return (yield response.blob()).stream();
-                    case 'text': return yield response.text();
-                } //@formatter:on
-            }
-            if (response.headers.get('content-type') === 'application/json') {
-                return response.json();
-            }
-            return response.text();
-        }
-        catch (e) {
-            return {};
-        }
-    });
+function createRequestFactory(clientConfig, _Request = Request) {
+    return new RequestFactory(clientConfig, _Request);
 }
-function transformResponse(response, request, config) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const transformed = response.clone();
-        transformed.request = request;
-        transformed.config = config;
-        transformed.data = yield getResponseData(response, config);
-        // handle headers
-        let headerEntries = Array.from(response.headers['entries']());
-        Object.entries(cjs.all([
-            headerEntries.map(([key, value]) => ([camelcase(key), value])).reduce(objectify, {}),
-            headerEntries.map(([key, value]) => ([key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value])).reduce(objectify, {}),
-            headerEntries.reduce(objectify, {}),
-        ])).forEach(([key, value]) => {
-            transformed.headers[key] = value;
-            transformed.headers.set(key, value);
-        });
-        // Include error if needed
-        if (!response.ok) {
-            try {
-                transformed.errorText = yield response.text();
-            }
-            catch (e) {
-                transformed.errorText = '';
-            }
-            transformed.error = new HTTPError(response, request);
-        }
-        return transformed;
-    });
+function mergeHeaders(source, destination) {
+    (new Headers(source)).forEach((value, key) => destination.set(key, value));
+    return destination;
 }
-class Client {
-    constructor(config) {
-        this.hooks = {
-            createRequest: new SyncWaterfallHook(['factory']),
-            request: new SyncWaterfallHook(['request']),
-            response: new AsyncSeriesWaterfallHook(['response', 'request']),
-        };
-        this.config = cjs({
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            request: {
-                method: 'GET',
-                credentials: 'include',
-                errorHandling: 'throw',
-            },
-        }, config);
-    }
-    request(method, uri, config = {}) {
-        return __awaiter(this, void 0, void 0, function* () {
-            config = this.getRequestConfig(method, uri, config);
-            let request = this.createRequest(config);
-            request = this.hooks.request.call(request);
-            let res = yield fetch(request);
-            let response = yield transformResponse(res, request, config);
-            response = yield this.hooks.response.promise(response, request);
-            if (response.error && config.errorHandling === 'throw') {
-                throw response.error;
-            }
-            return response;
-        });
-    }
-    createRequest(config = {}) {
-        let factory = this.createRequestFactory(config);
-        factory.headers(this.config.headers);
-        factory = this.hooks.createRequest.call(factory);
-        return factory.make();
-    }
-    createRequestFactory(config = {}) {
-        return createRequestFactory(this.config).merge(config);
-    }
-    getRequestConfig(method, url, config = {}) {
-        return this.mergeRequestConfig(config, { method, url });
-    }
-    mergeRequestConfig(...config) {
-        return cjs.all([
-            this.config.request,
-            ...config || [],
-        ], { clone: true });
-    }
-}
+/**
+ * Provides a fluent way of configuring the {@link RequestConfig}
+ * and creating a {@link Request}. This class is used in the {@link Client} class
+ * and it's provided {@link Client.hooks.createRequest} hook.
+ *
+ * Using the {@link createRequestFactory} function is the preferred way of creating an instance of this class
+ * as it returns the fluent {@link RequestConfigSetter} wrapper type that follows this class it's proxy behaviour.
+ */
 class RequestFactory {
     constructor(_clientConfig, _Request) {
         this._clientConfig = _clientConfig;
@@ -4626,12 +4538,139 @@ class RequestFactory {
         return new this._Request(config.url, config);
     }
 }
-function createRequestFactory(clientConfig, _Request = Request) {
-    return new RequestFactory(clientConfig, _Request);
+
+function getResponseData(response, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            if (config.responseType) {
+                switch (config.responseType) { //@formatter:off
+                    case 'blob': return yield response.blob();
+                    case 'arraybuffer': return yield response.arrayBuffer();
+                    case 'document': return yield response.text();
+                    case 'json': return yield response.json();
+                    case 'stream': return (yield response.blob()).stream();
+                    case 'text': return yield response.text();
+                } //@formatter:on
+            }
+            if (response.headers.get('content-type') === 'application/json') {
+                return response.json();
+            }
+            return response.text();
+        }
+        catch (e) {
+            return {};
+        }
+    });
 }
-function mergeHeaders(source, destination) {
-    (new Headers(source)).forEach((value, key) => destination.set(key, value));
-    return destination;
+function transformResponse(response, request, config) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const transformed = response.clone();
+        transformed.request = request;
+        transformed.config = config;
+        transformed.data = yield getResponseData(response, config);
+        // handle headers
+        let headerEntries = Array.from(response.headers['entries']());
+        Object.entries(cjs.all([
+            headerEntries.map(([key, value]) => ([camelcase(key), value])).reduce(objectify, {}),
+            headerEntries.map(([key, value]) => ([key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value])).reduce(objectify, {}),
+            headerEntries.reduce(objectify, {}),
+        ])).forEach(([key, value]) => {
+            transformed.headers[key] = value;
+            transformed.headers.set(key, value);
+        });
+        // Include error if needed
+        if (!response.ok) {
+            try {
+                transformed.errorText = yield response.text();
+            }
+            catch (e) {
+                transformed.errorText = '';
+            }
+            transformed.error = new HTTPError(response, request);
+        }
+        return transformed;
+    });
+}
+/**
+ * Used for creating requests using fetch.
+ * It handles the extra options in the {@linkcode RequestConfig} class and
+ * improves the default {@linkcode Response} by transforming it into {@linkcode ClientResponse}.
+ *
+ * This class contains 3 {@linkcode Client.hooks}, these are provided by the [tapable](https://github.com/webpack/tapable) library and is known
+ * for powering webpack plugins. A few examples of this:
+ * @example
+ * ```ts
+ * client.hooks.createRequest.tap('NAME', factory => {
+ *     factory.headers({
+ *
+ *     }).mode('cors').bearer('token')
+ *     return factory;
+ * })
+ * client.hooks.request.tap('NAME', request => {
+ *
+ *     return request;
+ * })
+ * client.hooks.response.tap('NAME', (response,request) => {
+ *     if(response.headers.has('Content-Type')){
+ *         const contentType = response.headers.get('Content-Type')
+ *         if(contentType === 'application/json'){
+ *             response.json()
+ *         }
+ *     }
+ *     return response;
+ * })
+ * ```
+ */
+class Client {
+    constructor(config) {
+        this.hooks = {
+            createRequest: new SyncWaterfallHook(['factory']),
+            request: new SyncWaterfallHook(['request']),
+            response: new AsyncSeriesWaterfallHook(['response', 'request']),
+        };
+        this.config = cjs({
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            request: {
+                method: 'GET',
+                credentials: 'include',
+                errorHandling: 'throw',
+            },
+        }, config);
+    }
+    request(method, uri, config = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            config = this.getRequestConfig(method, uri, config);
+            let request = this.createRequest(config);
+            request = this.hooks.request.call(request);
+            let res = yield fetch(request);
+            let response = yield transformResponse(res, request, config);
+            response = yield this.hooks.response.promise(response, request);
+            if (response.error && config.errorHandling === 'throw') {
+                throw response.error;
+            }
+            return response;
+        });
+    }
+    createRequest(config = {}) {
+        let factory = this.createRequestFactory(config);
+        factory.headers(this.config.headers);
+        factory = this.hooks.createRequest.call(factory);
+        return factory.make();
+    }
+    createRequestFactory(config = {}) {
+        return createRequestFactory(this.config).merge(config);
+    }
+    getRequestConfig(method, url, config = {}) {
+        return this.mergeRequestConfig(config, { method, url });
+    }
+    mergeRequestConfig(...config) {
+        return cjs.all([
+            this.config.request,
+            ...config || [],
+        ], { clone: true });
+    }
 }
 
 class Collection extends Array {
@@ -4921,8 +4960,30 @@ class Criteria {
 }
 
 class Field {
-    constructor(field) {
-        Object.assign(this, field);
+    constructor(_field) {
+        this._field = _field;
+        delete _field.__listeners;
+        delete _field.__observers;
+        let proxy = new Proxy(this, {
+            get(target, p, receiver) {
+                if (Reflect.has(target, p)) {
+                    return Reflect.get(target, p, receiver);
+                }
+                if (Reflect.has(target._field, p)) {
+                    return Reflect.get(target._field, p);
+                }
+            },
+            set(target, p, value, receiver) {
+                if (Reflect.has(target, p)) {
+                    return Reflect.set(target, p, value, receiver);
+                }
+                return Reflect.set(target._field, p, value);
+            },
+        });
+        return proxy;
+    }
+    serialize() {
+        return this._field;
     }
 }
 
@@ -5126,16 +5187,52 @@ class Repository {
     }
 }
 
+/**
+ *
+ * Represents a stream and can be used to get it's data.
+ *
+ * The example below uses:
+ * - {@linkcode Stream.repository} method returns {@linkcode Repository}
+ * - {@linkcode Stream.entries} method returns {@linkcode Criteria}
+ * ```ts
+ * const repository = await stream.repository()
+ * const client = await repository.find(2);
+ * const clients = await stream.entries()
+ *                                 .where('age', '>', 5)
+ *                                 .where('age', '<', 50)
+ *                                 .orderBy('age', 'asc')
+ *                                 .get();
+ *     for(const client of clients){
+ *         client.email;
+ *         client.age;
+ *     }
+ * }
+ * ```
+ */
 class Stream {
-    constructor(streams, stream, meta, links) {
+    constructor(streams, _stream, meta, links) {
         this.streams = streams;
+        this._stream = _stream;
         this.meta = meta;
         this.links = links;
-        if (stream.fields) {
-            this.fields = new Map(Object.entries(stream.fields).map(([key, field]) => [key, new Field(field)]));
-            delete stream.fields;
-        }
-        Object.assign(this, stream);
+        this.unserialize(_stream);
+        let proxy = new Proxy(this, {
+            get(target, p, receiver) {
+                if (Reflect.has(target, p)) {
+                    return Reflect.get(target, p, receiver);
+                }
+                if (Reflect.has(target._stream, p)) {
+                    return Reflect.get(target._stream, p);
+                }
+            },
+            set(target, p, value, receiver) {
+                if (Reflect.has(target, p)) {
+                    return Reflect.set(target, p, value, receiver);
+                }
+                return Reflect.set(target._stream, p, value);
+            },
+        });
+        return proxy;
     }
     /**
      * Return the entries repository.
@@ -5149,6 +5246,28 @@ class Stream {
         return this._repository;
     }
     ;
+    unserialize(stream) {
+        this.fields = new Map(Object.entries(stream.fields || {}).map(([key, field]) => [key, new Field(field)]));
+    }
+    serialize() {
+        let stream = cjs({}, this._stream, { clone: true });
+        stream.fields = Object
+            .entries(Object.fromEntries(this.fields.entries()))
+            .map(([id, field]) => [id, field.serialize()])
+            .reduce(objectify, {});
+        return stream;
+    }
+    save() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.streams.http.patchStream(this._stream.id, this.serialize());
+                return true;
+            }
+            catch (e) {
+                return false;
+            }
+        });
+    }
     /**
      * Return the entries criteria.
      *
@@ -5160,6 +5279,30 @@ class Stream {
     ;
 }
 
+/**
+ * The main class
+ *
+ * @example
+ * ```ts
+ * const streams = new Streams({
+ *     baseURL: 'http://localhost/api',
+ * });
+ *
+ *
+ *  async function run(){
+ *     const stream = await streams.make('clients')
+ *     const clients = await stream.entries()
+ *                                 .where('age', '>', 5)
+ *                                 .where('age', '<', 50)
+ *                                 .orderBy('age', 'asc')
+ *                                 .get();
+ *     for(const client of clients){
+ *         client.email;
+ *         client.age;
+ *     }
+ * }
+ * ```
+ */
 class Streams {
     constructor(config) {
         this.config = config;
@@ -5271,6 +5414,7 @@ exports.Str = Str;
 exports.Stream = Stream;
 exports.Streams = Streams;
 exports.comparisonOperators = comparisonOperators;
+exports.createRequestFactory = createRequestFactory;
 exports.logicalOperators = logicalOperators;
 exports.objectify = objectify;
 exports.operators = operators;
