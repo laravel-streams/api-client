@@ -1,0 +1,40 @@
+{
+    "name": "Profiles",
+    "description": "Profiling information for all users.",
+    "fields": {
+        "role": {
+            "type": "select",
+            "required": true,
+            "config": {
+                "options": {
+                    "md": "MD",
+                    "rn": "RN"
+                }
+            }
+        },
+        "degrees": {
+            "type": "multiselect",
+            "config": {
+                "options": [
+                    "MD",
+                    "PhD"
+                ]
+            }
+        },
+        "title": {
+            "type": "string"
+        },
+        "specialty": {
+            "type": "string"
+        },
+        "picture": {
+            "type": "image"
+        },
+        "username": {
+            "type": "slug",
+            "config": {
+                "seperator": "-"
+            }
+        }
+    }
+}

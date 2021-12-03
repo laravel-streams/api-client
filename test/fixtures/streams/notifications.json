@@ -1,0 +1,30 @@
+{
+    "name": "Notifications",
+    "description": "This describest the Laravel notifications:table schema.",
+    "config": {
+        "source": {
+            "type": "database",
+            "table": "notifications"
+        }
+    },
+    "fields": {
+        "id": {
+            "type": "integer",
+            "unique": true,
+            "required": true
+        },
+        "notifiable": {
+            "type": "polymorphic",
+            "required": true
+        },
+        "data": {
+            "type": "string"
+        },
+        "created_at": {
+            "type": "datetime"
+        },
+        "read_at": {
+            "type": "datetime"
+        }
+    }
+}

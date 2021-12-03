@@ -1,0 +1,10 @@
+{
+    "name": "Quizes",
+    "description": "Interactive quizes. @todo model me!",
+    "fields": {
+        "name": {
+            "type": "string",
+            "required": true
+        }
+    }
+}

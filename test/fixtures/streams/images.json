@@ -1,0 +1,9 @@
+{
+    "name": "images",
+    "description": "Image resources.",
+    "fields": {
+        "images": {
+            "type": "array"
+        }
+    }
+}

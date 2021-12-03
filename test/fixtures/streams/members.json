@@ -1,0 +1,65 @@
+{
+    "name": "Members",
+    "description": "Members are users who have joined a closed or private space.",
+    "fields": {
+        "id": {
+            "type": "uuid",
+            "unique": true,
+            "required": true,
+            "config": {
+                "default": true
+            }
+        },
+        "user": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "users"
+            }
+        },
+        "space": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "spaces"
+            }
+        },
+        "role": {
+            "type": "select",
+            "required": true,
+            "config": {
+                "options": {
+                    "admin": "fields.role.admin",
+                    "member": "fields.role.member",
+                    "contributor": "fields.role.contributor"
+                },
+                "default": "member"
+            }
+        },
+        "status": {
+            "type": "select",
+            "config": {
+                "options": {
+                    "approved": "Approved",
+                    "pending": "Pending",
+                    "blocked": "Blocked",
+                    "denied": "Denied"
+                },
+                "default": "approved"
+            }
+        },
+        "approved_by": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "users"
+            }
+        },
+        "blocked_by": {
+            "type": "relationship",
+            "config": {
+                "related": "users"
+            }
+        }
+    }
+}

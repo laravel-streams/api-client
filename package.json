@@ -11,22 +11,31 @@
         "build": "npm-run-all clean test bundle dts doc",
         "clean": "npm-run-all clean:dist clean:doc",
         "clean:dist": "rm -rf ./dist",
-        "clean:doc": "rm -rf ./docs",
-        "doc": "typedoc --options ./typedoc.js",
+        "clean:doc:api": "rm -rf ./docs/api",
+        "doc:api": "typedoc --options ./typedoc.js",
+        "doc:api:md": "STREAMS_API_MD_DOCS=true typedoc --options ./typedoc.js",
         "bundle": "rollup --config rollup.config.ts --configPlugin typescript",
         "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
         "dts": "tsc -p ./tsconfig.build.json --emitDeclarationOnly  --declaration --declarationDir dist ",
+        "fixtures:streams": "ts-node test/_support/move-fixtures.ts",
         "test": "cd test && mocha"
     },
     "dependencies": {
         "camelcase": "^6.2.0",
         "deepmerge": "^4.2.2",
-        "tapable": "^2.2.1"
+        "tapable": "^2.2.1",
+        "collect.js": "^4.29.3"
     },
     "devDependencies": {
         "reflect-metadata": "^0.1.13",
         "isomorphic-fetch": "^3.0.0",
-        "whatwg-fetch": "^3.6.2"
+        "whatwg-fetch": "^3.6.2",
+        "dot-object": "^2.1.4",
+        "@types/dot-object": "^2.1.2",
+        "lodash": "^4.17.21",
+        "@types/lodash": "^4.14.177",
+        "@radic/console-input": "^1.10.0",
+        "@radic/core": "^1.0.5"
     },
     "streams": {
         "output": {

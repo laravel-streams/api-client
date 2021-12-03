@@ -1,0 +1,31 @@
+{
+    "name": "Comments",
+    "description": "Comments by discussion.",
+    "fields": {
+        "id": {
+            "type": "uuid",
+            "unique": true,
+            "required": true,
+            "config": {
+                "default": true
+            }
+        },
+        "discussion": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "discussions"
+            }
+        },
+        "created_by": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "user"
+            }
+        },
+        "body": {
+            "type": "string"
+        }
+    }
+}

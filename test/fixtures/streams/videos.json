@@ -1,0 +1,13 @@
+{
+    "name": "videos",
+    "description": "Videos resources.",
+    "fields": {
+        "location": {
+            "type": "string"
+        },
+        "runtime": {
+            "name": "Runtime (Seconds)",
+            "type": "integer"
+        }
+    }
+}

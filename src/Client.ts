@@ -20,61 +20,6 @@ export interface ClientResponse<T = any> extends Response {
 
 }
 
-async function getResponseData(response: Response, config: RequestConfig) {
-
-    try {
-        if ( config.responseType ) {
-            switch(config.responseType){ //@formatter:off
-            case 'blob': return await response.blob();
-            case 'arraybuffer': return await response.arrayBuffer();
-            case 'document': return await response.text()
-            case 'json': return await response.json()
-            case 'stream': return (await response.blob()).stream()
-            case 'text': return await response.text()
-        }//@formatter:on
-        }
-
-        if ( response.headers.get('content-type') === 'application/json' ) {
-            return response.json();
-        }
-
-        return response.text();
-    } catch (e) {
-        return {};
-    }
-}
-
-async function transformResponse(response: Response, request: Request, config: RequestConfig): Promise<ClientResponse> {
-    const transformed: ClientResponse = response.clone() as any;
-
-    transformed.request = request;
-    transformed.config  = config;
-    transformed.data    = await getResponseData(response, config);
-
-    // handle headers
-    let headerEntries = Array.from(response.headers[ 'entries' ]());
-    Object.entries(deepmerge.all([
-        headerEntries.map(([ key, value ]) => ([ camelcase(key), value ])).reduce(objectify, {}),
-        headerEntries.map(([ key, value ]) => ([ key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value ])).reduce(objectify, {}),
-        headerEntries.reduce(objectify, {}),
-    ])).forEach(([ key, value ]) => {
-        transformed.headers[ key ] = value;
-        transformed.headers.set(key, value);
-    });
-
-    // Include error if needed
-    if ( !response.ok ) {
-        try {
-            transformed.errorText = await response.text();
-        } catch (e) {
-            transformed.errorText = '';
-        }
-        transformed.error = new HTTPError(response, request);
-    }
-
-    return transformed;
-}
-
 /**
  * Used for creating requests using fetch.
  * It handles the extra options in the {@linkcode RequestConfig} class and
@@ -127,8 +72,8 @@ export class Client {
     }
 
 
-    public async request<T>(method: MethodName, uri: string, config: RequestConfig = {}): Promise<ClientResponse<T>> {
-        config       = this.getRequestConfig(method, uri, config);
+    public async request<T>(method: MethodName, url: string, config: RequestConfig = {}): Promise<ClientResponse<T>> {
+        config       = this.mergeRequestConfig(config, { method, url });
         let request  = this.createRequest(config);
         request      = this.hooks.request.call(request);
         let res      = await fetch(request);
@@ -141,18 +86,10 @@ export class Client {
     }
 
     protected createRequest(config: RequestConfig = {}): Request {
-        let factory = this.createRequestFactory(config);
+        let factory = createRequestFactory(this.config).merge(config);
         factory.headers(this.config.headers);
         factory = this.hooks.createRequest.call(factory);
         return factory.make();
-    }
-
-    protected createRequestFactory(config: RequestConfig = {}): RequestConfigSetter {
-        return createRequestFactory(this.config).merge(config);
-    }
-
-    protected getRequestConfig(method: MethodName, url: string, config: RequestConfig = {}): RequestConfig {
-        return this.mergeRequestConfig(config, { method, url });
     }
 
     protected mergeRequestConfig(...config: RequestConfig[]): RequestConfig {
@@ -161,4 +98,59 @@ export class Client {
             ...config as any[] || [],
         ], { clone: true }) as RequestConfig;
     }
+}
+
+async function getResponseData(response: Response, config: RequestConfig) {
+
+    try {
+        if ( config.responseType ) {
+            switch(config.responseType){ //@formatter:off
+                case 'blob': return await response.blob();
+                case 'arraybuffer': return await response.arrayBuffer();
+                case 'document': return await response.text()
+                case 'json': return await response.json()
+                case 'stream': return (await response.blob()).stream()
+                case 'text': return await response.text()
+            }//@formatter:on
+        }
+
+        if ( response.headers.get('content-type') === 'application/json' ) {
+            return response.json();
+        }
+
+        return response.text();
+    } catch (e) {
+        return {};
+    }
+}
+
+async function transformResponse(response: Response, request: Request, config: RequestConfig): Promise<ClientResponse> {
+    const transformed: ClientResponse = response.clone() as any;
+
+    transformed.request = request;
+    transformed.config  = config;
+    transformed.data    = await getResponseData(response, config);
+
+    // handle headers
+    let headerEntries = Array.from(response.headers[ 'entries' ]());
+    Object.entries(deepmerge.all([
+        headerEntries.map(([ key, value ]) => ([ camelcase(key), value ])).reduce(objectify, {}),
+        headerEntries.map(([ key, value ]) => ([ key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value ])).reduce(objectify, {}),
+        headerEntries.reduce(objectify, {}),
+    ])).forEach(([ key, value ]) => {
+        transformed.headers[ key ] = value;
+        transformed.headers.set(key, value);
+    });
+
+    // Include error if needed
+    if ( !response.ok ) {
+        try {
+            transformed.errorText = await response.text();
+        } catch (e) {
+            transformed.errorText = '';
+        }
+        transformed.error = new HTTPError(response, request);
+    }
+
+    return transformed;
 }

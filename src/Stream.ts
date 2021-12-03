@@ -107,6 +107,15 @@ export class Stream<ID extends string = string> {
         }
     }
 
+    async delete(): Promise<boolean> {
+        try {
+            await this.streams.http.deleteStream(this._stream.id);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     /**
      * Return the entries criteria.
      *

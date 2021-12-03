@@ -1,20 +1,20 @@
-const {join} = require('path')
-const theme = "pages-plugin"; //join(require.resolve('typedoc'),'../typedoc-scalefast-theme/src');
+const {join} = require('path');
+const theme = 'pages-plugin'; //join(require.resolve('typedoc'),'../typedoc-scalefast-theme/src');
 /** @type import('typedoc').TypeDocOptionMap */
 const config = {
     entryPoints: ['./src/index.ts'],
     exclude    : 'test/**/*.ts',
-    includes: 'src',
-    out        : './docs',
+    includes   : 'src',
+    out        : './docs/api',
     tsconfig   : './tsconfig.typedoc.json',
-    theme  :'default',
+    theme      : 'default',
 
     //https://marked.js.org/using_advanced#options
     markedOptions : {
         'mangle': false
     },
     plugin        : [
-        'typedoc-plugin-custom-tags',
+        // 'typedoc-plugin-custom-tags',
         // 'typedoc-plugin-external-module-name',
         'typedoc-plugin-extras',
         // 'typedoc-plugin-inline-sources',
@@ -24,7 +24,7 @@ const config = {
         // 'typedoc-plugin-pages',
     ],
     hideGenerator : true,
-    readme        : '/README.md',
+    readme        : 'none',
     includeVersion: true,
     name          : 'Streams Platform Client Api',
     // pages: {
@@ -44,9 +44,9 @@ const config = {
     // }
 };
 
-if(process.env.STREAMS_API_MD_DOCS){
+if ( process.env.STREAMS_API_MD_DOCS ) {
     config.plugin.push('typedoc-plugin-markdown');
-    config.out = './docs/api'
+    config.out = './docs/api';
 }
 
 

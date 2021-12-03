@@ -1,0 +1,56 @@
+{
+    "name": "Posts/Items",
+    "description": "Posts are the BASE (abstract) objects for all things shared.",
+    "notes": [
+        "Does this model need any image or thumb? Content (markdown)?",
+        "Should this basically be the connecting stream for the many to one content relation?"
+    ],
+    "fields": {
+        "id": {
+            "type": "uuid",
+            "unique": true,
+            "required": true,
+            "config": {
+                "default": true
+            }
+        },
+        "entry": {
+            "type": "polymorphic",
+            "required": true,
+            "config": {
+                "allowed": [
+                    "articles",
+                    "audio",
+                    "documents",
+                    "images",
+                    "quizes",
+                    "videos"
+                ]
+            }
+        },
+        "space": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "spaces"
+            }
+        },
+        "title": "string",
+        "summary": "string",
+        "likes": "integer",
+        "views": "integer",
+        "shares": "integer",
+        "privacy": {
+            "type": "select",
+            "description": "@todo what do these _mean_ though?",
+            "required": true,
+            "config": {
+                "options": {
+                    "public": "Public",
+                    "private": "Private"
+                },
+                "default": "public"
+            }
+        }
+    }
+}

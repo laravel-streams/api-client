@@ -6,5 +6,5 @@
     "exit": true,
     "slow": 75,
     "ui": "bdd",
-    "require": ["ts-node/register","tsconfig-paths/register", "reflect-metadata"]
+    "require": ["ts-node/register","tsconfig-paths/register"]
 }

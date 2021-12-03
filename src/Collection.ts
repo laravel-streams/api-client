@@ -1,14 +1,21 @@
-export class Collection<Type> extends Array<Type> implements Array<Type> {
+// export class Collection<Type> extends Array<Type> implements Array<Type> {
+//
+//     /**
+//      * Create a new collection instance.
+//      *
+//      * @param items
+//      */
+//     constructor(...items: Type[]) {
+//
+//         super(...items);
+//
+//         Object.setPrototypeOf(this, Array.prototype);
+//     }
+// }
 
-    /**
-     * Create a new collection instance.
-     * 
-     * @param items 
-     */
-    constructor(...items: Type[]) {
 
-        super(...items);
+import { Collection as BaseCollection } from 'collect.js';
 
-        Object.setPrototypeOf(this, Array.prototype);
-    }
+export class Collection<T> extends BaseCollection<T> {
+    [macroFn: string]: any
 }

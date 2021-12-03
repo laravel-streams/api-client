@@ -11,3 +11,6 @@ composer.lock
 mix-manifest.json
 package-lock.json
 .size-snapshot.json
+test/http-client.private.env.json
+test/http-client.env.json
+

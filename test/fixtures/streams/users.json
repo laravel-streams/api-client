@@ -1,0 +1,47 @@
+{
+    "name": "Users",
+    "description": "All platform users.",
+    "config": {
+        "abstract": "App\\Models\\User",
+        "cache": {
+            "enabled": true
+        }
+    },
+    "fields": {
+        "id": {
+            "type": "uuid",
+            "unique": true,
+            "required": true,
+            "config": {
+                "default": true
+            }
+        },
+        "email": {
+            "type": "email",
+            "unique": true,
+            "required": true
+        },
+        "password": {
+            "type": "hash",
+            "required": true
+        },
+        "status": {
+            "type": "select",
+            "required": true,
+            "config": {
+                "options": {
+                    "active": "Active",
+                    "pending": "Pending",
+                    "disabled": "Disabled"
+                },
+                "default": "active"
+            }
+        },
+        "profile": {
+            "type": "entry",
+            "config": {
+                "stream": "profiles"
+            }
+        }
+    }
+}

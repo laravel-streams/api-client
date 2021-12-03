@@ -1,0 +1,38 @@
+{
+    "name": "Spaces",
+    "description": "Spaces organize interests for users.",
+    "fields": {
+        "id": {
+            "type": "uuid",
+            "unique": true,
+            "required": true
+        },
+        "name": {
+            "type": "string",
+            "required": true,
+            "rules": [
+                "min:10",
+                "max:50"
+            ]
+        },
+        "privacy": {
+            "type": "select",
+            "required": true,
+            "config": {
+                "options": {
+                    "open": "Open",
+                    "closed": "Closed",
+                    "private": "Private"
+                },
+                "default": "open"
+            }
+        },
+        "owner": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "users"
+            }
+        }
+    }
+}

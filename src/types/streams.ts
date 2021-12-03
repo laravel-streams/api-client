@@ -22,15 +22,16 @@ export type IStreamPost<T, ID extends string = string> =
     & T;
 
 export interface IBaseStream<ID extends string = string> {
-    id: ID
-    created_at: string
-    updated_at: string
+    id?: string
+    created_at?: string
+    updated_at?: string
     name: string
+    description: string
     source: {
         type: string
         [ key: string ]: any
     },
-    fields: Record<string, fields.Type | Field>|Map<string,Field>
+    fields?: Record<string, fields.Type | Field>|Map<string,Field>
     rules?: Record<string, string | object | string[]>
     [ key: string ]: any
 }

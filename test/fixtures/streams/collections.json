@@ -1,0 +1,59 @@
+{
+    "name": "Collections",
+    "description": "Collections organize content.",
+    "fields": {
+        "id": {
+            "type": "uuid",
+            "unique": true,
+            "required": true,
+            "config": {
+                "default": true
+            }
+        },
+        "space": {
+            "type": "relationship",
+            "required": true,
+            "config": {
+                "related": "spaces"
+            }
+        },
+        "parent": {
+            "type": "relationship",
+            "config": {
+                "related": "collections"
+            }
+        },
+        "name": {
+            "type": "string",
+            "required": true,
+            "rules": [
+                "min:10",
+                "max:50"
+            ]
+        },
+        "type": {
+            "type": "select",
+            "required": true,
+            "config": {
+                "options": {
+                    "default": "Can store anything",
+                    "directory": "Can store contacts."
+                },
+                "default": "default"
+            }
+        },
+        "privacy": {
+            "type": "select",
+            "description": "@todo what do these _mean_ though?",
+            "required": true,
+            "config": {
+                "options": {
+                    "public": "Public",
+                    "hidden": "?? Hidden",
+                    "private": "Private"
+                },
+                "default": "public"
+            }
+        }
+    }
+}

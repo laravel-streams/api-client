@@ -1,0 +1,10 @@
+{
+    "name": "Documents",
+    "description": "Document resources like protocols and guidelines.",
+    "fields": {
+        "file": {
+            "type": "file",
+            "required": true
+        }
+    }
+}

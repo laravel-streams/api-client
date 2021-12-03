@@ -1,0 +1,65 @@
+### GET streams
+GET http://{{host}}/{{path}}/streams
+Accept: application/json
+
+> {%
+client.test("Headers option exists", function() {
+    client.assert(response.body.hasOwnProperty("headers"), "Cannot find 'headers' option in response");
+});
+%}
+
+### POST streams
+POST http://streams-dev.local/api/streams
+Accept: application/json
+
+### GET streams/users
+GET http://streams-dev.local/api/streams/users
+Accept: application/json
+
+### GET streams/roles
+GET http://streams-dev.local/api/streams/roles
+Accept: application/json
+
+### GET streams/papges
+GET http://streams-dev.local/api/streams/pages
+Accept: application/json
+
+### GET streams/explore
+GET http://streams-dev.local/api/streams/explore
+Accept: application/json
+
+
+### GET streams/addons
+GET http://streams-dev.local/api/streams/addons
+Accept: application/json
+
+
+### GET streams/cp.navigation
+GET http://streams-dev.local/api/streams/cp.navigation
+Accept: application/json
+
+### GET streams/cp.shortcuts
+GET http://streams-dev.local/api/streams/cp.shortcuts
+Accept: application/json
+
+### GET streams/cp.themes
+GET http://streams-dev.local/api/streams/cp.themes
+Accept: application/json
+
+
+
+
+
+
+###
+
+GET http://streams-dev.local/api/streams/users
+Accept: application/json
+
+<> 2021-09-28T210156.200.json
+
+###
+
+GET http://streams-dev.local/api/streams/users/entries
+Accept: application/json
+###
