@@ -73,7 +73,6 @@ export class HttpTest extends TestCase {
     }
 
     @test('http.getStream')
-    @skip(invalid.streams.get)
     @params({ name: 'clients' }, 'get stream "clients"')
     @params({ name: 'posts' }, 'get stream "posts"')
     async getStreamTest({ name }: { name: string }) {
@@ -84,7 +83,6 @@ export class HttpTest extends TestCase {
     }
 
     @test('http.patchStream()')
-    @skip(invalid.streams.patch)
     async patchStreamTest(){
         this.fs.fixtures.copyStream('posts', this.fs.project);
         let res = await this.http.getStream('posts')
@@ -98,13 +96,11 @@ export class HttpTest extends TestCase {
     }
 
     @test('put stream')
-    @skip(invalid.streams.put)
     async putStreamTest() {
         await this.http.putStream('foobars', this.getStreamDefinition('foobars'));
     }
 
     @test('http.deleteStream(): should delete the stream')
-    @skip(invalid.streams.delete)
     async deleteStreamTest() {
         this.fs.fixtures.copyStream('posts', this.fs.project)
         let response = await this.http.deleteStream('posts')
@@ -113,7 +109,6 @@ export class HttpTest extends TestCase {
     }
 
     @test('get entries')
-    @skip(invalid.entries.getAll)
     async getEntriesTest() {
         this.fs.fixtures.copyStream('posts', this.fs.project)
         let response = await this.http.getEntries('posts')
@@ -122,7 +117,6 @@ export class HttpTest extends TestCase {
     }
 
     @test('post entry')
-    @skip(invalid.entries.post)
     async postEntryTest() {
         this.fs.fixtures.copyStream('clients', this.fs.project)
         const http  = await this.getHttp();
@@ -133,16 +127,16 @@ export class HttpTest extends TestCase {
         return;
     }
 
-    @test('get entry') @skip(invalid.entries.get)
+    @test('get entry') @skip(true)
     async getEntryTest() {}
 
-    @test('patch entry') @skip(invalid.entries.patch)
+    @test('patch entry') @skip(true)
     async patchEntryTest() {}
 
-    @test('put entry') @skip(invalid.entries.put)
+    @test('put entry') @skip(true)
     async putEntryTest() {}
 
-    @test('delete entry') @skip(invalid.entries.delete)
+    @test('delete entry') @skip(true)
     async deleteEntryTest() {}
 
 }
