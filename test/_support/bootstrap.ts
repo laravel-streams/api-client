@@ -17,6 +17,7 @@ import { JSDOM } from 'jsdom';
 import { getEnv } from './utils';
 import 'whatwg-fetch';
 
+
 const env = getEnv();
 
 const dom      = new JSDOM(``, {

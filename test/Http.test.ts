@@ -1,28 +1,8 @@
 import { params, skip, suite, test } from '@testdeck/mocha';
 import { TestCase } from './TestCase';
-import { Field, Http, HTTPError, Stream } from '../src';
-import { expect } from 'chai';
+import { Http, HTTPError } from '../src';
 
-
-
-const invalid = {
-    streams: {
-        getAll :false,
-        get   : false,
-        post  : false,
-        put   : true,
-        patch : false,
-        delete: false,
-    },
-    entries: {
-        getAll:false,
-        get   : false,
-        post  : false,
-        put   : true,
-        patch : false,
-        delete: false,
-    }
-};
+import f from 'faker';
 
 @suite('Http')
 export class HttpTest extends TestCase {
@@ -44,18 +24,10 @@ export class HttpTest extends TestCase {
         }
     }
 
-    @test('http.getStream')
-    async getStreamsTest() {
-        const http = this.getHttp();
-        http.should.be.instanceof(Http);
-        const stream = await http.getStream('users');
-        stream.should.have.property('data');
-    }
-
     @skip
-    @test('http.postStream')
+    @test('postStream')
     async postStreamTest() {
-        this.fs.project.deleteStream('clients')
+        this.fs.project.deleteStream('clients');
         const http             = await this.getHttp();
         const { data: stream } = await http.postStream(this.getStreamDefinition('clients'));
 
@@ -72,71 +44,134 @@ export class HttpTest extends TestCase {
         this.fs.project.hasStream('clients').should.eq(false);
     }
 
-    @test('http.getStream')
+    @test('getStream')
     @params({ name: 'clients' }, 'get stream "clients"')
     @params({ name: 'posts' }, 'get stream "posts"')
     async getStreamTest({ name }: { name: string }) {
-        this.fs.fixtures.copyStream(name, this.fs.project)
+        this.fs.fixtures.copyStream(name, this.fs.project);
         const stream = await this.http.getStream(name);
         stream.should.have.property('data');
-        this.fs.project.deleteStream(name)
+        this.fs.project.deleteStream(name);
     }
 
-    @test('http.patchStream()')
-    async patchStreamTest(){
+    @test('patchStream')
+    async patchStreamTest() {
         this.fs.fixtures.copyStream('posts', this.fs.project);
-        let res = await this.http.getStream('posts')
+        let res = await this.http.getStream('posts');
         res.should.have.property('data');
         res.data.data.description = 'foobarfoofoo';
-        res = await this.http.patchStream('posts',res.data.data)
+        res                       = await this.http.patchStream('posts', res.data.data);
         res.should.have.property('data');
-        res.data.data.description.should.equal('foobarfoofoo')
+        res.data.data.description.should.equal('foobarfoofoo');
         this.fs.project.getStream('posts').get('description').should.eq('foobarfoofoo');
         this.fs.project.deleteStream('posts');
     }
 
-    @test('put stream')
+    @test('putStream')
     async putStreamTest() {
+        this.fs.project.deleteStream('foobars');
         await this.http.putStream('foobars', this.getStreamDefinition('foobars'));
+        this.fs.project.hasStream('foobars').should.eq(true);
     }
 
-    @test('http.deleteStream(): should delete the stream')
+    @test('deleteStream')
     async deleteStreamTest() {
-        this.fs.fixtures.copyStream('posts', this.fs.project)
-        let response = await this.http.deleteStream('posts')
-        response.should.eq(true);
+        this.fs.fixtures.copyStream('posts', this.fs.project);
+        let response = await this.http.deleteStream('posts');
         this.fs.project.hasStream('posts').should.eq(false);
     }
 
-    @test('get entries')
+    @test('getEntries')
     async getEntriesTest() {
-        this.fs.fixtures.copyStream('posts', this.fs.project)
-        let response = await this.http.getEntries('posts')
-        response.data.data
-        this.fs.project.deleteStream('posts')
+        this.fs.fixtures.copyStream('posts', this.fs.project);
+        let response = await this.http.getEntries('posts');
+        response.ok.should.eq(true);
+        response.data.data.length.should.eq(20);
+        let entries: Array<{ space: string }>      = response.data.data;
+        let localEntries: Array<{ space: string }> = this.fs.project.getStreamEntries('posts');
+        let spaces                                 = entries.map(entry => entry.space);
+        for ( const entry of localEntries ) {
+            spaces.includes(entry.space).should.eq(true);
+        }
+        this.fs.project.deleteStream('posts');
     }
 
-    @test('post entry')
+    @test('postEntry')
     async postEntryTest() {
-        this.fs.fixtures.copyStream('clients', this.fs.project)
-        const http  = await this.getHttp();
-        const entry = await http.postEntry('clients', {
-            name : 'Robin',
-            email: 'robin@robin.com',
-        });
-        return;
+        this.fs.fixtures.copyStream('clients', this.fs.project);
+        const http                                                                   = await this.getHttp();
+        const data: any                                                              = {
+            id: 5, // @todo ids should be autogenerated
+            name : f.name.firstName(),
+            email: '',
+            age  : 55,
+        };
+        data.email                                                                   = f.internet.email(data.name);
+        const entry                                                                  = await http.postEntry('clients', data);
+        let entries: Record<string, { id: number, name: string, email: string, age: number }> = this.fs.project.getStreamEntries('clients');
+        let found = Object.values(entries).find(e => e.id===data.id&& e.email === data.email && e.age === data.age && e.name === data.name)
+        found.should.not.be.undefined;
+        found.email.should.eq(data.email)
+        this.fs.project.deleteStream('clients')
     }
 
-    @test('get entry') @skip(true)
-    async getEntryTest() {}
+    @skip
+    @test('postExistingIdEntry')
+    async postExistingIdEntryTest() {
+        this.fs.fixtures.copyStream('clients', this.fs.project);
+        let fstream = this.fs.project.getStream('clients');
+        fstream.put('5', {
+            id: 5, // @todo ids should be autogenerated
+            name : 'richard',
+            email: 'richard@gmail.com',
+            age  : 55,
+        })
 
-    @test('patch entry') @skip(true)
+        const http                                                                   = await this.getHttp();
+        const data: any                                                              = {
+            id: 5, // @todo ids should be autogenerated
+            name : 'robert',
+            email: 'robert@gmail.com',
+            age  : 55,
+        };
+        const entry                                                                  = await http.postEntry('clients', data);
+        let entries: Record<string, { id: number, name: string, email: string, age: number }> = this.fs.project.getStreamEntries('clients');
+        let found = Object.values(entries).find(e => e.id===data.id&& e.email === data.email && e.age === data.age && e.name === data.name)
+        found.should.not.be.undefined;
+        found.email.should.eq(data.email)
+        this.fs.project.deleteStream('clients')
+    }
+
+    @test('postEntryWithoutId')
+    async postEntryWithoutId() {
+        this.fs.fixtures.copyStream('clients', this.fs.project);
+        this.fs.project.deleteStreamData('clients')
+        const http                                                                   = await this.getHttp();
+        const data: any                                                              = {
+            name : 'robert',
+            email: 'robert@gmail.com',
+            age  : 55,
+        };
+        const entry                                                                  = await http.postEntry('clients', data);
+        let entries: Record<string, { id: number, name: string, email: string, age: number }> = this.fs.project.getStreamEntries('clients');
+        let found = Object.values(entries).find(e => e.id===data.id&& e.email === data.email && e.age === data.age && e.name === data.name)
+        found.should.not.be.undefined;
+        found.email.should.eq(data.email)
+        this.fs.project.deleteStream('clients')
+    }
+    @test('getEntry') @skip(true)
+    async getEntryTest() {
+
+
+    }
+
+    @test('patchEntry') @skip(true)
     async patchEntryTest() {}
 
-    @test('put entry') @skip(true)
+    @test('putEntry') @skip(true)
     async putEntryTest() {}
 
-    @test('delete entry') @skip(true)
+    @test('deleteEntry') @skip(true)
     async deleteEntryTest() {}
 
 }

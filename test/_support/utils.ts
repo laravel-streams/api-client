@@ -3,7 +3,7 @@ import { basename, dirname, isAbsolute, join, resolve } from 'path';
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { config } from 'dotenv';
 import { get, has, merge, set, unset } from 'lodash';
-import { DirectoryStorage, DirectoryStorageOptions } from '@radic/core';
+import { DirectoryStorage, DirectoryStorageOptions } from './DirectoryStorage';
 import { IStream } from '../../src';
 
 export function getBigDataObject() {
@@ -108,6 +108,10 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
 
     deleteStream(name: string) {
         this.delete(this.path(this.streamsDir, name + '.json'));
+        this.deleteStreamData(name);
+    }
+
+    deleteStreamData(name:string){
         this.delete(this.path(this.dataDir, name + '.json'));
         if ( this.isFile(this.dataDir, name + '.json') ) {
             this.delete(this.path(this.dataDir, name + '.json'));
@@ -121,7 +125,9 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
 
     hasStreamData(name: string) { return this.isDirectory(this.dataDir, name) || this.exists(this.dataDir, name + '.json'); }
 
-    getStream(name) {return dot<IStream>(this.readJson<IStream>(this.streamsDir + '/' + name + '.json'));}
+    getStream(name) {
+        return dot<IStream>(this.readJson<IStream>(this.streamsDir + '/' + name + '.json'));
+    }
 
     getStreamEntries(name): any {
         if ( !this.hasStreamData(name) ) {
@@ -147,9 +153,10 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
     createStreamEntries(name, data: object | Array<any>) {
         this.ensureDir(this.dataDir);
         if ( Array.isArray(data) ) {
+            this.ensureDir(this.dataDir,name);
             for ( const entry of data ) {
                 let fileName = entry.id || entry.handle || entry.__filename;
-                this.writeJson(this.path(this.dataDir, name, fileName), data);
+                this.writeJson(this.path(this.dataDir, name, fileName), entry);
             }
         } else {
             this.writeJson(this.path(this.dataDir, name + '.json'), data);
@@ -157,7 +164,8 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
     }
 
     copyStream(name, dest: StreamDirectoryStorage) {
-        dest.createStream(name, this.getStream(name).obj);
+        let stream = this.getStream(name)
+        dest.createStream(name, stream.obj);
         dest.createStreamEntries(name, this.getStreamEntries(name));
         return this;
     }
