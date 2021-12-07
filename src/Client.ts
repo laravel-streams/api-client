@@ -149,7 +149,7 @@ async function transformResponse(response: Response, request: Request, config: R
         } catch (e) {
             transformed.errorText = '';
         }
-        transformed.error = new HTTPError(response, request);
+        transformed.error = new HTTPError(transformed);
     }
 
     return transformed;

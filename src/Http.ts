@@ -48,16 +48,16 @@ export class Http {
         return this.client.request<R>('get', `/streams/${stream}/entries/${entry}`, config);
     }
 
-    async patchEntry(stream: string, entry: string | number, data: any = {}, config: RequestConfig = {}) {
-        return this.client.request('patch', `/streams/${stream}/entries/${entry}`, { data, ...config });
+    async patchEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, data: any = {}, config: RequestConfig = {}) {
+        return this.client.request<R>('patch', `/streams/${stream}/entries/${entry}`, { data, ...config });
     }
 
-    async putEntry(stream: string, entry: string | number, data: any = {}, config: RequestConfig = {}) {
-        return this.client.request('put', `/streams/${stream}/entries/${entry}`, { data, ...config });
+    async putEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, data: any = {}, config: RequestConfig = {}) {
+        return this.client.request<R>('put', `/streams/${stream}/entries/${entry}`, { data, ...config });
     }
 
-    async deleteEntry(stream: string, entry: string | number, config: RequestConfig = {}) {
-        return this.client.request<true>('patch', `/streams/${stream}/entries/${entry}`, config);
+    async deleteEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, config: RequestConfig = {}) {
+        return this.client.request<R>('delete', `/streams/${stream}/entries/${entry}`, config);
     }
 
     protected async request<T>(method: MethodName, uri: string, config: RequestConfig = {}):Promise<T>{

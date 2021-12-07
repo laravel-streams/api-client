@@ -21,7 +21,7 @@ export interface IPaginatedEntriesMeta extends IStreamMeta {
 
 export class EntryCollection<T=any> extends Collection<IEntry<T>> {
     constructor(entries: IEntry<T>[], public readonly meta?: IEntriesMeta, public readonly links?: IEntriesLinks) {
-        super(...entries as any[]);
+        super(entries as any[]);
     }
 
     static fromResponse<T>(response: ClientResponse<Http.Responses<T[]>['entries']>, stream: Stream): EntryCollection<T> {

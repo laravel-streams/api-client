@@ -5,6 +5,7 @@ import { config } from 'dotenv';
 import { get, has, merge, set, unset } from 'lodash';
 import { DirectoryStorage, DirectoryStorageOptions } from './DirectoryStorage';
 import { IStream } from '../../src';
+import { Generator } from './generator';
 
 export function getBigDataObject() {
     return require('./package-lock-data.json');
@@ -150,12 +151,20 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
         }
     }
 
+    generateFakeStreamEntries(name:string, amount:number){
+        let stream = this.getStream(name)
+        let entries = Generator.fromStream(stream, amount);
+        this.createStreamEntries(name, entries);
+        return entries;
+    }
+
     createStreamEntries(name, data: object | Array<any>) {
         this.ensureDir(this.dataDir);
         if ( Array.isArray(data) ) {
             this.ensureDir(this.dataDir,name);
             for ( const entry of data ) {
-                let fileName = entry.id || entry.handle || entry.__filename;
+                let fileName = (entry.id || entry.handle || entry.__filename).toString();
+                if(!fileName.endsWith('.json')) fileName += '.json';
                 this.writeJson(this.path(this.dataDir, name, fileName), entry);
             }
         } else {

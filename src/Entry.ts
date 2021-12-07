@@ -32,6 +32,7 @@ export class Entry<ID extends string = string> {
             },
         });
         return proxy;
+        // Object.assign(this,_data)
     }
 
     get stream(): Stream<ID> {

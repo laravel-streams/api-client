@@ -35,7 +35,7 @@ export class CriteriaTest extends TestCase {
                                     .where('age', '<', 50)
                                     .orderBy('age', 'asc')
                                     .get();
-        for(const entry of entries){
+        for(const entry of entries.toArray<any>()){
             entry.id.should.be.a('number')
             entry.age.should.be.a('number');
             entry.age.should.be.above(5)
