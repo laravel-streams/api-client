@@ -1,13 +1,10 @@
-import { Http } from './Http';
 import { Stream } from './Stream';
-export declare type IEntry<T, ID extends string = string> = Entry<ID> & T;
-export declare class Entry<ID extends string = string> {
-    protected _stream: Stream<ID>;
-    protected _data: any;
-    protected _fresh: boolean;
-    get http(): Http;
-    constructor(_stream: Stream<ID>, _data?: any, _fresh?: boolean);
-    get stream(): Stream<ID>;
+import { streams } from './types';
+export declare type IEntry<ID extends streams.StreamID = streams.StreamID> = Entry<ID> & streams.Streams[ID]['entries'];
+export declare class Entry<ID extends streams.StreamID = streams.StreamID> {
+    #private;
+    constructor(stream: Stream<ID>, data?: any, fresh?: boolean);
+    getStream(): Stream<ID>;
     save(): Promise<boolean>;
-    validator(): void;
+    serialize(): streams.Streams[ID]['entries'];
 }

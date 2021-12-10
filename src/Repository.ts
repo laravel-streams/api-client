@@ -2,19 +2,20 @@ import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { EntryCollection } from './EntryCollection';
 import { Entry } from './Entry';
+import { streams } from './types';
 
 
-export class Repository{
+export class Repository<ID extends streams.StreamID>{
 
     /**
      * Create a new repository instance.
      *
      * @param stream
      */
-    constructor(protected stream: Stream) { }
+    constructor(protected stream: Stream<ID>) { }
 
     get http() {
-        return this.stream.streams.http;
+        return this.stream.getStreams().http;
     }
 
     /**
@@ -36,7 +37,7 @@ export class Repository{
      */
     async find(id: string|number): Promise<Entry> {
 
-        let criteria = this.stream.entries();
+        let criteria = this.stream.getEntries();
 
         return criteria.where('id', id).first();
     }
@@ -49,7 +50,7 @@ export class Repository{
      */
     async findAll(ids:Array<string|number>): Promise<EntryCollection> {
 
-        let criteria = this.stream.entries();
+        let criteria = this.stream.getEntries();
 
         return criteria.where('id', 'IN', ids).get();
     }
@@ -63,13 +64,13 @@ export class Repository{
      */
     async findBy(field:string, value:any): Promise<Entry> {
 
-        let criteria = this.stream.entries();
+        let criteria = this.stream.getEntries();
 
         return criteria.where(field, value).first();
     }
     async findAllWhere(field: string, value:any): Promise<EntryCollection> {
 
-        let criteria = this.stream.entries();
+        let criteria = this.stream.getEntries();
 
         return criteria.where(field, value).get();
     }
@@ -121,7 +122,7 @@ export class Repository{
      * @param attributes
      * @returns
      */
-    newInstance(attributes: any): Entry {
+    newInstance(attributes: any): Entry<ID> {
         return this.newCriteria().newInstance(attributes);
     }
 
@@ -130,7 +131,7 @@ export class Repository{
      *
      * @returns Criteria
      */
-    newCriteria(): Criteria {
-        return new Criteria(this.stream);
+    newCriteria(): Criteria<ID> {
+        return new Criteria<ID>(this.stream);
     }
 }

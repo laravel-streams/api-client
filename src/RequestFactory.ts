@@ -2,7 +2,9 @@ import { ClientConfiguration, Constructor, RequestConfig, URLSearchParamsInit } 
 import { IStringifyOptions, stringify } from 'qs';
 import { Str } from './utils';
 import deepmerge from 'deepmerge';
-import {Client} from './Client';
+import { Client, ClientRequest } from './Client';
+import { HeaderFactory } from './HeaderFactory';
+import { CombinedHeaders } from './types/headers';
 
 export function createRequestFactory<T extends Request>(clientConfig: ClientConfiguration, _Request: Constructor<T> = Request as any): RequestConfigSetter<T> {
     return new RequestFactory(clientConfig, _Request) as RequestConfigSetter<T>;
@@ -13,17 +15,12 @@ function mergeURLSearchParams(source: URLSearchParamsInit, destination: URLSearc
     return destination;
 }
 
-function mergeHeaders(source: HeadersInit, destination: Headers) {
-    (new Headers(source)).forEach((value, key) => destination.set(key, value));
-    return destination;
-}
-
-
 export type RequestConfigSetter<T extends Request = Request, K extends keyof RequestConfig = keyof RequestConfig> =
     {
         [P in K]: (value: RequestConfig[P]) => RequestConfigSetter<T, K>
     }
     & RequestFactory<T>
+
 
 /**
  * Provides a fluent way of configuring the {@link RequestConfig}
@@ -33,10 +30,10 @@ export type RequestConfigSetter<T extends Request = Request, K extends keyof Req
  * Using the {@link createRequestFactory} function is the preferred way of creating an instance of this class
  * as it returns the fluent {@link RequestConfigSetter} wrapper type that follows this class it's proxy behaviour.
  */
-export class RequestFactory<T extends Request = Request> {
+export class RequestFactory<T extends ClientRequest = ClientRequest> {
     protected _config: RequestConfig       = {};
     protected _params: Record<string, any> = {};
-    protected _headers                     = new Headers();
+    protected _headers: HeaderFactory      = new HeaderFactory();
 
     constructor(protected _clientConfig: ClientConfiguration, protected _Request: Constructor<T>) {
         const self = this;
@@ -63,8 +60,8 @@ export class RequestFactory<T extends Request = Request> {
 
     protected getConfig(): RequestConfig {
         if ( this._config.responseType === 'json' ) {
-            if ( !this._headers.has('accept') ) {
-                this._headers.set('accept', 'application/json');
+            if ( !this._headers.has('Accept') ) {
+                this._headers.set('Accept', 'application/json');
             }
         }
         return {
@@ -98,7 +95,7 @@ export class RequestFactory<T extends Request = Request> {
         return this;
     }
 
-    header(name: string, value: string) {
+    header<T extends keyof CombinedHeaders>(name: T, value: CombinedHeaders[T]) {
         this._headers.set(name, value);
         return this;
     }
@@ -108,8 +105,8 @@ export class RequestFactory<T extends Request = Request> {
         return this;
     }
 
-    headers(headers: HeadersInit) {
-        mergeHeaders(headers, this._headers);
+    headers(headers: CombinedHeaders) {
+        this._headers.merge(headers);
         return this;
     }
 
@@ -128,22 +125,24 @@ export class RequestFactory<T extends Request = Request> {
     }
 
     basic(username: string, password: string) {
-        return this.authorization('Basic', btoa(username + ':' + password));
+        return this._headers.basic(username, password); //authorization('Basic', btoa(username + ':' + password));
     }
 
     bearer(token: string) {
-        return this.authorization('Bearer', token);
+        return this._headers.bearer(token);
     }
 
     authorization(key: string, value: string) {
-        this._headers.set('Authorization', key + ' ' + value);
+        this._headers.authorization(key, value);
         return this;
     }
 
 
     make(): T {
         const config = this.getConfig();
-        return new this._Request(config.url, config);
+        let request = new this._Request(config.url, config);
+        request.config = config;
+        return request;
     }
 
 }

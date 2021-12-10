@@ -1,5 +1,5 @@
+import { ClientResponse } from './Client';
 export declare class HTTPError extends Error {
-    response: Response;
-    request?: Request;
-    constructor(response: Response, request?: Request);
+    response: ClientResponse;
+    constructor(response: ClientResponse);
 }

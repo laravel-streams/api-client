@@ -1,5 +1,5 @@
-import { Field } from '../Field';
-
+import { FieldData } from '../Field';
+import { streams } from './generated';
 
 export interface IStreamMeta {
     parameters: Record<string, string>;
@@ -17,12 +17,12 @@ export interface IStreamResponse<T extends any = any, META extends IStreamMeta =
     errors?: string[] | Record<string, string | string[]>;
 }
 
-export type IStreamPost<T, ID extends string = string> =
+export type IStreamPost<T, ID extends streams.StreamID = streams.StreamID> =
     IBaseStream<ID>
     & T;
 
-export interface IBaseStream<ID extends string = string> {
-    id?: string
+export interface IBaseStream<ID extends streams.StreamID=streams.StreamID> {
+    id?: ID
     created_at?: string
     updated_at?: string
     name: string
@@ -31,13 +31,13 @@ export interface IBaseStream<ID extends string = string> {
         type: string
         [ key: string ]: any
     },
-    fields?: Record<string, fields.Type | Field>|Map<string,Field>
+    fields?: Record<string, fields.Type|FieldData>
     rules?: Record<string, string | object | string[]>
     [ key: string ]: any
 }
 
 
-export interface IStream<ID extends string = string> extends IBaseStream<ID> {
+export interface IStream<ID extends streams.StreamID = streams.StreamID> extends IBaseStream<ID> {
     handle?: ID
     routes?: Array<any>,
     validators?: Array<any>,

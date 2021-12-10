@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
-import { Entry } from './Entry';
+import { Entry, IEntry } from './Entry';
 import { EntryCollection, PaginatedEntryCollection } from './EntryCollection';
-import { IBaseStream } from './types';
+import { streams } from './types';
 import { Http } from './Http';
 
 export type OrderByDirection =
@@ -49,10 +49,9 @@ const ensureArray = (value: any) => Array.isArray(value) ? value : [ value ];
 export interface CriteriaParameter {
     name: string;
     value: any;
-    // [key:string]: any
 }
 
-export class Criteria<ID extends string = string> {
+export class Criteria<ID extends streams.StreamID = streams.StreamID> {
 
     parameters: CriteriaParameter[] = [];
 
@@ -61,9 +60,9 @@ export class Criteria<ID extends string = string> {
      *
      * @param stream
      */
-    constructor(protected stream: Stream) { }
+    constructor(protected stream: Stream<ID>) { }
 
-    get http(): Http {return this.stream.streams.http;}
+    get http(): Http {return this.stream.getStreams().http;}
 
     /**
      * Find an entry by ID.
@@ -71,7 +70,7 @@ export class Criteria<ID extends string = string> {
      * @param id
      * @returns
      */
-    async find(id:string|number): Promise<Entry> {
+    async find(id: string | number): Promise<IEntry<ID>> {
         return this.where('id', id).first();
     }
 
@@ -80,11 +79,11 @@ export class Criteria<ID extends string = string> {
      *
      * @returns
      */
-    async first(): Promise<Entry<ID> & IBaseStream<ID>> {
+    async first(): Promise<IEntry<ID>> {
 
         let collection = await this.limit(1).get();
 
-        return collection[ 0 ];
+        return collection.get(0 );
     }
 
     cache(): this { return this; }
@@ -96,7 +95,7 @@ export class Criteria<ID extends string = string> {
      * @param direction
      * @returns
      */
-    orderBy(key: string, direction: OrderByDirection = 'desc'): this {
+    orderBy<K extends keyof streams.Entries[ID]>(key: string, direction: OrderByDirection = 'desc'): this {
 
         this.addParameter('orderBy', [ key, direction ]);
 
@@ -123,9 +122,9 @@ export class Criteria<ID extends string = string> {
      * @param key
      * @param value
      */
-    where(key: string, operator: Operator, value: any, nested: any): this
-    where(key: string, operator: Operator, value: any): this
-    where(key: string, value: any): this
+    where<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K], nested: any): this
+    where<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K]): this
+    where<K extends keyof streams.Entries[ID]>(key: K, value: streams.Entries[ID][K]): this
     where(...args): this {
 
         let key: string,
@@ -157,8 +156,8 @@ export class Criteria<ID extends string = string> {
         return this;
     }
 
-    orWhere(key: string, operator: Operator, value: any): this
-    orWhere(key: string, value: any): this
+    orWhere<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K]): this
+    orWhere<K extends keyof streams.Entries[ID]>(key: K, value: streams.Entries[ID][K]): this
     orWhere(...args): this {
 
         let key: string,
@@ -189,11 +188,11 @@ export class Criteria<ID extends string = string> {
      *
      * @returns
      */
-    async get<T>(): Promise<EntryCollection> {
+    async get(): Promise<EntryCollection<ID>> {
         const parameters = this.compileParameters();
         const params     = { parameters };
-        const response   = await this.http.getEntries<T[], Http.Responses<T[]>['entries']>(this.stream.id, params);
-        return EntryCollection.fromResponse<T>(response, this.stream);
+        const response   = await this.http.getEntries(this.stream.id, params);
+        return EntryCollection.fromResponse<ID>(response, this.stream);
     }
 
     /**
@@ -203,12 +202,12 @@ export class Criteria<ID extends string = string> {
      * @param page
      * @returns
      */
-    async paginate<T>(per_page: number = 100, page: number = 1): Promise<PaginatedEntryCollection> {
+    async paginate(per_page: number = 100, page: number = 1): Promise<PaginatedEntryCollection<ID>> {
 
         let parameters = this.compileParameters();
         let params     = { parameters, paginate: true, per_page, page };
-        const response = await this.http.getEntries<T[], Http.Responses<T[]>['paginated']>(this.stream.id, params);
-        return PaginatedEntryCollection.fromResponse<T>(response, this.stream);
+        const response = await this.http.getEntries(this.stream.id, params);
+        return PaginatedEntryCollection.fromResponse<ID>(response as any, this.stream);
     }
 
     //count(): number { return 0; }
@@ -219,7 +218,7 @@ export class Criteria<ID extends string = string> {
      * @param attributes
      * @returns
      */
-    async create(attributes: any): Promise<Entry> {
+    async create(attributes: any): Promise<IEntry<ID>> {
 
         let entry = this.newInstance(attributes);
 
@@ -248,8 +247,8 @@ export class Criteria<ID extends string = string> {
      * @param attributes
      * @returns Entry
      */
-    public newInstance(attributes: any): Entry {
-        return new Entry(this.stream, attributes, true);
+    public newInstance(attributes: any): IEntry<ID> {
+        return new Entry<ID>(this.stream, attributes, true);
     }
 
     /**

@@ -30,7 +30,7 @@ export class CriteriaTest extends TestCase {
         this.createClientsStream();
         const streams = await this.getStreams();
         const stream  = await streams.make('clients');
-        const entries = await stream.entries()
+        const entries = await stream.getEntries()
                                     .where('age', '>', 5)
                                     .where('age', '<', 50)
                                     .orderBy('age', 'asc')
@@ -38,8 +38,8 @@ export class CriteriaTest extends TestCase {
         for(const entry of entries.toArray<any>()){
             entry.id.should.be.a('number')
             entry.age.should.be.a('number');
-            entry.age.should.be.above(5)
-            entry.age.should.be.below(50)
+            entry.age.should.be.above(4)
+            entry.age.should.be.below(51)
         }
         return;
     }
@@ -49,7 +49,7 @@ export class CriteriaTest extends TestCase {
         this.createClientsStream();
         const streams = await this.getStreams();
         const stream  = await streams.make('clients');
-        const entries = await stream.entries()
+        const entries = await stream.getEntries()
                                     .where('age', '>', 5)
                                     .where('age', '<', 50)
                                     .orderBy('age', 'asc')

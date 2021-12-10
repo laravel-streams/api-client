@@ -1,8 +1,6 @@
-export declare class Collection<Type> extends Array<Type> implements Array<Type> {
-    /**
-     * Create a new collection instance.
-     *
-     * @param items
-     */
-    constructor(...items: Type[]);
+import { Collection as BaseCollection } from 'collect.js';
+export declare class Collection<T> extends BaseCollection<T> {
+    [macroFn: string]: any;
+    items: T[] & Record<string, T>;
+    toObject(): Record<string, T>;
 }

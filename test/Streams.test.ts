@@ -18,15 +18,13 @@ export class StreamsTest extends TestCase {
         const streams = await this.getStreams();
         const stream  = await streams.make('clients');
         stream.id.should.eq('clients');
-        const fields = Object.fromEntries(stream.fields.entries());
-        fields.id.should.be.instanceof(Field);
-        const entry = await stream.repository.create({
+        const entry = await stream.getRepository().create({
             id   : 1,
             name : 'robin',
             email: 'robin@robin.com',
         });
         entry.should.be.instanceof(Entry);
-        const entries = await stream.repository.all();
+        const entries = await stream.getRepository().all();
 
         this.fs.project.deleteStream('client');
     }
@@ -36,10 +34,7 @@ export class StreamsTest extends TestCase {
         this.fs.fixtures.copyStream('clients', this.fs.project);
         const streams = await this.getStreams();
         const stream  = await streams.make('clients');
-        stream.id.should.eq('clients');
-        const fields = Object.fromEntries(stream.fields.entries());
-        fields.id.should.be.instanceof(Field);
-        const entry = await stream.repository.create({
+        const entry = await stream.getRepository().create({
             id   : 1,
             name : 'robin',
             email: 'robin@robin.com',
@@ -52,7 +47,7 @@ export class StreamsTest extends TestCase {
     async saveStreamTest() {
         this.fs.fixtures.copyStream('posts', this.fs.project);
         const stream = await this.makeStream('posts');
-        stream.fields.set('foo', new Field({
+        stream.getFields().put('foo', new Field({
             handle: 'foo',
             type  : 'boolean',
         }));

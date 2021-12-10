@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
-import { Entry } from './Entry';
+import { Entry, IEntry } from './Entry';
 import { EntryCollection, PaginatedEntryCollection } from './EntryCollection';
-import { IBaseStream } from './types';
+import { streams } from './types';
 import { Http } from './Http';
 export declare type OrderByDirection = 'asc' | 'desc';
 export declare type ComparisonOperator = '>' | '<' | '==' | '!=' | '>=' | '<=' | '!<' | '!>' | '<>';
@@ -14,15 +14,15 @@ export interface CriteriaParameter {
     name: string;
     value: any;
 }
-export declare class Criteria<ID extends string = string> {
-    protected stream: Stream;
+export declare class Criteria<ID extends streams.StreamID = streams.StreamID> {
+    protected stream: Stream<ID>;
     parameters: CriteriaParameter[];
     /**
      * Create a new instance.
      *
      * @param stream
      */
-    constructor(stream: Stream);
+    constructor(stream: Stream<ID>);
     get http(): Http;
     /**
      * Find an entry by ID.
@@ -30,13 +30,13 @@ export declare class Criteria<ID extends string = string> {
      * @param id
      * @returns
      */
-    find(id: string | number): Promise<Entry>;
+    find(id: string | number): Promise<IEntry<ID>>;
     /**
      * Return the first result.
      *
      * @returns
      */
-    first(): Promise<Entry<ID> & IBaseStream<ID>>;
+    first(): Promise<IEntry<ID>>;
     cache(): this;
     /**
      * Order the query by field/direction.
@@ -45,7 +45,7 @@ export declare class Criteria<ID extends string = string> {
      * @param direction
      * @returns
      */
-    orderBy(key: string, direction?: OrderByDirection): this;
+    orderBy<K extends keyof streams.Entries[ID]>(key: string, direction?: OrderByDirection): this;
     /**
      * Limit the entries returned.
      *
@@ -60,17 +60,17 @@ export declare class Criteria<ID extends string = string> {
      * @param key
      * @param value
      */
-    where(key: string, operator: Operator, value: any, nested: any): this;
-    where(key: string, operator: Operator, value: any): this;
-    where(key: string, value: any): this;
-    orWhere(key: string, operator: Operator, value: any): this;
-    orWhere(key: string, value: any): this;
+    where<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K], nested: any): this;
+    where<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K]): this;
+    where<K extends keyof streams.Entries[ID]>(key: K, value: streams.Entries[ID][K]): this;
+    orWhere<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K]): this;
+    orWhere<K extends keyof streams.Entries[ID]>(key: K, value: streams.Entries[ID][K]): this;
     /**
      * Get the criteria results.
      *
      * @returns
      */
-    get<T>(): Promise<EntryCollection>;
+    get(): Promise<EntryCollection<ID>>;
     /**
      * Get paginated criteria results.
      *
@@ -78,14 +78,14 @@ export declare class Criteria<ID extends string = string> {
      * @param page
      * @returns
      */
-    paginate<T>(per_page?: number, page?: number): Promise<PaginatedEntryCollection>;
+    paginate(per_page?: number, page?: number): Promise<PaginatedEntryCollection<ID>>;
     /**
      * Create a new entry.
      *
      * @param attributes
      * @returns
      */
-    create(attributes: any): Promise<Entry>;
+    create(attributes: any): Promise<IEntry<ID>>;
     /**
      * Save an entry.
      *
@@ -100,7 +100,7 @@ export declare class Criteria<ID extends string = string> {
      * @param attributes
      * @returns Entry
      */
-    newInstance(attributes: any): Entry;
+    newInstance(attributes: any): IEntry<ID>;
     /**
      * Get the parameters.
      *

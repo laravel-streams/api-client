@@ -1,3 +1,4 @@
+export declare function mergeHeaders(source: HeadersInit, destination: Headers): Headers;
 export declare class Str {
     static random(length?: number): string;
     static ensureLeft(str: string, left: string): string;

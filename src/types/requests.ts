@@ -1,3 +1,5 @@
+import { CombinedHeaders } from './headers';
+
 export type MethodName = keyof typeof Method
 
 export enum Method {
@@ -23,7 +25,7 @@ export type URLSearchParamsInit =
 
 export interface ClientConfiguration {
     baseURL: string;
-    headers?: Record<string, string>;
+    headers?: CombinedHeaders;
     request?: RequestConfig;
 
 }
@@ -31,7 +33,7 @@ export interface ClientConfiguration {
 export type Constructor<Type = any> = new (...args: any[]) => Type
 
 
-export interface ApiConfiguration extends ClientConfiguration {
+export interface StreamsConfiguration extends ClientConfiguration {
 
     Client?: Constructor<any>;
     Http?: Constructor<any>;

@@ -1,6 +1,6 @@
 import { Entry, IEntry } from './Entry';
 import { Collection } from './Collection';
-import { IStreamLinks, IStreamMeta } from './types';
+import { IStreamLinks, IStreamMeta, streams } from './types';
 import { Stream } from './Stream';
 import { Http } from './Http';
 import { ClientResponse } from './Client';
@@ -19,24 +19,24 @@ export interface IPaginatedEntriesMeta extends IStreamMeta {
     per_page: number;
 }
 
-export class EntryCollection<T=any> extends Collection<IEntry<T>> {
+export class EntryCollection<T extends streams.StreamID = streams.StreamID> extends Collection<IEntry<T>> {
     constructor(entries: IEntry<T>[], public readonly meta?: IEntriesMeta, public readonly links?: IEntriesLinks) {
         super(entries as any[]);
     }
 
-    static fromResponse<T>(response: ClientResponse<Http.Responses<T[]>['entries']>, stream: Stream): EntryCollection<T> {
+    static fromResponse<ID extends streams.StreamID = streams.StreamID>(response: ClientResponse<Http.Responses<streams.Entries[ID][]>['entries']>, stream: Stream<ID>): EntryCollection<ID> {
         const entries = Object.values(response.data.data).map(entry => new Entry(stream, entry, false));
-        return new EntryCollection<T>(entries as any, response.data.meta, response.data.links);
+        return new EntryCollection<ID>(entries as any, response.data.meta, response.data.links);
     }
 }
 
-export class PaginatedEntryCollection<T=any> extends Collection<IEntry<T>> {
-    constructor(entries: IEntry<T>[], public readonly meta?: IPaginatedEntriesMeta, public readonly links?: IPaginatedEntriesLinks) {
+export class PaginatedEntryCollection<ID extends streams.StreamID = streams.StreamID> extends Collection<IEntry<ID>> {
+    constructor(entries: IEntry<ID>[], public readonly meta?: IPaginatedEntriesMeta, public readonly links?: IPaginatedEntriesLinks) {
         super(...entries);
     }
 
-    static fromResponse<T>(response: ClientResponse<Http.Responses<T[]>['paginated']>, stream: Stream): PaginatedEntryCollection<T> {
+    static fromResponse<ID extends streams.StreamID = streams.StreamID>(response: ClientResponse<Http.Responses<streams.Entries[ID][]>['paginated']>, stream: Stream): PaginatedEntryCollection<ID> {
         const entries = Object.values(response.data.data).map(entry => new Entry(stream, entry, false));
-        return new PaginatedEntryCollection<T>(entries as any, response.data.meta, response.data.links);
+        return new PaginatedEntryCollection<ID>(entries as any, response.data.meta, response.data.links);
     }
 }

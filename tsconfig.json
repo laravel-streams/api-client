@@ -31,12 +31,13 @@
         ],
     },
     "include": [
-        "src"
+        "src",
+        "examples",
+        "rollup.config.ts"
     ],
     "exclude": [
         "node_modules",
         "test",
-        "rollup.config.ts",
         "dist"
     ]
 }

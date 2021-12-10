@@ -1,3 +1,9 @@
+export function mergeHeaders(source: HeadersInit, destination: Headers) {
+    (new Headers(source)).forEach((value, key) => destination.set(key, value));
+    return destination;
+}
+
+
 export class Str {
     public static random(length = 15) {
         let text       = '';

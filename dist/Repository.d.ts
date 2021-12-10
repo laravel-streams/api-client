@@ -2,14 +2,15 @@ import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { EntryCollection } from './EntryCollection';
 import { Entry } from './Entry';
-export declare class Repository {
-    protected stream: Stream;
+import { streams } from './types';
+export declare class Repository<ID extends streams.StreamID> {
+    protected stream: Stream<ID>;
     /**
      * Create a new repository instance.
      *
      * @param stream
      */
-    constructor(stream: Stream);
+    constructor(stream: Stream<ID>);
     get http(): import("./Http").Http;
     /**
      * Return all items.
@@ -68,11 +69,11 @@ export declare class Repository {
      * @param attributes
      * @returns
      */
-    newInstance(attributes: any): Entry;
+    newInstance(attributes: any): Entry<ID>;
     /**
      * Return a new entry criteria.
      *
      * @returns Criteria
      */
-    newCriteria(): Criteria;
+    newCriteria(): Criteria<ID>;
 }

@@ -2,6 +2,7 @@ import { AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
 import { ClientConfiguration, MethodName, RequestConfig } from './types';
 import { HTTPError } from './HTTPError';
 import { RequestConfigSetter } from './RequestFactory';
+import { HeaderFactory } from './HeaderFactory';
 export interface ClientHeaders extends Headers {
     [key: string]: any;
 }
@@ -12,6 +13,9 @@ export interface ClientResponse<T = any> extends Response {
     config: RequestConfig;
     error?: HTTPError;
     errorText?: string;
+}
+export interface ClientRequest extends Request {
+    config?: RequestConfig;
 }
 /**
  * Used for creating requests using fetch.
@@ -49,11 +53,12 @@ export declare class Client {
         request: SyncWaterfallHook<Request, import("tapable").UnsetAdditionalOptions>;
         response: AsyncSeriesWaterfallHook<[ClientResponse<any>, Request], import("tapable").UnsetAdditionalOptions>;
     };
-    config: ClientConfiguration;
+    readonly config: ClientConfiguration;
+    readonly headers: HeaderFactory;
     constructor(config: ClientConfiguration);
-    request<T>(method: MethodName, uri: string, config?: RequestConfig): Promise<ClientResponse<T>>;
-    protected createRequest(config?: RequestConfig): Request;
-    protected createRequestFactory(config?: RequestConfig): RequestConfigSetter;
-    protected getRequestConfig(method: MethodName, url: string, config?: RequestConfig): RequestConfig;
+    request<T>(method: MethodName, url: string, config?: RequestConfig): Promise<ClientResponse<T>>;
+    fetch<T>(request: ClientRequest): Promise<ClientResponse<T>>;
+    createRequestFactory<T extends ClientRequest>(): RequestConfigSetter<ClientRequest>;
+    protected createRequest(config?: RequestConfig): ClientRequest;
     protected mergeRequestConfig(...config: RequestConfig[]): RequestConfig;
 }

@@ -9,7 +9,6 @@
         "jsxFactory": "h",
         "moduleResolution": "node",
         "experimentalDecorators": true,
-
         "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
@@ -33,8 +32,10 @@
         "src"
     ],
     "exclude": [
+        "dist",
+        "docs",
+        "examples",
         "node_modules",
-        "test",
-        "dist"
+        "test"
     ]
 }

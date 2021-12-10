@@ -1,10 +1,11 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { IBaseStream, IStream, IStreamResponse, ApiConfiguration, ApiDataResponse } from './types';
+import { ApiDataResponse, IBaseStream, IStream, streams, StreamsConfiguration } from './types';
 import { Http } from './Http';
 import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
+import { Collection } from './Collection';
 
 export interface Streams {
 
@@ -37,18 +38,39 @@ export interface Streams {
 export class Streams {
     public readonly hooks = {
         all    : new AsyncSeriesWaterfallHook<IBaseStream>([ 'data' ]),
-        make   : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream>>([ 'data' ]),
+        make   : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
         maked  : new SyncHook<Stream>([ 'stream' ]),
-        create : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream>>([ 'data' ]),
+        create : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
         created: new SyncHook<Stream>([ 'stream' ]),
     };
-    public readonly http: Http;
-    public readonly client: Client;
-
-    constructor(public config: ApiConfiguration) {
-        this.client = new config.Client(this.config);
-        this.http   = new config.Http(this);
+    #http: Http;
+    public get http(): Http {
+        if ( !this.#http ) {
+            this.#http = new this.config.Http(this);
+        }
+        return this.#http;
     }
+
+    #client: Client;
+    public get client(): Client {
+        if ( !this.#client ) {
+            this.#client = new this.config.Client(this.config);
+        }
+        return this.#client;
+    }
+
+    public config: StreamsConfiguration;
+
+    constructor(config: StreamsConfiguration) {
+        this.config = {
+            Client: Client,
+            Http  : Http,
+            ...config,
+        };
+        // this.client = new this.config.Client(this.config);
+        // this.http   = new this.config.Http(this);
+    }
+
 
     /**
      * Return all streams.
@@ -73,26 +95,27 @@ export class Streams {
      * @param id
      * @returns
      */
-    public async make(id: string): Promise<Stream> {
+    public async make<ID extends streams.StreamID>(id: ID): Promise<Stream<ID>> {
 
-        let response = await this.http.getStream(id);
-        response.data     = await this.hooks.make.promise(response.data);
-        const {data,meta,links} = response.data
-        const stream   = new Stream(this, data, meta, links);
+        let response                = await this.http.getStream(id);
+        response.data               = await this.hooks.make.promise(response.data);
+        const { data, meta, links } = response.data;
+        const stream                = new Stream<ID>(this, data, meta, links);
         this.hooks.maked.call(stream);
         return stream;
     }
 
-    public async create(id: string, streamData: any): Promise<Stream> {
-        let response = await this.http.postStream({ id, name: id, ...streamData });
-        response.data     = await this.hooks.create.promise(response.data);
-        const {data,meta,links} = response.data
-        const stream   = new Stream(this, data, meta, links);
+    public async create<ID extends streams.StreamID>(id: ID, streamData: streams.Entries[ID]): Promise<Stream<ID>> {
+        let response                = await this.http.postStream({ id, name: id, ...streamData });
+        // @ts-ignore
+        response.data               = await this.hooks.create.promise(response.data);
+        const { data, meta, links } = response.data;
+        const stream                = new Stream<ID>(this, data, meta, links);
         this.hooks.created.call(stream);
         return stream;
     }
 
-    public async entries<ID extends string>(id: ID): Promise<Criteria> {
+    public async entries<ID extends streams.StreamID>(id: ID): Promise<Criteria<ID>> {
         const stream = await this.make(id);
         return new Criteria(stream);
     }
@@ -103,15 +126,15 @@ export class Streams {
      * @param id
      * @returns
      */
-    public async repository<ID extends string>(id: ID): Promise<Repository> {
+    public async repository<ID extends streams.StreamID>(id: ID): Promise<Repository<ID>> {
         const stream = await this.make(id);
-        return new Repository(stream);
+        return new Repository<ID>(stream);
     }
 
     /**
      * Return the Streams collection.
      */
-    public collection() {
-        // return this._collection
+    public async collection(): Promise<Collection<Stream>> {
+        return new Collection(await this.all());
     }
 }

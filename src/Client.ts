@@ -5,6 +5,7 @@ import { HTTPError } from './HTTPError';
 import { objectify, Str } from './utils';
 import camelcase from 'camelcase';
 import { createRequestFactory, RequestConfigSetter } from './RequestFactory';
+import { HeaderFactory } from './HeaderFactory';
 
 export interface ClientHeaders extends Headers {
     [ key: string ]: any;
@@ -18,6 +19,10 @@ export interface ClientResponse<T = any> extends Response {
     error?: HTTPError;
     errorText?: string;
 
+}
+
+export interface ClientRequest extends Request {
+    config?: RequestConfig;
 }
 
 /**
@@ -56,7 +61,8 @@ export class Client {
         request      : new SyncWaterfallHook<Request>([ 'request' ]),
         response     : new AsyncSeriesWaterfallHook<[ ClientResponse, Request ]>([ 'response', 'request' ]),
     };
-    public config: ClientConfiguration;
+    public readonly config: ClientConfiguration;
+    public readonly headers:HeaderFactory
 
     constructor(config: ClientConfiguration) {
         this.config = deepmerge({
@@ -69,27 +75,36 @@ export class Client {
                 errorHandling: 'throw',
             },
         }, config);
+
+        this.headers = new HeaderFactory(this.config.headers as any)
     }
 
 
     public async request<T>(method: MethodName, url: string, config: RequestConfig = {}): Promise<ClientResponse<T>> {
-        config       = this.mergeRequestConfig(config, { method, url });
-        let request  = this.createRequest(config);
+        config      = this.mergeRequestConfig(config, { method, url });
+        let request = this.createRequest(config);
+        return this.fetch(request);
+    }
+
+    async fetch<T>(request: ClientRequest): Promise<ClientResponse<T>> {
         request      = this.hooks.request.call(request);
         let res      = await fetch(request);
-        let response = await transformResponse(res, request, config);
+        let response = await transformResponse(res, request, request.config);
         response     = await this.hooks.response.promise(response, request);
-        if ( response.error && config.errorHandling === 'throw' ) {
+        if ( response.error && request.config.errorHandling === 'throw' ) {
             throw response.error;
         }
         return response;
     }
 
-    protected createRequest(config: RequestConfig = {}): Request {
-        let factory = createRequestFactory(this.config).merge(config);
-        factory.headers(this.config.headers);
-        factory = this.hooks.createRequest.call(factory);
-        return factory.make();
+    createRequestFactory<T extends ClientRequest>(): RequestConfigSetter<ClientRequest> {
+        return createRequestFactory<T>(this.config).headers(this.config.headers);
+    }
+
+    protected createRequest(config: RequestConfig = {}): ClientRequest {
+        let factory = createRequestFactory<ClientRequest>(this.config).merge(config);
+        factory.headers(this.headers.make());
+        return this.hooks.createRequest.call(factory).make();
     }
 
     protected mergeRequestConfig(...config: RequestConfig[]): RequestConfig {

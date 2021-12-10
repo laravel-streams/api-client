@@ -89,8 +89,8 @@ export class HttpTest extends TestCase {
         let response = await this.http.getEntries('posts');
         this.assertResOk(response);
         response.data.data.length.should.eq(20);
-        let entries: Array<{ space: string }>      = response.data.data;
-        let localEntries: Array<{ space: string }> = this.fs.project.getStreamEntries('posts');
+        let entries      = response.data.data;
+        let localEntries = this.fs.project.getStreamEntries('posts');
         let spaces                                 = entries.map(entry => entry.space);
         for ( const entry of localEntries ) {
             spaces.includes(entry.space).should.eq(true);

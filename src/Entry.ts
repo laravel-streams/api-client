@@ -1,59 +1,72 @@
-import { Http } from './Http';
-import {  Stream } from './Stream';
+import { Stream } from './Stream';
+import { streams } from './types';
 // export interface Entry<ID extends string = string> {
 //     id: string;
 // }
-export type IEntry<T, ID extends string = string> =
-    Entry<ID>
-    & T;
+export type IEntry<ID extends streams.StreamID = streams.StreamID> =
+    Entry<ID> & streams.Streams[ID]['entries'];
 
-export class Entry<ID extends string = string> {
-    get http(): Http {return this._stream.streams.http;}
+let a:IEntry<'vehicles'>
+
+
+
+export class Entry<ID extends streams.StreamID = streams.StreamID> {
+    #stream: Stream<ID>;
+    #data: streams.Streams[ID]['entries']      = {};
+    #fresh: boolean = true;
 
     constructor(
-        protected _stream: Stream<ID>,
-        protected _data: any      = {},
-        protected _fresh: boolean = true,
+        stream: Stream<ID>,
+        data: any      = {},
+        fresh: boolean = true,
     ) {
-        let proxy = new Proxy(this, {
-            get(target: Entry<ID>, p: string | symbol, receiver: any): any {
+        this.#stream = stream;
+        this.#data   = data;
+        this.#fresh  = fresh;
+        const self=this;
+        let proxy    = new Proxy(this, {
+            get: (target: Entry<ID>, p: string | symbol, receiver: any): any => {
+                if(typeof self[p.toString()] === 'function'){
+                    return self[p.toString()].bind(self);
+                }
+                if(self[p.toString()] !== undefined){
+                    return self[p.toString()]
+                }
+                if ( Reflect.has(target.#data, p) ) {
+                    return Reflect.get(target.#data, p);
+                }
                 if ( Reflect.has(target, p) ) {
                     return Reflect.get(target, p, receiver);
                 }
-                if ( Reflect.has(target._data, p) ) {
-                    return Reflect.get(target._data, p);
-                }
             },
-            set(target: Entry<ID>, p: string | symbol, value: any, receiver: any): boolean {
+            set: (target: Entry<ID>, p: string | symbol, value: any, receiver: any): boolean => {
                 if ( Reflect.has(target, p) ) {
                     return Reflect.set(target, p, value, receiver);
                 }
-                return Reflect.set(target._data, p, value);
+                return Reflect.set(target.#data, p, value);
             },
         });
         return proxy;
-        // Object.assign(this,_data)
     }
 
-    get stream(): Stream<ID> {
-        return this._stream;
-    }
+    public getStream(): Stream<ID> {return this.#stream; }
 
-    async save(): Promise<boolean> {
+    public async save(): Promise<boolean> {
+        let http = this.#stream.getStreams().http;
         try {
-            if ( this._fresh ) {
-                await this.http.postEntry(this._stream.id, this._data);
+            if ( this.#fresh ) {
+                await http.postEntry(this.#stream.id, this.#data);
+                this.#fresh = false;
                 return true;
             }
-            await this.http.patchEntry(this._stream.id, this._data.id, this._data);
+            await http.patchEntry(this.#stream.id, this.#data.id, this.#data);
             return true;
         } catch (e) {
             return false;
         }
     }
 
-    validator() {
-
+    serialize():streams.Streams[ID]['entries']{
+        return this.#data
     }
-
 }

@@ -1,5 +1,5 @@
 import { IEntriesLinks, IEntriesMeta, IPaginatedEntriesLinks, IPaginatedEntriesMeta } from './EntryCollection';
-import { ApiConfiguration, ApiDataResponse, IBaseStream, IStream, IStreamLinks, IStreamMeta, IStreamPost, IStreamResponse, MethodName, RequestConfig } from './types';
+import { ApiDataResponse, IBaseStream, IStream, IStreamLinks, IStreamMeta, IStreamPost, IStreamResponse, MethodName, RequestConfig, streams, StreamsConfiguration } from './types';
 import { Streams } from './Streams';
 import { Client, ClientResponse } from './Client';
 
@@ -9,7 +9,7 @@ export class Http {
 
     get client(): Client {return this.streams.client;}
 
-    get config(): ApiConfiguration { return this.streams.config; }
+    get config(): StreamsConfiguration { return this.streams.config; }
 
     async getStreams<T = IBaseStream[], R = ApiDataResponse<T>>(params: any = {}, config: RequestConfig = {}) {
         return this.client.request<R>('get', `/streams`, { params, ...config });
@@ -19,15 +19,15 @@ export class Http {
         return this.client.request<R>('post', `/streams`, { data, ...config });
     }
 
-    async getStream<T extends string, R = ApiDataResponse<IStream<T>,'stream'>>(stream: T, params: any = {}, config: RequestConfig = {}) {
-        return this.client.request<R>('get', `/streams/${stream}`,config);
+    async getStream<ID extends streams.StreamID, R = ApiDataResponse<IStream<ID>, 'stream'>>(stream: ID, params: any = {}, config: RequestConfig = {}) {
+        return this.client.request<R>('get', `/streams/${stream}`, config);
     }
 
-    async patchStream<T extends string, R = ApiDataResponse<IStream<T>,'stream'>>(stream: T, data: any = {}, config: RequestConfig = {}) {
+    async patchStream<ID extends streams.StreamID, R = ApiDataResponse<IStream<ID>, 'stream'>>(stream: ID, data: any = {}, config: RequestConfig = {}) {
         return this.client.request<R>('patch', `/streams/${stream}`, { data, ...config });
     }
 
-    async putStream<T extends string, R = ApiDataResponse<IStream<T>>>(stream: T, data: any = {}, config: RequestConfig = {}) {
+    async putStream<ID extends streams.StreamID, R = ApiDataResponse<IStream<ID>>>(stream: ID, data: any = {}, config: RequestConfig = {}) {
         return this.client.request<R>('put', `/streams/${stream}`, { data, ...config });
     }
 
@@ -36,32 +36,32 @@ export class Http {
     }
 
 
-    async getEntries<T = any, R = IStreamResponse<T,IEntriesMeta, IEntriesLinks>>(stream: string, params: any = {}, config: RequestConfig = {}) {
+    async getEntries<ID extends streams.StreamID,T = streams.Entries[ID], R = IStreamResponse<T[], IEntriesMeta, IEntriesLinks>>(stream: ID, params: any = {}, config: RequestConfig = {}): Promise<ClientResponse<R>> {
         return this.client.request<R>('get', `/streams/${stream}/entries`, { params, ...config });
     }
 
-    async postEntry<T = any, R = IStreamResponse<T>>(stream: string, data: any = {}, config: RequestConfig = {}) {
+    async postEntry<ID extends streams.StreamID,T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, data: any = {}, config: RequestConfig = {}) {
         return this.client.request<R>('post', `/streams/${stream}/entries`, { data, ...config });
     }
 
-    async getEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, config: RequestConfig = {}) {
+    async getEntry<ID extends streams.StreamID,T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, config: RequestConfig = {}) {
         return this.client.request<R>('get', `/streams/${stream}/entries/${entry}`, config);
     }
 
-    async patchEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, data: any = {}, config: RequestConfig = {}) {
+    async patchEntry<ID extends streams.StreamID,T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, data: any = {}, config: RequestConfig = {}) {
         return this.client.request<R>('patch', `/streams/${stream}/entries/${entry}`, { data, ...config });
     }
 
-    async putEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, data: any = {}, config: RequestConfig = {}) {
+    async putEntry<ID extends streams.StreamID,T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, data: any = {}, config: RequestConfig = {}) {
         return this.client.request<R>('put', `/streams/${stream}/entries/${entry}`, { data, ...config });
     }
 
-    async deleteEntry<T = any, R = IStreamResponse<T>>(stream: string, entry: string | number, config: RequestConfig = {}) {
+    async deleteEntry<ID extends streams.StreamID,T = any, R = IStreamResponse<T>>(stream: ID, entry: string | number, config: RequestConfig = {}) {
         return this.client.request<R>('delete', `/streams/${stream}/entries/${entry}`, config);
     }
 
-    protected async request<T>(method: MethodName, uri: string, config: RequestConfig = {}):Promise<T>{
-        const res = await this.client.request<T>(method,uri,config);
+    protected async request<T>(method: MethodName, uri: string, config: RequestConfig = {}): Promise<T> {
+        const res = await this.client.request<T>(method, uri, config);
 
         return res.data;
     }

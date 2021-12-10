@@ -1,3 +1,4 @@
+import { CombinedHeaders } from './headers';
 export declare type MethodName = keyof typeof Method;
 export declare enum Method {
     connect = "CONNECT",
@@ -14,11 +15,11 @@ export declare type URLSearchParamsFunctionName = keyof URLSearchParams;
 export declare type URLSearchParamsInit = string[][] | Record<string, string> | string | URLSearchParams;
 export interface ClientConfiguration {
     baseURL: string;
-    headers?: Record<string, string>;
+    headers?: CombinedHeaders;
     request?: RequestConfig;
 }
 export declare type Constructor<Type = any> = new (...args: any[]) => Type;
-export interface ApiConfiguration extends ClientConfiguration {
+export interface StreamsConfiguration extends ClientConfiguration {
     Client?: Constructor<any>;
     Http?: Constructor<any>;
 }

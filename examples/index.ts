@@ -7,7 +7,7 @@ const streams = new Streams({
 
 async function run(){
     const stream = await streams.make('clients')
-    const clients = await stream.entries()
+    const clients = await stream.getEntries()
                                 .where('age', '>', 5)
                                 .where('age', '<', 50)
                                 .orderBy('age', 'asc')
