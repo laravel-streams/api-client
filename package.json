@@ -1,6 +1,6 @@
 {
     "name": "@laravel-streams/streams-api",
-    "version": "1.0.3",
+    "version": "1.0.6",
     "publishConfig": {
         "access": "public"
     },
@@ -10,38 +10,38 @@
     "scripts": {
         "build": "npm-run-all clean test bundle dts doc:api",
         "clean": "npm-run-all clean:dist clean:doc:api",
-        "clean:dist": "rm -rf ./dist",
+        "clean:dist": "rm -rf ./dist ./types",
         "clean:doc:api": "rm -rf ./docs/api",
         "clean:src": "rimraf src/**/*.{js,js.map}",
         "doc:api": "typedoc --options ./typedoc.js",
         "doc:api:md": "STREAMS_API_MD_DOCS=true typedoc --options ./typedoc.js",
         "bundle": "rollup --config rollup.config.ts --configPlugin typescript",
         "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
-        "dts": "tsc -p ./tsconfig.build.json --emitDeclarationOnly  --declaration --declarationDir dist ",
+        "dts": "tsc -p ./tsconfig.build.json --emitDeclarationOnly  --declaration --declarationDir types",
         "fixtures:streams": "ts-node test/_support/move-fixtures.ts",
-        "release": "yarn login && np --yolo --no-yarn",
+        "prepublish": "npm-run-all build",
         "test": "mocha"
     },
     "dependencies": {
         "camelcase": "^6.2.0",
+        "collect.js": "^4.29.3",
         "deepmerge": "^4.2.2",
-        "tapable": "^2.2.1",
-        "collect.js": "^4.29.3"
+        "tapable": "^2.2.1"
     },
     "devDependencies": {
-        "reflect-metadata": "^0.1.13",
-        "isomorphic-fetch": "^3.0.0",
-        "whatwg-fetch": "^3.6.2",
-        "dot-object": "^2.1.4",
-        "@types/dot-object": "^2.1.2",
-        "lodash": "^4.17.21",
-        "@types/fs-extra": "^9.0.13",
-        "fs-extra": "^10.0.0",
-        "@types/lodash": "^4.14.177",
         "@radic/console-input": "^1.10.0",
         "@radic/core": "^1.0.5",
+        "@types/dot-object": "^2.1.2",
+        "@types/fs-extra": "^9.0.13",
+        "@types/jquery": "^3.5.10",
+        "@types/lodash": "^4.14.177",
+        "dot-object": "^2.1.4",
+        "fs-extra": "^10.0.0",
+        "isomorphic-fetch": "^3.0.0",
         "jquery": "^3.6.0",
-        "@types/jquery": "^3.5.10"
+        "lodash": "^4.17.21",
+        "reflect-metadata": "^0.1.13",
+        "whatwg-fetch": "^3.6.2"
     },
     "streams": {
         "output": {
