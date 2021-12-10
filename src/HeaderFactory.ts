@@ -12,6 +12,12 @@ export class HeaderFactory implements Omit<Headers, 'set'> {
         return this.#headers;
     }
 
+    toObject(){
+        let headers:any = {}
+        this.#headers.forEach((value,key) => headers[key]=value)
+        return headers;
+    }
+
     append(name: AnyHeader, value: HeaderValue): this {
         this.#headers.append(name, value);
         return this;

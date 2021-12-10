@@ -1,9 +1,7 @@
 import deepmerge from 'deepmerge';
-import { AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
+import { AsyncSeriesWaterfallHook, SyncHook, SyncWaterfallHook } from 'tapable';
 import { ClientConfiguration, MethodName, RequestConfig } from './types';
 import { HTTPError } from './HTTPError';
-import { objectify, Str } from './utils';
-import camelcase from 'camelcase';
 import { createRequestFactory, RequestConfigSetter } from './RequestFactory';
 import { HeaderFactory } from './HeaderFactory';
 
@@ -12,7 +10,7 @@ export interface ClientHeaders extends Headers {
 }
 
 export interface ClientResponse<T = any> extends Response {
-    readonly headers: ClientHeaders;
+    readonly headers: HeaderFactory;
     data: T;
     request: Request;
     config: RequestConfig;
@@ -60,9 +58,10 @@ export class Client {
         createRequest: new SyncWaterfallHook<RequestConfigSetter>([ 'factory' ]),
         request      : new SyncWaterfallHook<Request>([ 'request' ]),
         response     : new AsyncSeriesWaterfallHook<[ ClientResponse, Request ]>([ 'response', 'request' ]),
+        error        : new SyncHook<[ HTTPError, ClientResponse ]>([ 'error', 'response' ]),
     };
     public readonly config: ClientConfiguration;
-    public readonly headers:HeaderFactory
+    public readonly headers: HeaderFactory;
 
     constructor(config: ClientConfiguration) {
         this.config = deepmerge({
@@ -76,7 +75,7 @@ export class Client {
             },
         }, config);
 
-        this.headers = new HeaderFactory(this.config.headers as any)
+        this.headers = new HeaderFactory(this.config.headers as any);
     }
 
 
@@ -91,8 +90,11 @@ export class Client {
         let res      = await fetch(request);
         let response = await transformResponse(res, request, request.config);
         response     = await this.hooks.response.promise(response, request);
-        if ( response.error && request.config.errorHandling === 'throw' ) {
-            throw response.error;
+        if ( response.error ) {
+            this.hooks.error.call(response.error, response);
+            if ( request.config.errorHandling === 'throw' ) {
+                throw response.error;
+            }
         }
         return response;
     }
@@ -141,21 +143,13 @@ async function getResponseData(response: Response, config: RequestConfig) {
 
 async function transformResponse(response: Response, request: Request, config: RequestConfig): Promise<ClientResponse> {
     const transformed: ClientResponse = response.clone() as any;
-
+    const proto                       = Object.getPrototypeOf(transformed);
+    const oldHeaders                  = transformed.headers;
+    delete proto.headers;
+    proto.headers       = new HeaderFactory(oldHeaders);
     transformed.request = request;
     transformed.config  = config;
     transformed.data    = await getResponseData(response, config);
-
-    // handle headers
-    let headerEntries = Array.from(response.headers[ 'entries' ]());
-    Object.entries(deepmerge.all([
-        headerEntries.map(([ key, value ]) => ([ camelcase(key), value ])).reduce(objectify, {}),
-        headerEntries.map(([ key, value ]) => ([ key.split('-').map(seg => Str.ucfirst(seg)).join('-'), value ])).reduce(objectify, {}),
-        headerEntries.reduce(objectify, {}),
-    ])).forEach(([ key, value ]) => {
-        transformed.headers[ key ] = value;
-        transformed.headers.set(key, value);
-    });
 
     // Include error if needed
     if ( !response.ok ) {
