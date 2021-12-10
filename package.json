@@ -19,6 +19,7 @@
         "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
         "dts": "tsc -p ./tsconfig.build.json --emitDeclarationOnly  --declaration --declarationDir dist ",
         "fixtures:streams": "ts-node test/_support/move-fixtures.ts",
+        "release": "yarn login && np --yolo --no-yarn",
         "test": "mocha"
     },
     "dependencies": {
