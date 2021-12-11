@@ -1,4 +1,6 @@
+/// <reference types="src/globals" />
 import 'reflect-metadata';
+import { Streams } from './Streams';
 export * from './Client';
 export * from './Collection';
 export * from './Criteria';
@@ -14,3 +16,4 @@ export * from './Streams';
 export * from './types';
 export * from './utils';
 export * from './RequestFactory';
+export default Streams;

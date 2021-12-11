@@ -2,10 +2,10 @@ import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { EntryCollection } from './EntryCollection';
 import { Entry } from './Entry';
-import { streams } from './types';
+import { StreamID } from './types';
 
 
-export class Repository<ID extends streams.StreamID>{
+export class Repository<ID extends StreamID> {
 
     /**
      * Create a new repository instance.
@@ -25,7 +25,7 @@ export class Repository<ID extends streams.StreamID>{
      */
     async all(): Promise<EntryCollection> {
         let response = await this.http.getEntries<any>(this.stream.id);
-        let entries = response.data.data.map(entry => new Entry(this.stream, entry, false));
+        let entries  = response.data.data.map(entry => new Entry(this.stream, entry, false));
         return new EntryCollection(entries, response.data.meta, response.data.links);
     }
 
@@ -35,7 +35,7 @@ export class Repository<ID extends streams.StreamID>{
      * @param id
      * @returns Entry
      */
-    async find(id: string|number): Promise<Entry> {
+    async find(id: string | number): Promise<Entry> {
 
         let criteria = this.stream.getEntries();
 
@@ -48,7 +48,7 @@ export class Repository<ID extends streams.StreamID>{
      * @param ids
      * @returns EntryCollection
      */
-    async findAll(ids:Array<string|number>): Promise<EntryCollection> {
+    async findAll(ids: Array<string | number>): Promise<EntryCollection> {
 
         let criteria = this.stream.getEntries();
 
@@ -62,13 +62,14 @@ export class Repository<ID extends streams.StreamID>{
      * @param value
      * @returns Entry
      */
-    async findBy(field:string, value:any): Promise<Entry> {
+    async findBy(field: string, value: any): Promise<Entry> {
 
         let criteria = this.stream.getEntries();
 
         return criteria.where(field, value).first();
     }
-    async findAllWhere(field: string, value:any): Promise<EntryCollection> {
+
+    async findAllWhere(field: string, value: any): Promise<EntryCollection> {
 
         let criteria = this.stream.getEntries();
 

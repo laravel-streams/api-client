@@ -1,9 +1,9 @@
 import { Repository } from './Repository';
 import { Criteria } from './Criteria';
-import { ApiLinks, ApiMeta, IBaseStream, IStream, streams } from './types';
+import { ApiLinks, ApiMeta, IBaseStream, IStream, StreamID } from './types';
 import { Streams } from './Streams';
 import { FieldCollection } from './FieldCollection';
-export interface Stream<ID extends streams.StreamID = streams.StreamID> extends IStream<ID> {
+export interface Stream<ID extends StreamID = StreamID> extends IStream<ID> {
 }
 /**
  *
@@ -27,7 +27,7 @@ export interface Stream<ID extends streams.StreamID = streams.StreamID> extends 
  * }
  * ```
  */
-export declare class Stream<ID extends streams.StreamID = streams.StreamID> {
+export declare class Stream<ID extends StreamID = StreamID> {
     #private;
     constructor(streams: Streams, stream: IBaseStream<ID>, meta?: ApiMeta, links?: ApiLinks);
     getFields(): FieldCollection;

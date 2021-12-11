@@ -1,5 +1,4 @@
-import { FieldData } from '../Field';
-import { streams } from './generated';
+import { IBaseStream, StreamID } from './generated';
 export interface IStreamMeta {
     parameters: Record<string, string>;
     query: string[];
@@ -13,26 +12,8 @@ export interface IStreamResponse<T extends any = any, META extends IStreamMeta =
     links: LINKS;
     errors?: string[] | Record<string, string | string[]>;
 }
-export declare type IStreamPost<T, ID extends streams.StreamID = streams.StreamID> = IBaseStream<ID> & T;
-export interface IBaseStream<ID extends streams.StreamID = streams.StreamID> {
-    id?: ID;
-    created_at?: string;
-    updated_at?: string;
-    name: string;
-    description: string;
-    source: {
-        type: string;
-        [key: string]: any;
-    };
-    fields?: Record<string, fields.Type | FieldData>;
-    rules?: Record<string, string | object | string[]>;
-    [key: string]: any;
-}
-export interface IStream<ID extends streams.StreamID = streams.StreamID> extends IBaseStream<ID> {
-    handle?: ID;
-    routes?: Array<any>;
-    validators?: Array<any>;
-    config?: Record<string, any>;
+export declare type IStreamPost<T, ID extends StreamID = StreamID> = IBaseStream<ID> & T;
+export interface IStream<ID extends StreamID = StreamID> extends IBaseStream<ID> {
 }
 export declare namespace fields {
     interface Types {
@@ -66,6 +47,7 @@ export declare namespace fields {
         polymorphic: any;
         relationship: any;
         color: any;
+        [key: string]: any;
     }
     type Type = keyof Types;
 }

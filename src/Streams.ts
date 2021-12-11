@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { ApiDataResponse, IBaseStream, IStream, streams, StreamsConfiguration } from './types';
+import { ApiDataResponse, IBaseStream, IEntries, IStream, StreamID, StreamsConfiguration } from './types';
 import { Http } from './Http';
 import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
@@ -95,7 +95,7 @@ export class Streams {
      * @param id
      * @returns
      */
-    public async make<ID extends streams.StreamID>(id: ID): Promise<Stream<ID>> {
+    public async make<ID extends StreamID>(id: ID): Promise<Stream<ID>> {
 
         let response                = await this.http.getStream(id);
         response.data               = await this.hooks.make.promise(response.data);
@@ -105,7 +105,7 @@ export class Streams {
         return stream;
     }
 
-    public async create<ID extends streams.StreamID>(id: ID, streamData: streams.Entries[ID]): Promise<Stream<ID>> {
+    public async create<ID extends StreamID>(id: ID, streamData: IEntries[ID]): Promise<Stream<ID>> {
         let response                = await this.http.postStream({ id, name: id, ...streamData });
         // @ts-ignore
         response.data               = await this.hooks.create.promise(response.data);
@@ -115,7 +115,7 @@ export class Streams {
         return stream;
     }
 
-    public async entries<ID extends streams.StreamID>(id: ID): Promise<Criteria<ID>> {
+    public async entries<ID extends StreamID>(id: ID): Promise<Criteria<ID>> {
         const stream = await this.make(id);
         return new Criteria(stream);
     }
@@ -126,7 +126,7 @@ export class Streams {
      * @param id
      * @returns
      */
-    public async repository<ID extends streams.StreamID>(id: ID): Promise<Repository<ID>> {
+    public async repository<ID extends StreamID>(id: ID): Promise<Repository<ID>> {
         const stream = await this.make(id);
         return new Repository<ID>(stream);
     }

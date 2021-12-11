@@ -17,16 +17,7 @@ const streams            = new Streams({
 
 async function run(){
     const stream = await streams.make('vehicles')
-    let a = stream.id
-    const vehicle = await stream.getEntries().first()
-    const response = await streams.http.getEntries('vehicles')
-    const response2 = await streams.http.getEntries(a)
-    let entry = await stream.getEntries().first();
-return entry;
-    const fields = stream.getFields()
-    const field = fields.first();
-    field.serialize();
-    const meta = stream.getMeta()
-
+    const entry = await stream.getEntries().first();
+    entry.
 }
 run();

@@ -1,5 +1,7 @@
-import 'reflect-metadata'
 ///<reference path="globals.d.ts"/>
+
+import 'reflect-metadata';
+import { Streams } from './Streams';
 
 export * from './Client';
 export * from './Collection';
@@ -16,3 +18,5 @@ export * from './Streams';
 export * from './types';
 export * from './utils';
 export * from './RequestFactory';
+
+export default Streams;

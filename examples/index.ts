@@ -1,4 +1,4 @@
-import { Streams } from '@laravel-streams/streams-api';
+import { Streams } from '../src';
 
 const streams = new Streams({
     baseURL: 'https://localhost/api',

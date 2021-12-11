@@ -1,8 +1,8 @@
 import { Stream } from './Stream';
 import { Entry, IEntry } from './Entry';
 import { EntryCollection, PaginatedEntryCollection } from './EntryCollection';
-import { streams } from './types';
 import { Http } from './Http';
+import { IEntries, StreamID } from './types';
 
 export type OrderByDirection =
     'asc'
@@ -51,7 +51,7 @@ export interface CriteriaParameter {
     value: any;
 }
 
-export class Criteria<ID extends streams.StreamID = streams.StreamID> {
+export class Criteria<ID extends StreamID = StreamID> {
 
     parameters: CriteriaParameter[] = [];
 
@@ -95,7 +95,7 @@ export class Criteria<ID extends streams.StreamID = streams.StreamID> {
      * @param direction
      * @returns
      */
-    orderBy<K extends keyof streams.Entries[ID]>(key: string, direction: OrderByDirection = 'desc'): this {
+    orderBy<K extends keyof IEntries[ID]>(key: string, direction: OrderByDirection = 'desc'): this {
 
         this.addParameter('orderBy', [ key, direction ]);
 
@@ -122,9 +122,9 @@ export class Criteria<ID extends streams.StreamID = streams.StreamID> {
      * @param key
      * @param value
      */
-    where<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K], nested: any): this
-    where<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K]): this
-    where<K extends keyof streams.Entries[ID]>(key: K, value: streams.Entries[ID][K]): this
+    where<K extends keyof IEntries[ID]>(key: K, operator: Operator, value: IEntries[ID][K], nested: any): this
+    where<K extends keyof IEntries[ID]>(key: K, operator: Operator, value: IEntries[ID][K]): this
+    where<K extends keyof IEntries[ID]>(key: K, value: IEntries[ID][K]): this
     where(...args): this {
 
         let key: string,
@@ -156,8 +156,8 @@ export class Criteria<ID extends streams.StreamID = streams.StreamID> {
         return this;
     }
 
-    orWhere<K extends keyof streams.Entries[ID]>(key: K, operator: Operator, value: streams.Entries[ID][K]): this
-    orWhere<K extends keyof streams.Entries[ID]>(key: K, value: streams.Entries[ID][K]): this
+    orWhere<K extends keyof IEntries[ID]>(key: K, operator: Operator, value: IEntries[ID][K]): this
+    orWhere<K extends keyof IEntries[ID]>(key: K, value: IEntries[ID][K]): this
     orWhere(...args): this {
 
         let key: string,

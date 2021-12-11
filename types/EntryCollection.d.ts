@@ -1,6 +1,6 @@
 import { IEntry } from './Entry';
 import { Collection } from './Collection';
-import { IStreamLinks, IStreamMeta, streams } from './types';
+import { IEntries, IStreamLinks, IStreamMeta, StreamID } from './types';
 import { Stream } from './Stream';
 import { Http } from './Http';
 import { ClientResponse } from './Client';
@@ -14,15 +14,15 @@ export interface IPaginatedEntriesMeta extends IStreamMeta {
     last_page: number;
     per_page: number;
 }
-export declare class EntryCollection<T extends streams.StreamID = streams.StreamID> extends Collection<IEntry<T>> {
+export declare class EntryCollection<T extends StreamID = StreamID> extends Collection<IEntry<T>> {
     readonly meta?: IEntriesMeta;
     readonly links?: IEntriesLinks;
     constructor(entries: IEntry<T>[], meta?: IEntriesMeta, links?: IEntriesLinks);
-    static fromResponse<ID extends streams.StreamID = streams.StreamID>(response: ClientResponse<Http.Responses<streams.Entries[ID][]>['entries']>, stream: Stream<ID>): EntryCollection<ID>;
+    static fromResponse<ID extends StreamID = StreamID>(response: ClientResponse<Http.Responses<IEntries[ID][]>['entries']>, stream: Stream<ID>): EntryCollection<ID>;
 }
-export declare class PaginatedEntryCollection<ID extends streams.StreamID = streams.StreamID> extends Collection<IEntry<ID>> {
+export declare class PaginatedEntryCollection<ID extends StreamID = StreamID> extends Collection<IEntry<ID>> {
     readonly meta?: IPaginatedEntriesMeta;
     readonly links?: IPaginatedEntriesLinks;
     constructor(entries: IEntry<ID>[], meta?: IPaginatedEntriesMeta, links?: IPaginatedEntriesLinks);
-    static fromResponse<ID extends streams.StreamID = streams.StreamID>(response: ClientResponse<Http.Responses<streams.Entries[ID][]>['paginated']>, stream: Stream): PaginatedEntryCollection<ID>;
+    static fromResponse<ID extends StreamID = StreamID>(response: ClientResponse<Http.Responses<IEntries[ID][]>['paginated']>, stream: Stream): PaginatedEntryCollection<ID>;
 }

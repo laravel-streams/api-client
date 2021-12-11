@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { ApiDataResponse, IBaseStream, IStream, streams, StreamsConfiguration } from './types';
+import { ApiDataResponse, IBaseStream, IEntries, IStream, StreamID, StreamsConfiguration } from './types';
 import { Http } from './Http';
 import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
@@ -35,11 +35,11 @@ export interface Streams {
 export declare class Streams {
     #private;
     readonly hooks: {
-        all: AsyncSeriesWaterfallHook<IBaseStream<string | number>, import("tapable").UnsetAdditionalOptions>;
+        all: AsyncSeriesWaterfallHook<IBaseStream<any>, import("tapable").UnsetAdditionalOptions>;
         make: AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>, any, Partial<Record<"stream" | "entries" | "streams" | "self" | "location" | "first_page" | "next_page" | "previous_page", string>>, import("./types").ApiPayloadMeta<IStream<any>, any>>, import("tapable").UnsetAdditionalOptions>;
-        maked: SyncHook<Stream<string | number>, void, import("tapable").UnsetAdditionalOptions>;
+        maked: SyncHook<Stream<StreamID>, void, import("tapable").UnsetAdditionalOptions>;
         create: AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>, any, Partial<Record<"stream" | "entries" | "streams" | "self" | "location" | "first_page" | "next_page" | "previous_page", string>>, import("./types").ApiPayloadMeta<IStream<any>, any>>, import("tapable").UnsetAdditionalOptions>;
-        created: SyncHook<Stream<string | number>, void, import("tapable").UnsetAdditionalOptions>;
+        created: SyncHook<Stream<StreamID>, void, import("tapable").UnsetAdditionalOptions>;
     };
     get http(): Http;
     get client(): Client;
@@ -57,16 +57,16 @@ export declare class Streams {
      * @param id
      * @returns
      */
-    make<ID extends streams.StreamID>(id: ID): Promise<Stream<ID>>;
-    create<ID extends streams.StreamID>(id: ID, streamData: streams.Entries[ID]): Promise<Stream<ID>>;
-    entries<ID extends streams.StreamID>(id: ID): Promise<Criteria<ID>>;
+    make<ID extends StreamID>(id: ID): Promise<Stream<ID>>;
+    create<ID extends StreamID>(id: ID, streamData: IEntries[ID]): Promise<Stream<ID>>;
+    entries<ID extends StreamID>(id: ID): Promise<Criteria<ID>>;
     /**
      * Return an entry repository.
      *
      * @param id
      * @returns
      */
-    repository<ID extends streams.StreamID>(id: ID): Promise<Repository<ID>>;
+    repository<ID extends StreamID>(id: ID): Promise<Repository<ID>>;
     /**
      * Return the Streams collection.
      */

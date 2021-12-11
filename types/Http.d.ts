@@ -1,5 +1,5 @@
 import { IEntriesLinks, IEntriesMeta, IPaginatedEntriesLinks, IPaginatedEntriesMeta } from './EntryCollection';
-import { ApiDataResponse, IBaseStream, IStream, IStreamLinks, IStreamMeta, IStreamPost, IStreamResponse, MethodName, RequestConfig, streams, StreamsConfiguration } from './types';
+import { ApiDataResponse, IBaseStream, IEntries, IStream, IStreamLinks, IStreamMeta, IStreamPost, IStreamResponse, MethodName, RequestConfig, StreamID, StreamsConfiguration } from './types';
 import { Streams } from './Streams';
 import { Client, ClientResponse } from './Client';
 export declare class Http {
@@ -9,16 +9,16 @@ export declare class Http {
     get config(): StreamsConfiguration;
     getStreams<T = IBaseStream[], R = ApiDataResponse<T>>(params?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
     postStream<T, R = ApiDataResponse<IStreamPost<T>>>(data: T, config?: RequestConfig): Promise<ClientResponse<R>>;
-    getStream<ID extends streams.StreamID, R = ApiDataResponse<IStream<ID>, 'stream'>>(stream: ID, params?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
-    patchStream<ID extends streams.StreamID, R = ApiDataResponse<IStream<ID>, 'stream'>>(stream: ID, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
-    putStream<ID extends streams.StreamID, R = ApiDataResponse<IStream<ID>>>(stream: ID, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    getStream<ID extends StreamID, R = ApiDataResponse<IStream<ID>, 'stream'>>(stream: ID, params?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    patchStream<ID extends StreamID, R = ApiDataResponse<IStream<ID>, 'stream'>>(stream: ID, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    putStream<ID extends StreamID, R = ApiDataResponse<IStream<ID>>>(stream: ID, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
     deleteStream(stream: string | number, config?: RequestConfig): Promise<ClientResponse<boolean>>;
-    getEntries<ID extends streams.StreamID, T = streams.Entries[ID], R = IStreamResponse<T[], IEntriesMeta, IEntriesLinks>>(stream: ID, params?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
-    postEntry<ID extends streams.StreamID, T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
-    getEntry<ID extends streams.StreamID, T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, config?: RequestConfig): Promise<ClientResponse<R>>;
-    patchEntry<ID extends streams.StreamID, T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
-    putEntry<ID extends streams.StreamID, T = streams.Entries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
-    deleteEntry<ID extends streams.StreamID, T = any, R = IStreamResponse<T>>(stream: ID, entry: string | number, config?: RequestConfig): Promise<ClientResponse<R>>;
+    getEntries<ID extends StreamID, T = IEntries[ID], R = IStreamResponse<T[], IEntriesMeta, IEntriesLinks>>(stream: ID, params?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    postEntry<ID extends StreamID, T = IEntries[ID], R = IStreamResponse<T>>(stream: ID, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    getEntry<ID extends StreamID, T = IEntries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, config?: RequestConfig): Promise<ClientResponse<R>>;
+    patchEntry<ID extends StreamID, T = IEntries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    putEntry<ID extends StreamID, T = IEntries[ID], R = IStreamResponse<T>>(stream: ID, entry: string | number, data?: any, config?: RequestConfig): Promise<ClientResponse<R>>;
+    deleteEntry<ID extends StreamID, T = any, R = IStreamResponse<T>>(stream: ID, entry: string | number, config?: RequestConfig): Promise<ClientResponse<R>>;
     protected request<T>(method: MethodName, uri: string, config?: RequestConfig): Promise<T>;
 }
 export declare namespace Http {

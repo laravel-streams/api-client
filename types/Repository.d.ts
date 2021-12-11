@@ -2,8 +2,8 @@ import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { EntryCollection } from './EntryCollection';
 import { Entry } from './Entry';
-import { streams } from './types';
-export declare class Repository<ID extends streams.StreamID> {
+import { StreamID } from './types';
+export declare class Repository<ID extends StreamID> {
     protected stream: Stream<ID>;
     /**
      * Create a new repository instance.

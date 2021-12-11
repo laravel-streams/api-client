@@ -1,14 +1,14 @@
 import { Field, isFieldData } from './Field';
 import { Repository } from './Repository';
 import { Criteria } from './Criteria';
-import { ApiLinks, ApiMeta, IBaseStream, IStream, streams } from './types';
+import { ApiLinks, ApiMeta, IBaseStream, IStream, StreamID } from './types';
 import { Streams } from './Streams';
 import deepmerge from 'deepmerge';
 import { objectify } from './utils';
 import { FieldCollection } from './FieldCollection';
 
 // export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> {}
-export interface Stream<ID extends streams.StreamID = streams.StreamID> extends IStream<ID> {}
+export interface Stream<ID extends StreamID = StreamID> extends IStream<ID> {}
 
 
 /**
@@ -33,7 +33,7 @@ export interface Stream<ID extends streams.StreamID = streams.StreamID> extends 
  * }
  * ```
  */
-export class Stream<ID extends streams.StreamID = streams.StreamID> {
+export class Stream<ID extends StreamID = StreamID> {
     constructor(
         streams: Streams,
         stream: IBaseStream<ID>,
