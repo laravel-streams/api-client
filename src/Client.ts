@@ -72,6 +72,7 @@ export class Client {
                 method       : 'GET',
                 credentials  : 'include',
                 errorHandling: 'throw',
+                responseType : 'json',
             },
         }, config);
 
@@ -150,6 +151,13 @@ async function transformResponse(response: Response, request: Request, config: R
     transformed.request = request;
     transformed.config  = config;
     transformed.data    = await getResponseData(response, config);
+
+    try {
+        let data         = JSON.parse(transformed.data);
+        transformed.data = data;
+    } catch (e) {
+
+    }
 
     // Include error if needed
     if ( !response.ok ) {

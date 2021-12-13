@@ -7932,6 +7932,7 @@ class Client {
                 method: 'GET',
                 credentials: 'include',
                 errorHandling: 'throw',
+                responseType: 'json',
             },
         }, config);
         this.headers = new HeaderFactory(this.config.headers);
@@ -8006,6 +8007,12 @@ function transformResponse(response, request, config) {
         transformed.request = request;
         transformed.config = config;
         transformed.data = yield getResponseData(response, config);
+        try {
+            let data = JSON.parse(transformed.data);
+            transformed.data = data;
+        }
+        catch (e) {
+        }
         // Include error if needed
         if (!response.ok) {
             try {
