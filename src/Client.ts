@@ -70,7 +70,6 @@ export class Client {
             },
             request: {
                 method       : 'GET',
-                credentials  : 'include',
                 errorHandling: 'throw',
                 responseType : 'json',
             },

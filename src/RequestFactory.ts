@@ -125,14 +125,17 @@ export class RequestFactory<T extends ClientRequest = ClientRequest> {
     }
 
     basic(username: string, password: string) {
+        this._config.credentials='include'
         return this._headers.basic(username, password); //authorization('Basic', btoa(username + ':' + password));
     }
 
     bearer(token: string) {
+        this._config.credentials='include'
         return this._headers.bearer(token);
     }
 
     authorization(key: string, value: string) {
+        this._config.credentials='include'
         this._headers.authorization(key, value);
         return this;
     }
