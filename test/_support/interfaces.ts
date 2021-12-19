@@ -35,3 +35,23 @@ export interface IFriend {
     id?:   number;
     name?: string;
 }
+
+export interface FixtureStreams {
+    articles
+    audio
+    clients
+    collections
+    comments
+    discussions
+    documents
+    images
+    members
+    notifications
+    posts
+    profiles
+    quizes
+    spaces
+    tokens
+    users
+    videos
+}

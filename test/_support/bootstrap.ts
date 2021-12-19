@@ -20,7 +20,7 @@ import 'whatwg-fetch';
 
 const env = getEnv();
 
-const dom      = new JSDOM(``, {
+const dom             = new JSDOM(``, {
     url                 : env.get('APP_URL', 'http://localhost') + '/' + env.get('STREAMS_API_PREFIX', 'api'),
     contentType         : 'text/html',
     includeNodeLocations: true,
@@ -30,7 +30,8 @@ const dom      = new JSDOM(``, {
 });
 global.XMLHttpRequest = dom.window.XMLHttpRequest;
 global.btoa           = btoa;
-
+global.location       = dom.window.location;
+global['window'] = dom.window as any
 chai.use(sinonChai);
 
 export function bootstrap(): any {
@@ -41,8 +42,8 @@ export function instanceBootstrap(): any {
     return { chai, sinon, env };
 }
 
-export function getUtils(){
-    return { chai, sinon, env,dom, };
+export function getUtils() {
+    return { chai, sinon, env, dom };
 }
 
-export { chai, sinon,env,dom };
+export { chai, sinon, env, dom };

@@ -1,62 +1,37 @@
-import { AxiosResponse } from 'axios';
+import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { RequestHeaders } from './headers';
 
-export interface ApiError {
+export type URLSearchParamsFunctionName = keyof URLSearchParams
+export type URLSearchParamsInit =
+    string[][]
+    | Record<string, string>
+    | string
+    | URLSearchParams
+
+export interface RequestConfig<D = any> extends Omit<AxiosRequestConfig<D>,'headers'> {
+    headers?:RequestHeaders
+}
+export type Constructor<Type = any> = new (...args: any[]) => Type
+
+
+export interface StreamsConfiguration {
+    baseURL:string
+    request?:RequestConfig
+}
+
+
+
+export interface Response<T=any, D=any> extends AxiosResponse<T,D>{
+
+}
+
+export interface ResponseError {
     message: string;
     meta?: {
         field?: string
     };
 }
 
-export interface ApiMeta<T extends keyof any = any> {
-    parameters: Record<T, string>;
-}
-
-export interface ApiPayloadMeta<T = any, P extends keyof any = any> extends ApiMeta<P> {
-    payload: T;
-}
-
-export interface ApiQueryMeta extends ApiMeta {
-    query: Record<string, any>;
-}
-
-export interface EmptyApiResponse {}
-
-export interface BaseApiResponse {
-    errors?: ApiError[];
-}
-
-export interface ApiErrorResponse<T extends ApiMeta = ApiMeta> extends BaseApiResponse {
-    meta: T;
-}
-
-export interface ApiErrorResponse extends BaseApiResponse {
-
-}
-
-export interface ClientResponse<T = any> extends AxiosResponse<T> {
-    errorText?: string;
-}
-
-export interface ApiDataResponse<DATA = any,
-    PARAMS extends keyof any = any,
-    LINKS extends ApiLinks = ApiLinks,
-    META extends ApiMeta = ApiPayloadMeta<DATA, PARAMS>> extends BaseApiResponse {
-    meta: META;
-    links: LINKS;
-    data: DATA;
-}
-
-let a: ApiDataResponse<{ a: string }, 'stream' | 'entry'>;
-
-export type ApiResponse =
-    BaseApiResponse
-    | EmptyApiResponse
-    | ApiErrorResponse
-    | ApiDataResponse
-
-import ApiLinks = links.Links;
-
-export { ApiLinks };
 
 namespace links {
     export type ApiLinks<K extends keyof any> = { [P in K]: string }

@@ -1,6 +1,6 @@
 import { params, skip, suite, test } from '@testdeck/mocha';
 import { TestCase } from './TestCase';
-import { Http, HTTPError } from '../src';
+import { Http } from '../src';
 
 import f from 'faker';
 import { expect } from 'chai';
@@ -15,13 +15,21 @@ export class HttpTest extends TestCase {
         http.should.be.instanceof(Http);
     }
 
+    @test('getStream')
+    async getStream() {
+        this.fs.fixtures.copyStream('users',this.fs.project)
+        const stream = await this.http.getStream('users');
+
+        stream.should.not.equal(undefined);
+    }
+
     @test('getting nonexistant stream should result in HTTPError')
     async gettingNonexistantStreamShouldResultInHttperror() {
         const http = await this.getHttp();
         try {
             const stream = await http.getStream('users2');
         } catch (e) {
-            e.should.be.instanceof(HTTPError);
+            e.should.be.instanceof(undefined);
         }
     }
 

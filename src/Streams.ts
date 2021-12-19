@@ -1,11 +1,14 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { ApiDataResponse, IBaseStream, IEntries, IStream, StreamID, StreamsConfiguration } from './types';
+import { ApiDataResponse, IBaseStream, IEntries, IStream, RequestConfig, StreamID, StreamsConfiguration } from './types';
 import { Http } from './Http';
 import { Client } from './Client';
-import { AsyncSeriesWaterfallHook, SyncHook } from 'tapable';
+import { AsyncSeriesWaterfallHook, SyncHook, SyncWaterfallHook } from 'tapable';
 import { Collection } from './Collection';
+import deepmerge from 'deepmerge';
+import { defaultConfig } from './defaultConfig';
+import { Request } from './Request';
 
 export interface Streams {
 
@@ -42,35 +45,28 @@ export class Streams {
         maked  : new SyncHook<Stream>([ 'stream' ]),
         create : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
         created: new SyncHook<Stream>([ 'stream' ]),
+        createRequestConfig: new SyncWaterfallHook<RequestConfig>([ 'config' ]),
+        createRequest      : new SyncWaterfallHook<Request>([ 'request' ]),
     };
     #http: Http;
     public get http(): Http {
         if ( !this.#http ) {
-            this.#http = new this.config.Http(this);
+            this.#http = new Http(this);
         }
         return this.#http;
-    }
-
-    #client: Client;
-    public get client(): Client {
-        if ( !this.#client ) {
-            this.#client = new this.config.Client(this.config);
-        }
-        return this.#client;
     }
 
     public config: StreamsConfiguration;
 
     constructor(config: StreamsConfiguration) {
-        this.config = {
-            Client: Client,
-            Http  : Http,
-            ...config,
-        };
-        // this.client = new this.config.Client(this.config);
-        // this.http   = new this.config.Http(this);
+        this.config = deepmerge.all<StreamsConfiguration>([ defaultConfig, config, { request: { baseURL: config.baseURL } } ], { clone: true });
     }
 
+    public createRequest<T=any,D=any>(): Request<T,D> {
+        const config  = this.hooks.createRequestConfig.call(this.config.request);
+        const request = Request.create<T,D>(config);
+        return this.hooks.createRequest.call(request);
+    }
 
     /**
      * Return all streams.
