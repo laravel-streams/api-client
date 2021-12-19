@@ -3,11 +3,9 @@ import { Criteria } from './Criteria';
 import { Repository } from './Repository';
 import { ApiDataResponse, IBaseStream, IEntries, IStream, RequestConfig, StreamID, StreamsConfiguration } from './types';
 import { Http } from './Http';
-import { Client } from './Client';
 import { AsyncSeriesWaterfallHook, SyncHook, SyncWaterfallHook } from 'tapable';
 import { Collection } from './Collection';
 import deepmerge from 'deepmerge';
-import { defaultConfig } from './defaultConfig';
 import { Request } from './Request';
 
 export interface Streams {
@@ -40,14 +38,15 @@ export interface Streams {
  */
 export class Streams {
     public readonly hooks = {
-        all    : new AsyncSeriesWaterfallHook<IBaseStream>([ 'data' ]),
-        make   : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
-        maked  : new SyncHook<Stream>([ 'stream' ]),
-        create : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
-        created: new SyncHook<Stream>([ 'stream' ]),
+        all                : new AsyncSeriesWaterfallHook<IBaseStream>([ 'data' ]),
+        make               : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
+        maked              : new SyncHook<Stream>([ 'stream' ]),
+        create             : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
+        created            : new SyncHook<Stream>([ 'stream' ]),
         createRequestConfig: new SyncWaterfallHook<RequestConfig>([ 'config' ]),
         createRequest      : new SyncWaterfallHook<Request>([ 'request' ]),
     };
+
     #http: Http;
     public get http(): Http {
         if ( !this.#http ) {
@@ -59,12 +58,12 @@ export class Streams {
     public config: StreamsConfiguration;
 
     constructor(config: StreamsConfiguration) {
-        this.config = deepmerge.all<StreamsConfiguration>([ defaultConfig, config, { request: { baseURL: config.baseURL } } ], { clone: true });
+        this.config = deepmerge.all<StreamsConfiguration>([ config, { request: { baseURL: config.baseURL } } ], { clone: true });
     }
 
-    public createRequest<T=any,D=any>(): Request<T,D> {
+    public createRequest<T = any, D = any>(): Request<T, D> {
         const config  = this.hooks.createRequestConfig.call(this.config.request);
-        const request = Request.create<T,D>(config);
+        const request = Request.create<T, D>(config);
         return this.hooks.createRequest.call(request);
     }
 
