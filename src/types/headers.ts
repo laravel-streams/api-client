@@ -819,10 +819,10 @@ export interface NonStandardResponseHeaders {
 
 export type RequestHeaders =
     StandardRequestHeaders
-    & NonStandardRequestHeaders
+    | NonStandardRequestHeaders
 export type ResponseHeaders =
     StandardResponseHeaders
-    & NonStandardResponseHeaders
+    | NonStandardResponseHeaders
 export type RequestHeader =
     keyof StandardRequestHeaders
     | keyof NonStandardRequestHeaders

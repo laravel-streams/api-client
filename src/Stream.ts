@@ -37,8 +37,8 @@ export class Stream<ID extends StreamID = StreamID> {
     constructor(
         streams: Streams,
         stream: IBaseStream<ID>,
-        meta?: ApiMeta,
-        links?: ApiLinks,
+        meta?: ApiMeta<'get'|'post'>,
+        links?: ApiLinks<'streams','get'|'post'>,
     ) {
         this.#streams = streams;
         this.#stream  = stream;
@@ -78,8 +78,8 @@ export class Stream<ID extends StreamID = StreamID> {
     #proxy:ProxyHandler<Stream<ID>>
     #stream: IBaseStream<ID>;
     #streams: Streams;
-    #meta?: ApiMeta;
-    #links?: ApiLinks;
+    #meta?: ApiMeta<'get'|'post'>
+    #links?: ApiLinks<'streams','get'|'post'>
     #repository: Repository<ID>;
     #fields: FieldCollection;
 
@@ -87,9 +87,9 @@ export class Stream<ID extends StreamID = StreamID> {
 
     public getStreams(): Streams {return this.#streams;}
 
-    public getMeta(): ApiMeta {return this.#meta;}
+    public getMeta(): ApiMeta<'get'|'post'> {return this.#meta;}
 
-    public getLinks(): ApiLinks {return this.#links;}
+    public getLinks(): ApiLinks<'streams','get'|'post'> {return this.#links;}
 
     public getRepository(): Repository<ID> {
         if ( !this.#repository ) {

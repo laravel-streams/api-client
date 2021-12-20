@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { ApiDataResponse, IBaseStream, IEntries, IStream, RequestConfig, StreamID, StreamsConfiguration } from './types';
+import { ApiDataResponse, IBaseStream, IEntries, IStream, IStreams, RequestConfig, StreamID, StreamsConfiguration } from './types';
 import { Http } from './Http';
 import { AsyncSeriesWaterfallHook, SyncHook, SyncWaterfallHook } from 'tapable';
 import { Collection } from './Collection';
@@ -39,9 +39,7 @@ export interface Streams {
 export class Streams {
     public readonly hooks = {
         all                : new AsyncSeriesWaterfallHook<IBaseStream>([ 'data' ]),
-        make               : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
         maked              : new SyncHook<Stream>([ 'stream' ]),
-        create             : new AsyncSeriesWaterfallHook<ApiDataResponse<IStream<any>>>([ 'data' ]),
         created            : new SyncHook<Stream>([ 'stream' ]),
         createRequestConfig: new SyncWaterfallHook<RequestConfig>([ 'config' ]),
         createRequest      : new SyncWaterfallHook<Request>([ 'request' ]),
@@ -91,9 +89,7 @@ export class Streams {
      * @returns
      */
     public async make<ID extends StreamID>(id: ID): Promise<Stream<ID>> {
-
         let response                = await this.http.getStream(id);
-        response.data               = await this.hooks.make.promise(response.data);
         const { data, meta, links } = response.data;
         const stream                = new Stream<ID>(this, data, meta, links);
         this.hooks.maked.call(stream);
@@ -102,8 +98,6 @@ export class Streams {
 
     public async create<ID extends StreamID>(id: ID, streamData: IEntries[ID]): Promise<Stream<ID>> {
         let response                = await this.http.postStream({ id, name: id, ...streamData });
-        // @ts-ignore
-        response.data               = await this.hooks.create.promise(response.data);
         const { data, meta, links } = response.data;
         const stream                = new Stream<ID>(this, data, meta, links);
         this.hooks.created.call(stream);

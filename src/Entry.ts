@@ -1,13 +1,10 @@
 import { Stream } from './Stream';
 import { IStreams, StreamID } from './types';
-// export interface Entry<ID extends string = string> {
-//     id: string;
-// }
+
 export type IEntry<ID extends StreamID = StreamID> =
     Entry<ID>
     & IStreams[ID]['entries'];
 
-let a: IEntry<'vehicles'>;
 
 
 export class Entry<ID extends StreamID = StreamID> {

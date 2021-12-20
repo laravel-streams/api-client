@@ -24,11 +24,11 @@ export interface IBaseStream<ID=any> {
 }
 
 export interface IEntries {
-    [ key: string ]: any;
+    [ key: string ]: IBaseEntry;
 }
 
 export interface IStreams {
     [ key: string ]: any;
 }
 
-export type StreamID = keyof IStreams | string
+export type StreamID = keyof IStreams

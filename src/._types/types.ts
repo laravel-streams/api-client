@@ -1,5 +1,5 @@
-import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { RequestHeaders } from '../types/headers';
+import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { RequestHeaders } from './headers';
 
 export type URLSearchParamsFunctionName = keyof URLSearchParams
 export type URLSearchParamsInit =
@@ -25,9 +25,6 @@ export interface Response<T=any, D=any> extends AxiosResponse<T,D>{
 
 }
 
-export interface ApiResponse {
-
-}
 export interface ResponseError {
     message: string;
     meta?: {

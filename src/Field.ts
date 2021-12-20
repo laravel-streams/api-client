@@ -1,40 +1,29 @@
-import { fields } from './types';
+import { FieldType, IBaseField } from './types';
 
-export interface FieldData<T extends fields.Type = fields.Type> {
-    handle?: string;
-    type: T;
-    input?: Record<string, any> & {
-        type: T
-    };
-    rules?: any[];
-    config?: Record<string, any>;
 
-    [ key: string ]: any;
-}
-
-export type IField<T extends keyof fields.Types = keyof fields.Types, D extends FieldData<any> = FieldData<T>> =
+export type IField<T extends FieldType = FieldType, D extends IBaseField<T> = IBaseField<T>> =
     Field
     & D;
 
-export interface Field<T extends keyof fields.Types = keyof fields.Types> extends FieldData<T> {
+export interface Field<T extends FieldType = FieldType> extends IBaseField<T> {
 }
 
-export const isFieldData = (val: any): val is FieldData => val && val.type !== undefined;
+export const isFieldData = (val: any): val is IBaseField => val && val.type !== undefined;
 
-export const isIField    = (val: any): val is IField => val && val instanceof Field;//&& typeof val.serialize === 'function'
+export const isIField = (val: any): val is IField => val && val instanceof Field;//&& typeof val.serialize === 'function'
 
-export class Field<T extends keyof fields.Types = keyof fields.Types> {
-    #field: FieldData;
+export class Field<T extends FieldType = FieldType> {
+    #field: IBaseField<T>;
 
-    constructor(field: FieldData) {
+    constructor(field: IBaseField<T>) {
         delete field.__listeners;
         delete field.__observers;
         this.#field = field;
-        const self=this;
+        const self  = this;
         let proxy   = new Proxy(this, {
-            get: (target: Field, p: string | symbol, receiver: any): any=> {
-                if(typeof self[p.toString()] === 'function'){
-                    return self[p.toString()].bind(self);
+            get: (target: Field, p: string | symbol, receiver: any): any => {
+                if ( typeof self[ p.toString() ] === 'function' ) {
+                    return self[ p.toString() ].bind(self);
                 }
                 // if(self.#field[p.toString()] !== undefined){
                 //     return self.#field[p.toString()];
@@ -56,7 +45,7 @@ export class Field<T extends keyof fields.Types = keyof fields.Types> {
         return proxy as any;
     }
 
-    serialize():FieldData {
+    serialize(): IBaseField<T> {
         return this.#field;
     }
 }

@@ -1,8 +1,10 @@
-import Axios, { AxiosInstance, CancelTokenSource, CancelTokenStatic } from 'axios';
+import Axios, { AxiosError, AxiosInstance, CancelTokenSource, CancelTokenStatic } from 'axios';
 import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue, StreamsConfiguration } from './types';
 import deepmerge from 'deepmerge';
 import { SyncWaterfallHook } from 'tapable';
 import { Response } from './Response';
+
+const isAxiosError = (val: any): val is AxiosError => val && val.isAxiosError;
 
 export class Request<T = any, D = any> {
     public readonly hooks = {
@@ -31,11 +33,21 @@ export class Request<T = any, D = any> {
     }
 
     async send(config: Partial<RequestConfig> = {}): Promise<Response<T, D>> {
-        const axios       = this.createAxios();
-        config            = this.hooks.send.call(config, axios, this);
-        let axiosResponse = await axios.request<T>(config as any); // new Response<T>(this, await );
-        let response      = Response.fromAxiosResponse<T>(axiosResponse);
-        response          = this.hooks.response.call(response, config, this);
+        const axios = this.createAxios();
+        config      = this.hooks.send.call(config, axios, this);
+        let response;
+        try {
+            let axiosResponse = await axios.request<T>(config as any);
+            response          = Response.fromAxiosResponse<T>(axiosResponse);
+        } catch (e) {
+            if ( isAxiosError(e) ) {
+                let msg = e?.response?.data?.message || e.message;
+                new Error();
+            } else {
+                throw e;
+            }
+        }
+        response = this.hooks.response.call(response, config, this);
         return response;
     }
 

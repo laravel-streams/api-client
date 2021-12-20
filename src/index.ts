@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { Streams } from './Streams';
+export * from './types';
 
 export * from './Collection';
 export * from './Criteria';
@@ -9,9 +10,10 @@ export * from './Field';
 export * from './FieldCollection';
 export * from './Http';
 export * from './Repository';
+export * from './Request';
+export * from './Response';
 export * from './Stream';
 export * from './Streams';
-export * from './types';
 export * from './utils';
 
 export default Streams;
