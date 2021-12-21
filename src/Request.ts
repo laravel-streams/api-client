@@ -3,8 +3,18 @@ import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue, StreamsConf
 import deepmerge from 'deepmerge';
 import { SyncWaterfallHook } from 'tapable';
 import { Response } from './Response';
+import { stringify } from 'qs';
+
+interface BackendException {
+    exception: string;
+    message: string;
+    file: string;
+    line: number;
+    trace: Array<{ class: string, file: string, function: string, line: number, type: string }>;
+}
 
 const isAxiosError = (val: any): val is AxiosError => val && val.isAxiosError;
+const hasException = (val: any): val is AxiosError<BackendException> => isAxiosError(val) && val?.response?.data?.exception !== undefined;
 
 export class Request<T = any, D = any> {
     public readonly hooks = {
@@ -19,13 +29,15 @@ export class Request<T = any, D = any> {
     get cancelToken() {return this.CancelTokenSource.token; }
 
     protected constructor(config: RequestConfig) {
-        this.CancelToken        = Axios.CancelToken;
-        this.CancelTokenSource  = this.CancelToken.source();
-        this.config             = deepmerge.all<RequestConfig>([
+        this.CancelToken             = Axios.CancelToken;
+        this.CancelTokenSource       = this.CancelToken.source();
+        this.config                  = deepmerge.all<RequestConfig>([
             Request.getDefaultConfig(),
             config,
+
         ], { clone: true });
-        this.config.cancelToken = this.CancelTokenSource.token;
+        this.config.cancelToken      = this.CancelTokenSource.token;
+        this.config.paramsSerializer= params => stringify(params);
     }
 
     static create<T = any, D = any>(config: RequestConfig<D>) {
@@ -40,12 +52,11 @@ export class Request<T = any, D = any> {
             let axiosResponse = await axios.request<T>(config as any);
             response          = Response.fromAxiosResponse<T>(axiosResponse);
         } catch (e) {
-            if ( isAxiosError(e) ) {
-                let msg = e?.response?.data?.message || e.message;
-                new Error();
-            } else {
-                throw e;
+            if ( isAxiosError(e) && hasException(e) ) {
+                let { message, exception, file, line } = e.response.data;
+                e.message += `:\n${exception}: ${message}\n${line}:${file}`;
             }
+            throw e;
         }
         response = this.hooks.response.call(response, config, this);
         return response;

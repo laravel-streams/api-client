@@ -5,6 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
 import progress from 'rollup-plugin-progress';
 // import dts from 'rollup-plugin-dts'
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 import deepmerge from 'deepmerge';
 // dts({})
 const resolve = (...parts) => path.resolve(__dirname, ...parts);
@@ -23,11 +24,13 @@ const outputConfigs: Record<string, OutputOptions> = {
     cjs          : {
         file  : resolve(`dist/${name}.cjs.js`),
         format: `cjs`,
+        exports: 'named'
     },
     global       : {
         file  : resolve(`dist/${name}.global.js`),
         format: `iife`,
         name  : 'streamsApi',
+        exports: 'named'
     },
 };
 const globalPlugins                                = [
@@ -65,12 +68,15 @@ function createConfig(format: string, options: Partial<RollupOptions> = {}) {
             }
         },
         plugins: [
+            nodePolyfills({
+                baseDir:resolve('../../../node_modules'),
+                include: ['util']
+            }),
             require('@rollup/plugin-node-resolve').nodeResolve({
                     moduleDirectories: [ resolve('node_modules'), resolve('../../../node_modules') ],
                     preferBuiltins   : true,
                 },
             ),
-            require('rollup-plugin-polyfill-node')(),
             require('@rollup/plugin-commonjs')({
                 sourceMap: output.sourcemap,
             }),

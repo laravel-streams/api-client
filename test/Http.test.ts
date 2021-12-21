@@ -29,7 +29,7 @@ export class HttpTest extends TestCase {
         try {
             const stream = await http.getStream('users2');
         } catch (e) {
-            e.should.be.instanceof(undefined);
+            e.should.be.instanceof(Error);
         }
     }
 

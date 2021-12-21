@@ -43,23 +43,16 @@ const streams = new Streams({
     baseURL: 'http://localhost/api',
 });
 
-streams.client.hooks.createRequest.tap('NAME', factory => {
-    factory.headers({
-
-    }).mode('cors').bearer('token')
-    return factory;
-})
-streams.client.hooks.request.tap('NAME', request => {
-
+streams.hooks.createRequest.tap('NAME', request => {
+    // alter request
     return request;
 })
-streams.client.hooks.response.tap('NAME', (response,request) => {
-    if(response.headers.has('Content-Type')){
-        const contentType = response.headers.get('Content-Type')
-        if(contentType === 'application/json'){
-            response.json()
-        }
-    }
+streams.hooks.request.tap('NAME', request => {
+    // alter request
+    return request;
+})
+streams.hooks.response.tap('NAME', (response,request) => {
+    // alter response
     return response;
 })
 

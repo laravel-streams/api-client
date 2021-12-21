@@ -1,10 +1,8 @@
+/// <reference types="node" />
 import { MimeType } from './mimes';
-
-
-export type ResponseHeaderValue = string
-export type RequestHeaderValue = any
-export type HeaderValue = string
-
+export declare type ResponseHeaderValue = string;
+export declare type RequestHeaderValue = any;
+export declare type HeaderValue = string;
 export interface StandardRequestHeaders {
     /**
      * Acceptable instance-manipulations for the request.
@@ -103,7 +101,7 @@ export interface StandardRequestHeaders {
      * @example
      * Content-Type: application/x-www-form-urlencoded
      */
-    'Content-Type'?: RequestHeaderValue|MimeType;
+    'Content-Type'?: RequestHeaderValue | MimeType;
     /**
      * An HTTP cookie previously sent by the server with Set-Cookie (below).
      *
@@ -286,9 +284,7 @@ export interface StandardRequestHeaders {
      * Warning: 199 Miscellaneous warning
      */
     'Warning'?: RequestHeaderValue;
-
 }
-
 export interface NonStandardRequestHeaders {
     /**
      * Tells a server which (presumably in the middle of a HTTP -> HTTPS migration) hosts mixed content that the client would prefer redirection to HTTPS and can handle Content-Security-Policy: upgrade-insecure-requests            Must not be used with HTTP/2
@@ -395,9 +391,7 @@ export interface NonStandardRequestHeaders {
      * Save-Data: on
      */
     'Save-Data'?: RequestHeaderValue;
-
 }
-
 export interface StandardResponseHeaders {
     /**
      * Requests HTTP Client Hints
@@ -522,7 +516,7 @@ export interface StandardResponseHeaders {
      * @example
      * Content-Type: text/html; charset=utf-8
      */
-    'Content-Type'?: ResponseHeaderValue|MimeType;
+    'Content-Type'?: ResponseHeaderValue | MimeType;
     /**
      * The date and time that the message was sent (in "HTTP-date" format as defined by RFC 7231)
      *
@@ -705,9 +699,7 @@ export interface StandardResponseHeaders {
      * X-Frame-Options: deny
      */
     'X-Frame-Options'?: ResponseHeaderValue;
-
 }
-
 export interface NonStandardResponseHeaders {
     /**
      * Content Security Policy definition.
@@ -814,35 +806,11 @@ export interface NonStandardResponseHeaders {
      * X-XSS-Protection: 1; mode=block
      */
     'X-XSS-Protection'?: ResponseHeaderValue;
-
 }
-
-export type RequestHeaders =
-    StandardRequestHeaders
-    & NonStandardRequestHeaders
-export type ResponseHeaders =
-    StandardResponseHeaders
-    & NonStandardResponseHeaders
-export type RequestHeader =
-    keyof StandardRequestHeaders
-    | keyof NonStandardRequestHeaders
-export type ResponseHeader =
-    keyof StandardResponseHeaders
-    | keyof NonStandardResponseHeaders
-export type AllHeaders =
-    StandardRequestHeaders
-    | NonStandardRequestHeaders
-    | StandardResponseHeaders
-    | NonStandardResponseHeaders
-export type AnyHeader =
-    keyof StandardRequestHeaders
-    | keyof NonStandardRequestHeaders
-    | keyof StandardResponseHeaders
-    | keyof NonStandardResponseHeaders
-    | string
-
-export type CombinedHeaders =
-    StandardRequestHeaders
-    & NonStandardRequestHeaders
-    & StandardResponseHeaders
-    & NonStandardResponseHeaders
+export declare type RequestHeaders = StandardRequestHeaders | NonStandardRequestHeaders;
+export declare type ResponseHeaders = StandardResponseHeaders | NonStandardResponseHeaders;
+export declare type RequestHeader = keyof StandardRequestHeaders | keyof NonStandardRequestHeaders;
+export declare type ResponseHeader = keyof StandardResponseHeaders | keyof NonStandardResponseHeaders;
+export declare type AllHeaders = StandardRequestHeaders | NonStandardRequestHeaders | StandardResponseHeaders | NonStandardResponseHeaders;
+export declare type AnyHeader = keyof StandardRequestHeaders | keyof NonStandardRequestHeaders | keyof StandardResponseHeaders | keyof NonStandardResponseHeaders | string;
+export declare type CombinedHeaders = StandardRequestHeaders & NonStandardRequestHeaders & StandardResponseHeaders & NonStandardResponseHeaders;

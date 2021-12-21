@@ -1,6 +1,6 @@
 {
     "name": "@laravel-streams/streams-api",
-    "version": "1.0.9",
+    "version": "1.0.11",
     "publishConfig": {
         "access": "public"
     },
@@ -27,7 +27,8 @@
         "collect.js": "^4.29.3",
         "deepmerge": "^4.2.2",
         "tapable": "^2.2.1",
-        "axios": "^0.24.0"
+        "axios": "^0.24.0",
+        "qs": "^6.10.2"
     },
     "devDependencies": {
         "@radic/console-input": "^1.10.0",
