@@ -19,23 +19,18 @@ async function run(){
 }
 
 async function extend(){
-    streams.client.hooks.createRequest.tap('NAME', factory => {
-        factory.headers({
 
-        }).mode('cors').bearer('token')
-        return factory;
+    streams.hooks.createRequestConfig.tap('NAME', config => {
+        // alter config
+        return config;
     })
-    streams.client.hooks.request.tap('NAME', request => {
-
+    streams.hooks.createRequest.tap('NAME', request => {
+        // alter request
         return request;
     })
-    streams.client.hooks.response.tap('NAME', (response,request) => {
-        if(response.headers.has('Content-Type')){
-            const contentType = response.headers.get('Content-Type')
-            if(contentType === 'application/json'){
-                response.json()
-            }
-        }
-        return response;
+    streams.hooks.created.tap('NAME', stream => {
+        // alter stream
+        return stream;
     })
+
 }

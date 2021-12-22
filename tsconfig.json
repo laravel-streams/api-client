@@ -33,6 +33,7 @@
     "include": [
         "src",
         "examples",
+        "scripts",
         "rollup.config.ts"
     ],
     "exclude": [

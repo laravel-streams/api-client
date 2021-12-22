@@ -4937,8 +4937,6 @@ var streamsApi = (function (exports) {
 	  uptime: uptime
 	};
 
-	var process$1 = browser$1;
-
 	var inherits;
 	if (typeof Object.create === 'function'){
 	  inherits = function inherits(ctor, superCtor) {
@@ -5015,18 +5013,14 @@ var streamsApi = (function (exports) {
 	    };
 	  }
 
-	  if (process$1.noDeprecation === true) {
+	  if (browser$1.noDeprecation === true) {
 	    return fn;
 	  }
 
 	  var warned = false;
 	  function deprecated() {
 	    if (!warned) {
-	      if (process$1.throwDeprecation) {
-	        throw new Error(msg);
-	      } else if (process$1.traceDeprecation) {
-	        console.trace(msg);
-	      } else {
+	      {
 	        console.error(msg);
 	      }
 	      warned = true;
@@ -5041,7 +5035,7 @@ var streamsApi = (function (exports) {
 	var debugEnviron;
 	function debuglog(set) {
 	  if (isUndefined$1(debugEnviron))
-	    debugEnviron = process$1.env.NODE_DEBUG || '';
+	    debugEnviron = browser$1.env.NODE_DEBUG || '';
 	  set = set.toUpperCase();
 	  if (!debugs[set]) {
 	    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {

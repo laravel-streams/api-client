@@ -8,11 +8,12 @@
     "main": "dist/streams-api.cjs.js",
     "module": "dist/streams-api.esm-bundler.js",
     "scripts": {
-        "build": "npm-run-all clean test bundle dts doc:api",
+        "build": "npm-run-all clean test bundle dts doc:analyze doc:api",
         "clean": "npm-run-all clean:dist clean:doc:api",
         "clean:dist": "rm -rf ./dist ./types",
         "clean:doc:api": "rm -rf ./docs/api",
         "clean:src": "rimraf src/**/*.{js,js.map}",
+        "doc:analyze": "ts-node ./scripts/analyze.ts --renderJson --renderMarkdown",
         "doc:api": "typedoc --options ./typedoc.js",
         "doc:api:md": "STREAMS_API_MD_DOCS=true typedoc --options ./typedoc.js",
         "bundle": "rollup --config rollup.config.ts --configPlugin typescript",
@@ -26,11 +27,15 @@
         "camelcase": "^6.2.0",
         "collect.js": "^4.29.3",
         "deepmerge": "^4.2.2",
-        "tapable": "^2.2.1",
+        "tapable": "^2.2.1"
+    },
+    "peerDependencies": {
         "axios": "^0.24.0",
         "qs": "^6.10.2"
     },
     "devDependencies": {
+        "axios": "^0.24.0",
+        "qs": "^6.10.2",
         "@radic/console-input": "^1.10.0",
         "@radic/core": "^1.0.5",
         "@types/dot-object": "^2.1.2",
@@ -39,11 +44,9 @@
         "@types/lodash": "^4.14.177",
         "dot-object": "^2.1.4",
         "fs-extra": "^10.0.0",
-        "isomorphic-fetch": "^3.0.0",
         "jquery": "^3.6.0",
         "lodash": "^4.17.21",
-        "reflect-metadata": "^0.1.13",
-        "whatwg-fetch": "^3.6.2"
+        "reflect-metadata": "^0.1.13"
     },
     "streams": {
         "output": {

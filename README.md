@@ -58,3 +58,18 @@ streams.hooks.response.tap('NAME', (response,request) => {
 
 
 ```
+
+
+## Variants
+Streams API comes with several bundles. You can use your bundle (eg webpack)  to let it resolve to the appropriate one.
+
+
+### File size analysis
+| File | Bundled | Minified | Gziped | Rollup | Webpack | Import Statements |
+| :------------------------------------------|:---------|:----------|:--------|:--------|:---------|:------------------- |
+| streams-api.nodedeps.min.esm-browser.js | 224.18 kB | 110.45 kB | 27.85 kB | 71.96 kB | 76.33 kB | 52 |
+| streams-api.esm-browser.js | 693.56 kB | 282.45 kB | 77.48 kB | 219.36 kB | 222.44 kB | 0 |
+| streams-api.nodedeps.esm-browser.js | 224.18 kB | 110.45 kB | 27.85 kB | 71.96 kB | 76.33 kB | 52 |
+| streams-api.min.esm-browser.js | 693.56 kB | 282.45 kB | 77.48 kB | 219.36 kB | 222.44 kB | 0 |
+
+

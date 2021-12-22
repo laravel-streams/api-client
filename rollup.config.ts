@@ -1,65 +1,110 @@
 import ts from 'rollup-plugin-typescript2';
 import { defineConfig, OutputOptions, RollupOptions } from 'rollup';
-import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
 import progress from 'rollup-plugin-progress';
 // import dts from 'rollup-plugin-dts'
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import deepmerge from 'deepmerge';
-// dts({})
-const resolve = (...parts) => path.resolve(__dirname, ...parts);
+import { terser } from 'rollup-plugin-terser';
+import { existsSync, mkdirSync } from 'fs';
+import path from 'path';
 
-const name = 'streams-api';
+export const ensureDirSync = (...parts: string[]) => {
+    let path = resolve(...parts);
+    if ( !existsSync(path) ) {
+        mkdirSync(path, { recursive: true });
+    }
+    return path;
+};
+export const resolve       = (...parts) => path.join(...parts);
 
-const outputConfigs: Record<string, OutputOptions> = {
+export interface Options extends Partial<RollupOptions> {
+    output?: OutputOptions;
+}
+
+const name           = 'streams-api';
+const dir            = 'dist';
+const packageConfigs = [];
+
+
+const configs: Record<string, Options> = {
     'esm-bundler': {
-        file  : resolve(`dist/${name}.esm-bundler.js`),
-        format: `es`,
+        output: {
+            file  : name, //resolve(`dist/${name}.esm-bundler.js`),
+            format: `es`,
+        },
     },
     'esm-browser': {
-        file  : resolve(`dist/${name}.esm-browser.js`),
-        format: `es`,
+        output: {
+            file  : name, //resolve(`dist/${name}.esm-browser.js`),
+            format: `es`,
+        },
     },
     cjs          : {
-        file  : resolve(`dist/${name}.cjs.js`),
-        format: `cjs`,
-        exports: 'named'
+        output: {
+            file   : name, //resolve(`dist/${name}.cjs.js`),
+            format : `cjs`,
+            exports: 'named',
+        },
     },
     global       : {
-        file  : resolve(`dist/${name}.global.js`),
-        format: `iife`,
-        name  : 'streamsApi',
-        exports: 'named'
+        output: {
+            file   : name, //resolve(`dist/${name}.global.js`),
+            format : `iife`,
+            name   : 'streamsApi',
+            exports: 'named',
+        },
     },
 };
-const globalPlugins                                = [
-    visualizer({
-        filename: 'dist/stats.html',
-        gzipSize: true,
-        open    : false,
-    }),
-    sizeSnapshot({
-        printInfo: true,
-    }),
-    progress({
-        clearLine: true,
-    }),
-];
-const packageConfigs                               = [];
 
-const formats = Object.keys(outputConfigs);
+const formats = Object.keys(configs);
 
 formats.forEach(format => {
-    packageConfigs.push(createConfig(format, { output: { sourcemap: true } }));
-    packageConfigs.push(createMinifiedConfig(format));
+    let config = configs[ format ];
+    packageConfigs.push(createConfig(format, {
+        output: {
+            sourcemap: true,
+        },
+    }));
+    packageConfigs.push(createConfig(format, {
+        external: [ 'axios', 'qs' ],
+        output  : {
+            file     : config.output.file + '.nodedeps',
+            sourcemap: true,
+            globals  : {
+                axios: 'Axios',
+                qs   : 'qs',
+            },
+        },
+    }));
+    packageConfigs.push(createMinifiedConfig(format, {
+        output: {
+            file: config.output.file + '.min',
+        },
+    }));
+    packageConfigs.push(createMinifiedConfig(format, {
+        external: [ 'axios', 'qs' ],
+        output  : {
+            file     : config.output.file + '.nodedeps.min',
+            sourcemap: true,
+            globals  : {
+                axios: 'Axios',
+                qs   : 'qs',
+            },
+        },
+    }));
 });
 export default packageConfigs;
 
-function createConfig(format: string, options: Partial<RollupOptions> = {}) {
-    const output: OutputOptions = deepmerge(outputConfigs[ format ], (options.output as OutputOptions) || {});
-    output.sourcemap            = output.sourcemap === undefined ? false : output.sourcemap;
-    const config                = defineConfig({
+
+function createConfig(format: string, options: Options = {}) {
+    options          = deepmerge.all([ configs[ format ] as Options, (options as Options) || {} ], { clone: true });
+    let output       = options.output;
+    output.sourcemap = output.sourcemap === undefined ? false : output.sourcemap;
+    output.file      = resolve(dir, `${output.file}.${format}.js`);
+
+    const config = defineConfig({
         input  : 'src/index.ts',
         output,
         onwarn : (msg, warn) => {
@@ -69,8 +114,9 @@ function createConfig(format: string, options: Partial<RollupOptions> = {}) {
         },
         plugins: [
             nodePolyfills({
-                baseDir:resolve('../../../node_modules'),
-                include: ['util']
+                baseDir: resolve('../../../node_modules'),
+                include: [ 'util' ],
+                exclude: ['/.*/']
             }),
             require('@rollup/plugin-node-resolve').nodeResolve({
                     moduleDirectories: [ resolve('node_modules'), resolve('../../../node_modules') ],
@@ -87,7 +133,7 @@ function createConfig(format: string, options: Partial<RollupOptions> = {}) {
                 tsconfigOverride: {
 
                     compilerOptions: {
-                        module: 'esnext',
+                        module     : 'esnext',
                         sourceMap  : output.sourcemap,
                         declaration: false,
                     },
@@ -95,28 +141,26 @@ function createConfig(format: string, options: Partial<RollupOptions> = {}) {
                 },
             }),
             visualizer({
-                filename: `dist/stats-${format}.html`,
+                filename: `docs/visualizer/${output.file}-${format}.html`,
                 gzipSize: true,
                 open    : false,
             }),
             progress({
                 clearLine: true,
             }),
-            sizeSnapshot({
-                printInfo: true,
-            }),
+            sizeSnapshot({ printInfo: false }),
         ],
     });
     return deepmerge(config, options);
 }
 
 
-function createMinifiedConfig(format) {
+function createMinifiedConfig(format, options: Partial<Options> = {}) {
     const { terser } = require('rollup-plugin-terser');
-    return createConfig(format, {
+    options          = deepmerge(configs[ format ], options, { clone: true });
+    options          = deepmerge(options, {
         output : {
-            file     : outputConfigs[ format ].file.replace(/\.js$/, '.prod.js'),
-            format   : outputConfigs[ format ].format,
+            format   : options.output.format,
             sourcemap: false,
         },
         plugins: [
@@ -129,5 +173,6 @@ function createMinifiedConfig(format) {
                 safari10: true,
             }),
         ],
-    });
+    }, { clone: true });
+    return createConfig(format, options);
 }

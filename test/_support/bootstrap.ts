@@ -15,7 +15,6 @@ import sinonChai from 'sinon-chai';
 import btoa from 'btoa';
 import { JSDOM } from 'jsdom';
 import { getEnv } from './utils';
-import 'whatwg-fetch';
 
 
 const env = getEnv();
