@@ -1,6 +1,6 @@
 {
-    "name": "@laravel-streams/streams-api",
-    "version": "1.0.11",
+    "name": "@laravel-streams/api-client",
+    "version": "1.0.0",
     "publishConfig": {
         "access": "public"
     },
@@ -48,17 +48,35 @@
         "lodash": "^4.17.21",
         "reflect-metadata": "^0.1.13"
     },
-    "streams": {
-        "output": {
-            "type": "module"
-        },
-        "src": "src",
-        "bundler": "rollup",
-        "scripts": {
-            "dev": "bundle",
-            "prod": "build",
-            "watch": "watch",
-            "test": "test"
+    "bugs": {
+        "url": "https://github.com/laravel-streams/api-client/issues"
+    },
+    "repository": {
+        "url": "git@github.com:laravel-streams/api-client.git",
+        "type": "git"
+    },
+    "homepage": "https://streams.dev",
+    "description": "An API client for the Laravel Streams API package.",
+    "keywords": [
+        "laravel",
+        "php",
+        "streams",
+        "laravel-streams",
+        "crud",
+        "api",
+        "awesome"
+    ],
+    "license": "MIT",
+    "author": {
+        "url": "https://github.com/robinradic",
+        "email": "rradic@hotmail.com",
+        "name": "Robin Radic"
+    },
+    "contributors": [
+        {
+            "name": "Ryan Thompson",
+            "email": "ryan@pyrocms.com",
+            "url": "https://github.com/ryanthompson"
         }
-    }
+    ]
 }
