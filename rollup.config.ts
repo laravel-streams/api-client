@@ -102,7 +102,8 @@ function createConfig(format: string, options: Options = {}) {
     options          = deepmerge.all([ configs[ format ] as Options, (options as Options) || {} ], { clone: true });
     let output       = options.output;
     output.sourcemap = output.sourcemap === undefined ? false : output.sourcemap;
-    output.file      = resolve(dir, `${output.file}.${format}.js`);
+    const fileName = `${output.file}.${format}.js`;
+    output.file      = resolve(dir, fileName);
 
     const config = defineConfig({
         input  : 'src/index.ts',
@@ -141,13 +142,13 @@ function createConfig(format: string, options: Options = {}) {
                 },
             }),
             visualizer({
-                filename: `docs/visualizer/${output.file}-${format}.html`,
+                filename: resolve(__dirname,`docs/visualizer/${fileName.replace('.js','')}.html`),
                 gzipSize: true,
                 open    : false,
+                title: `Streams JS API client :: ${format}`,
+                projectRoot:__dirname
             }),
-            progress({
-                clearLine: true,
-            }),
+            progress({ clearLine: true,            }),
             sizeSnapshot({ printInfo: false }),
         ],
     });

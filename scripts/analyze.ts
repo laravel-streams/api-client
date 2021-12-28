@@ -19,7 +19,7 @@ const fileSizeOptions: FileSizeOptions = {
     standard: 'jedec',
 };
 
-class Analyze {
+export class Analyze {
     create(sizeSnapshotFilePath: string = resolve(__dirname, '../.size-snapshot.json')): Analysis {
         if ( !existsSync(sizeSnapshotFilePath) ) {
             throw new Error(`couldnot find size-snapshot file at ${sizeSnapshotFilePath}`);
@@ -67,6 +67,16 @@ class Analyze {
         return { headers: tableHeaders, rows: tableRows };
     }
 
+    writeToMarkdownFile(path: string, analysis?: Analysis) {
+        if ( !analysis ) {
+            analysis = this.create();
+        }
+        let content = this.convertToMarkdownTable(analysis);
+        ensureDirSync(dirname(path));
+        writeFileSync(path, content, 'utf8');
+
+    }
+
     convertToMarkdownTable(analysis?: Analysis) {
         if ( !analysis ) {
             analysis = this.create();
@@ -75,6 +85,7 @@ class Analyze {
         const tableHeaders = [ 'File', 'Bundled', 'Minified', 'Gziped', 'Rollup', 'Webpack', 'Import Statements' ];
         const tableRows    = [];
         Object.entries(analysis).forEach(([ fileName, snapshot ]) => {
+            fileName = `[\`${fileName}\`](visualizer/${fileName.replace('.js','.html')}){target="_blank"}`
             tableRows.push([ fileName, snapshot.bundled, snapshot.minified, snapshot.gzipped, snapshot.rollup, snapshot.webpack, snapshot.import_statements ]);
         });
         lines.push(`| ${tableHeaders.join(' | ')} |`);
@@ -105,7 +116,7 @@ async function runCli() {
     if ( process.argv.includes('--renderMarkdown') ) {
         const result = analyze.convertToMarkdownTable(analysis);
         out.nl.nl.line(`{bold}Analysis converted to markdown table{/bold}:`);
-        if(!printCliTable()){
+        if ( !printCliTable() ) {
             out.line(result);
         }
         const filePath = resolve(__dirname, '..', 'docs', 'filesize.md');
@@ -117,19 +128,18 @@ async function runCli() {
     function printCliTable() {
         try {
             if ( require.resolve('cli-table3') ) {
-                const { headers, rows } = analyze.toTable(analysis)
+                const { headers, rows } = analyze.toTable(analysis);
                 const table             = new out.ui.Table({
-                    head: headers
-                })
+                    head: headers,
+                });
                 table.push(...rows);
-                out.line(table.toString())
+                out.line(table.toString());
                 return true;
             }
-        }catch (e) {
+        } catch (e) {
         }
-        return false
+        return false;
     }
+
     console.log('\n\ndone');
 }
-
-runCli();

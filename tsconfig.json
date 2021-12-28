@@ -9,8 +9,8 @@
         "jsxFactory": "h",
         "moduleResolution": "node",
         "experimentalDecorators": true,
-
-
+        "allowJs": true,
+        "checkJs": false,
         "skipLibCheck": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
@@ -28,7 +28,7 @@
             "ES2020",
             "scripthost",
             "DOM"
-        ],
+        ]
     },
     "include": [
         "src",
