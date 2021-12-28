@@ -97,7 +97,7 @@
                           <div class="edit-comment-hide">
                             <div class="comment-body markdown-body markdown-format js-comment-body" id="grip-content">
 
-    <h1>Streams JS Api Client</h1>
+    <h1 id="streams-js-api-client">Streams JS Api Client</h1>
 <p>A cohesive development system for building, administrating, and interacting with data-driven Laravel applications.</p>
 <blockquote>
 <p>This is not a Laravel Streams addon. This is a NPM package that decoupled websites can use to interact with the backend server.</p>
@@ -135,8 +135,8 @@
 </li>
 <li><a href="#mit-license">MIT License</a></li>
 </ol>
-<h2>The upper layer</h2>
-<h3>Installation &amp; Configuration</h3>
+<h2 id="the-upper-layer">The upper layer</h2>
+<h3 id="installation-%26-configuration">Installation &amp; Configuration</h3>
 <p>Installation goes through any package manger capable of pulling packages from NPM.</p>
 <pre><code class="language-shell">yarn add @laravel-streams/api-client
 </code></pre>
@@ -155,7 +155,7 @@
 <li><strong>baseURL</strong> <code>string</code> <em>[required]</em> The url that points to the api, eg <code>http://127.0.0.1/api</code></li>
 <li><strong>request</strong> <code>AxiosRequestConfig</code> The base HTTP Request configuration. This is similar to Axios configuration</li>
 </ul>
-<h3>Working with the streams instance</h3>
+<h3 id="working-with-the-streams-instance">Working with the streams instance</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Collection</span>, <span class="hljs-title class_">Entry</span>, <span class="hljs-title class_">EntryCollection</span>, <span class="hljs-title class_">Field</span>, <span class="hljs-title class_">Stream</span>, <span class="hljs-title class_">Streams</span>, <span class="hljs-title class_">Response</span>, <span class="hljs-title class_">Request</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@laravel-streams/api-client&#x27;</span>;
 
 <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">WorkingWithTheStreamsInstance</span>(<span class="hljs-params"></span>) {
@@ -164,7 +164,7 @@
     });
 }
 </code></pre>
-<h3>Getting, modifying and creating streams</h3>
+<h3 id="getting%2C-modifying-and-creating-streams">Getting, modifying and creating streams</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">GettingModifyingStreams</span>(<span class="hljs-params">streams: Streams</span>) {
     <span class="hljs-comment">// Getting a stream</span>
     <span class="hljs-keyword">const</span> <span class="hljs-attr">stream</span>: <span class="hljs-title class_">Stream</span> = <span class="hljs-keyword">await</span> streams.<span class="hljs-title function_">make</span>(<span class="hljs-string">&#x27;clients&#x27;</span>);
@@ -204,7 +204,7 @@
 }
 
 </code></pre>
-<h3>Getting Stream entries using the Stream Repository</h3>
+<h3 id="getting-stream-entries-using-the-stream-repository">Getting Stream entries using the Stream Repository</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">WorkingWithAStreamRepository</span>(<span class="hljs-params">streams: Streams, stream: Stream</span>) {
     <span class="hljs-comment">//  Getting Stream entries using the Stream Repository</span>
     <span class="hljs-keyword">const</span> <span class="hljs-attr">entry</span>: <span class="hljs-title class_">Entry</span> = <span class="hljs-keyword">await</span> stream.<span class="hljs-title function_">getRepository</span>().<span class="hljs-title function_">find</span>(<span class="hljs-number">1</span>);
@@ -223,7 +223,7 @@
 }
 
 </code></pre>
-<h3>Getting Stream entries using the Stream Criteria</h3>
+<h3 id="getting-stream-entries-using-the-stream-criteria">Getting Stream entries using the Stream Criteria</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">WorkingWithAStreamCriteria</span>(<span class="hljs-params">streams: Streams, stream: Stream</span>) {
     <span class="hljs-comment">//  Getting Stream entries using the Stream Criteria</span>
     <span class="hljs-keyword">const</span> criteria                    = stream.<span class="hljs-title function_">getEntries</span>();
@@ -238,7 +238,7 @@
 }
 
 </code></pre>
-<h3>Working with a Entry instance. Reading, updating and deleting data.</h3>
+<h3 id="working-with-a-entry-instance.-reading%2C-updating-and-deleting-data.">Working with a Entry instance. Reading, updating and deleting data.</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">WorkingWithAEntryInstance_ReadingUpdatingAndDeletingData</span>(<span class="hljs-params">entry:Entry, streams: Streams, stream: Stream</span>) {
     <span class="hljs-comment">/**
      * You can modify the values of the entry and save them
@@ -256,14 +256,14 @@
 
 
 </code></pre>
-<h2>The lower layer</h2>
-<h3>Working with the HTTP instance</h3>
+<h2 id="the-lower-layer">The lower layer</h2>
+<h3 id="working-with-the-http-instance">Working with the HTTP instance</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">WorkingWithTheHTTPInstance</span>(<span class="hljs-params">streams:Streams</span>) {
     <span class="hljs-keyword">const</span> <span class="hljs-attr">response</span>:<span class="hljs-title class_">Response</span> = <span class="hljs-keyword">await</span> streams.<span class="hljs-property">http</span>.<span class="hljs-title function_">getStream</span>(<span class="hljs-string">&#x27;clients&#x27;</span>)
 
 }
 </code></pre>
-<h3>Creating Requests</h3>
+<h3 id="creating-requests">Creating Requests</h3>
 <pre><code class="language-ts"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">createingRequests</span>(<span class="hljs-params">streams:Streams</span>) {
     <span class="hljs-keyword">const</span> <span class="hljs-attr">request</span>: <span class="hljs-title class_">Request</span> = streams.<span class="hljs-title function_">createRequest</span>()
     <span class="hljs-comment">// merge config</span>
@@ -285,7 +285,7 @@
     <span class="hljs-comment">// setting headers</span>
     request.<span class="hljs-title function_">header</span>(<span class="hljs-string">&#x27;If-Modified-Since&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>)
 </code></pre>
-<h3>Reading Responses &amp; Handling errors</h3>
+<h3 id="reading-responses-%26-handling-errors">Reading Responses &amp; Handling errors</h3>
 <pre><code class="language-ts">    <span class="hljs-comment">// sending request, getting response</span>
     <span class="hljs-keyword">try</span> {
         <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> request.<span class="hljs-title function_">send</span>();
@@ -300,10 +300,10 @@
     }
 }
 </code></pre>
-<h2>The extras</h2>
-<h3>Generate type definitions for streams, entries etc</h3>
+<h2 id="the-extras">The extras</h2>
+<h3 id="generate-type-definitions-for-streams%2C-entries-etc">Generate type definitions for streams, entries etc</h3>
 <p>todo</p>
-<h3>Extending, hooks and hacking the library.</h3>
+<h3 id="extending%2C-hooks-and-hacking-the-library.">Extending, hooks and hacking the library.</h3>
 <p>Several classes contain <a href="https://github.com/webpack/tapable">hooks</a>.</p>
 <p>More information will be provided before final release. The <a href="https://laravel-streams.github.io/api-js/">Api Docs</a> will also cover these.</p>
 <pre><code class="language-ts"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Streams</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@laravel-streams/streams-api&#x27;</span>;
@@ -325,7 +325,7 @@ streams.<span class="hljs-property">hooks</span>.<span class="hljs-property">res
     <span class="hljs-keyword">return</span> response;
 })
 </code></pre>
-<h3>The various bundles that come with the package.</h3>
+<h3 id="the-various-bundles-that-come-with-the-package.">The various bundles that come with the package.</h3>
 <p>Click on the file link will open a new window with the visualisation of the bundle.</p>
 <table>
 <thead>
@@ -486,7 +486,7 @@ streams.<span class="hljs-property">hooks</span>.<span class="hljs-property">res
 </tr>
 </tbody>
 </table>
-<h4>How to choose the right one</h4>
+<h4 id="how-to-choose-the-right-one">How to choose the right one</h4>
 <p>All the <code>nodeps</code> versions do not contain <code>axios</code> and <code>qs</code>, as such they are <code>peerDependencies</code> in case you
 already have those installed. This means that:</p>
 <p><strong>global</strong>
@@ -497,7 +497,7 @@ You need to have both <code>axios</code> and <code>qs</code> installed. Then you
 <code>const streamApi = require('@laravel-streams/api-client')</code></p>
 <p><strong>esm-bundler</strong>
 Same deal as <strong>cjs</strong>. Make sure both are installed.</p>
-<h4>How to configure that in Webpack/Mix/Rollup</h4>
+<h4 id="how-to-configure-that-in-webpack%2Fmix%2Frollup">How to configure that in Webpack/Mix/Rollup</h4>
 <p>So, by default the <code>streams-api.esm-bundler.js</code> will be used, which have both <code>axios</code> and <code>qs</code> bundled into it.
 In order to use the <code>streams-api.nodeps.esm-bundler.js</code> you'll have to make an alias in webpack:</p>
 <pre><code class="language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
@@ -510,7 +510,7 @@ In order to use the <code>streams-api.nodeps.esm-bundler.js</code> you'll have t
 }
 
 </code></pre>
-<h2>MIT License</h2>
+<h2 id="mit-license">MIT License</h2>
 <p>Can be found <a href="LICENSE.md">here</a>;</p>
 
   </div>

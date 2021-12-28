@@ -4,7 +4,7 @@ import { isAbsolute, resolve } from 'path';
 import EventEmitter from 'events';
 import hljs from 'highlight.js';
 import markdownItAttrs from './markdownItAttrs';
-
+import markdownItAnchor from './markdownItAnchor'
 export interface Doc {
     sourceFile: string,
     destFile: string
@@ -29,6 +29,9 @@ export class Docs extends EventEmitter {
                 return ''; // use external default escaping
             },
         });
+        this.converter.use(markdownItAnchor, {
+            level:6,
+        })
         this.converter.use(markdownItAttrs, {
             // optional, these are default options
             leftDelimiter    : '{',
