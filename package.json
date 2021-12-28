@@ -1,6 +1,6 @@
 {
     "name": "@laravel-streams/api-client",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "publishConfig": {
         "access": "public"
     },
@@ -16,11 +16,9 @@
         "cli:analyze": "ts-node ./scripts/cli.ts analyze",
         "cli:docs": "ts-node ./scripts/cli.ts docs",
         "doc:api": "typedoc --options ./typedoc.js",
-        "doc:api:md": "STREAMS_API_MD_DOCS=true typedoc --options ./typedoc.js",
         "bundle": "rollup --config rollup.config.ts --configPlugin typescript",
         "watch": "rollup --config rollup.config.ts --configPlugin typescript --watch",
         "dts": "tsc -p ./tsconfig.build.json --emitDeclarationOnly  --declaration --declarationDir types",
-        "fixtures:streams": "ts-node test/_support/move-fixtures.ts",
         "prepublish": "npm-run-all build",
         "test": "mocha"
     },

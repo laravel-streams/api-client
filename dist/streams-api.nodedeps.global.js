@@ -1233,6 +1233,212 @@ var streamsApi = (function (exports, Axios, qs) {
 	}
 	_Field_field = new WeakMap();
 
+	var isMergeableObject = function isMergeableObject(value) {
+		return isNonNullObject(value)
+			&& !isSpecial(value)
+	};
+
+	function isNonNullObject(value) {
+		return !!value && typeof value === 'object'
+	}
+
+	function isSpecial(value) {
+		var stringValue = Object.prototype.toString.call(value);
+
+		return stringValue === '[object RegExp]'
+			|| stringValue === '[object Date]'
+			|| isReactElement(value)
+	}
+
+	// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
+	var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
+	var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
+
+	function isReactElement(value) {
+		return value.$$typeof === REACT_ELEMENT_TYPE
+	}
+
+	function emptyTarget(val) {
+		return Array.isArray(val) ? [] : {}
+	}
+
+	function cloneUnlessOtherwiseSpecified(value, options) {
+		return (options.clone !== false && options.isMergeableObject(value))
+			? deepmerge(emptyTarget(value), value, options)
+			: value
+	}
+
+	function defaultArrayMerge(target, source, options) {
+		return target.concat(source).map(function(element) {
+			return cloneUnlessOtherwiseSpecified(element, options)
+		})
+	}
+
+	function getMergeFunction(key, options) {
+		if (!options.customMerge) {
+			return deepmerge
+		}
+		var customMerge = options.customMerge(key);
+		return typeof customMerge === 'function' ? customMerge : deepmerge
+	}
+
+	function getEnumerableOwnPropertySymbols(target) {
+		return Object.getOwnPropertySymbols
+			? Object.getOwnPropertySymbols(target).filter(function(symbol) {
+				return target.propertyIsEnumerable(symbol)
+			})
+			: []
+	}
+
+	function getKeys(target) {
+		return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target))
+	}
+
+	function propertyIsOnObject(object, property) {
+		try {
+			return property in object
+		} catch(_) {
+			return false
+		}
+	}
+
+	// Protects from prototype poisoning and unexpected merging up the prototype chain.
+	function propertyIsUnsafe(target, key) {
+		return propertyIsOnObject(target, key) // Properties are safe to merge if they don't exist in the target yet,
+			&& !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
+				&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
+	}
+
+	function mergeObject(target, source, options) {
+		var destination = {};
+		if (options.isMergeableObject(target)) {
+			getKeys(target).forEach(function(key) {
+				destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+			});
+		}
+		getKeys(source).forEach(function(key) {
+			if (propertyIsUnsafe(target, key)) {
+				return
+			}
+
+			if (propertyIsOnObject(target, key) && options.isMergeableObject(source[key])) {
+				destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
+			} else {
+				destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
+			}
+		});
+		return destination
+	}
+
+	function deepmerge(target, source, options) {
+		options = options || {};
+		options.arrayMerge = options.arrayMerge || defaultArrayMerge;
+		options.isMergeableObject = options.isMergeableObject || isMergeableObject;
+		// cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
+		// implementations can use it. The caller may not replace it.
+		options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
+
+		var sourceIsArray = Array.isArray(source);
+		var targetIsArray = Array.isArray(target);
+		var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
+
+		if (!sourceAndTargetTypesMatch) {
+			return cloneUnlessOtherwiseSpecified(source, options)
+		} else if (sourceIsArray) {
+			return options.arrayMerge(target, source, options)
+		} else {
+			return mergeObject(target, source, options)
+		}
+	}
+
+	deepmerge.all = function deepmergeAll(array, options) {
+		if (!Array.isArray(array)) {
+			throw new Error('first argument should be an array')
+		}
+
+		return array.reduce(function(prev, next) {
+			return deepmerge(prev, next, options)
+		}, {})
+	};
+
+	var deepmerge_1 = deepmerge;
+
+	var cjs = deepmerge_1;
+
+	class Str {
+	    static random(length = 15) {
+	        let text = '';
+	        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	        for (let i = 0; i < length; i++) {
+	            text += possible.charAt(Math.floor(Math.random() * possible.length));
+	        }
+	        return text;
+	    }
+	    static ensureLeft(str, left) {
+	        if (false === str.startsWith(left)) {
+	            return left + str;
+	        }
+	        return str;
+	    }
+	    static ensureRight(str, right) {
+	        if (false === str.endsWith(right)) {
+	            return str + right;
+	        }
+	        return str;
+	    }
+	    static stripLeft(str, left) {
+	        if (str.startsWith(left)) {
+	            return str.substr(left.length);
+	        }
+	        return str;
+	    }
+	    static stripRight(str, right) {
+	        if (str.endsWith(right)) {
+	            return str.substr(0, str.length - right.length);
+	        }
+	        return str;
+	    }
+	    static ucfirst(string) {
+	        return string[0].toUpperCase() + string.slice(1);
+	    }
+	    static lcfirst(string) {
+	        return string[0].toLowerCase() + string.slice(1);
+	    }
+	    static parameters(str, params) {
+	        Object.entries(params).forEach(([key, value]) => str = str.replace(new RegExp(':' + key, 'g'), value));
+	        return str;
+	    }
+	}
+	/**
+	 *
+	 * @param obj
+	 * @param k
+	 * @param v
+	 * @example
+	 *
+	 * params = Object.entries(params).filter(([ key, value ]) => {
+	 *     return value.toString().length > 0;
+	 * }).reduce(utils.objectify, {});
+	 *
+	 */
+	const objectify = (obj, [k, v]) => (Object.assign(Object.assign({}, obj), { [k]: v }));
+	class Obj {
+	    static merge(...objs) {
+	        objs.unshift({});
+	        return cjs.all(objs, { clone: true });
+	    }
+	    static clone(obj) {
+	        return cjs({}, obj, { clone: true });
+	    }
+	    static exclude(obj, keys) {
+	        obj = this.clone(obj);
+	        for (let key of keys) {
+	            delete obj[key];
+	        }
+	        return obj;
+	    }
+	}
+
 	var _Entry_stream, _Entry_data, _Entry_fresh;
 	class Entry {
 	    constructor(stream, data = {}, fresh = true) {
@@ -1277,7 +1483,7 @@ var streamsApi = (function (exports, Axios, qs) {
 	                    __classPrivateFieldSet(this, _Entry_fresh, false, "f");
 	                    return true;
 	                }
-	                yield http.patchEntry(__classPrivateFieldGet(this, _Entry_stream, "f").id, __classPrivateFieldGet(this, _Entry_data, "f").id, __classPrivateFieldGet(this, _Entry_data, "f"));
+	                yield http.patchEntry(__classPrivateFieldGet(this, _Entry_stream, "f").id, __classPrivateFieldGet(this, _Entry_data, "f").id, this.getPatchData());
 	                return true;
 	            }
 	            catch (e) {
@@ -1285,7 +1491,15 @@ var streamsApi = (function (exports, Axios, qs) {
 	            }
 	        });
 	    }
-	    serialize() {
+	    getPatchData() {
+	        var _a, _b;
+	        let data = this.toObject();
+	        if ((_b = (_a = __classPrivateFieldGet(this, _Entry_stream, "f")) === null || _a === void 0 ? void 0 : _a.config) === null || _b === void 0 ? void 0 : _b.key_name) {
+	            return Obj.exclude(data, [__classPrivateFieldGet(this, _Entry_stream, "f").config.key_name]);
+	        }
+	        return data;
+	    }
+	    toObject() {
 	        return __classPrivateFieldGet(this, _Entry_data, "f");
 	    }
 	}
@@ -4320,196 +4534,6 @@ var streamsApi = (function (exports, Axios, qs) {
 	    }
 	}
 
-	var isMergeableObject = function isMergeableObject(value) {
-		return isNonNullObject(value)
-			&& !isSpecial(value)
-	};
-
-	function isNonNullObject(value) {
-		return !!value && typeof value === 'object'
-	}
-
-	function isSpecial(value) {
-		var stringValue = Object.prototype.toString.call(value);
-
-		return stringValue === '[object RegExp]'
-			|| stringValue === '[object Date]'
-			|| isReactElement(value)
-	}
-
-	// see https://github.com/facebook/react/blob/b5ac963fb791d1298e7f396236383bc955f916c1/src/isomorphic/classic/element/ReactElement.js#L21-L25
-	var canUseSymbol = typeof Symbol === 'function' && Symbol.for;
-	var REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for('react.element') : 0xeac7;
-
-	function isReactElement(value) {
-		return value.$$typeof === REACT_ELEMENT_TYPE
-	}
-
-	function emptyTarget(val) {
-		return Array.isArray(val) ? [] : {}
-	}
-
-	function cloneUnlessOtherwiseSpecified(value, options) {
-		return (options.clone !== false && options.isMergeableObject(value))
-			? deepmerge(emptyTarget(value), value, options)
-			: value
-	}
-
-	function defaultArrayMerge(target, source, options) {
-		return target.concat(source).map(function(element) {
-			return cloneUnlessOtherwiseSpecified(element, options)
-		})
-	}
-
-	function getMergeFunction(key, options) {
-		if (!options.customMerge) {
-			return deepmerge
-		}
-		var customMerge = options.customMerge(key);
-		return typeof customMerge === 'function' ? customMerge : deepmerge
-	}
-
-	function getEnumerableOwnPropertySymbols(target) {
-		return Object.getOwnPropertySymbols
-			? Object.getOwnPropertySymbols(target).filter(function(symbol) {
-				return target.propertyIsEnumerable(symbol)
-			})
-			: []
-	}
-
-	function getKeys(target) {
-		return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target))
-	}
-
-	function propertyIsOnObject(object, property) {
-		try {
-			return property in object
-		} catch(_) {
-			return false
-		}
-	}
-
-	// Protects from prototype poisoning and unexpected merging up the prototype chain.
-	function propertyIsUnsafe(target, key) {
-		return propertyIsOnObject(target, key) // Properties are safe to merge if they don't exist in the target yet,
-			&& !(Object.hasOwnProperty.call(target, key) // unsafe if they exist up the prototype chain,
-				&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
-	}
-
-	function mergeObject(target, source, options) {
-		var destination = {};
-		if (options.isMergeableObject(target)) {
-			getKeys(target).forEach(function(key) {
-				destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
-			});
-		}
-		getKeys(source).forEach(function(key) {
-			if (propertyIsUnsafe(target, key)) {
-				return
-			}
-
-			if (propertyIsOnObject(target, key) && options.isMergeableObject(source[key])) {
-				destination[key] = getMergeFunction(key, options)(target[key], source[key], options);
-			} else {
-				destination[key] = cloneUnlessOtherwiseSpecified(source[key], options);
-			}
-		});
-		return destination
-	}
-
-	function deepmerge(target, source, options) {
-		options = options || {};
-		options.arrayMerge = options.arrayMerge || defaultArrayMerge;
-		options.isMergeableObject = options.isMergeableObject || isMergeableObject;
-		// cloneUnlessOtherwiseSpecified is added to `options` so that custom arrayMerge()
-		// implementations can use it. The caller may not replace it.
-		options.cloneUnlessOtherwiseSpecified = cloneUnlessOtherwiseSpecified;
-
-		var sourceIsArray = Array.isArray(source);
-		var targetIsArray = Array.isArray(target);
-		var sourceAndTargetTypesMatch = sourceIsArray === targetIsArray;
-
-		if (!sourceAndTargetTypesMatch) {
-			return cloneUnlessOtherwiseSpecified(source, options)
-		} else if (sourceIsArray) {
-			return options.arrayMerge(target, source, options)
-		} else {
-			return mergeObject(target, source, options)
-		}
-	}
-
-	deepmerge.all = function deepmergeAll(array, options) {
-		if (!Array.isArray(array)) {
-			throw new Error('first argument should be an array')
-		}
-
-		return array.reduce(function(prev, next) {
-			return deepmerge(prev, next, options)
-		}, {})
-	};
-
-	var deepmerge_1 = deepmerge;
-
-	var cjs = deepmerge_1;
-
-	class Str {
-	    static random(length = 15) {
-	        let text = '';
-	        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	        for (let i = 0; i < length; i++) {
-	            text += possible.charAt(Math.floor(Math.random() * possible.length));
-	        }
-	        return text;
-	    }
-	    static ensureLeft(str, left) {
-	        if (false === str.startsWith(left)) {
-	            return left + str;
-	        }
-	        return str;
-	    }
-	    static ensureRight(str, right) {
-	        if (false === str.endsWith(right)) {
-	            return str + right;
-	        }
-	        return str;
-	    }
-	    static stripLeft(str, left) {
-	        if (str.startsWith(left)) {
-	            return str.substr(left.length);
-	        }
-	        return str;
-	    }
-	    static stripRight(str, right) {
-	        if (str.endsWith(right)) {
-	            return str.substr(0, str.length - right.length);
-	        }
-	        return str;
-	    }
-	    static ucfirst(string) {
-	        return string[0].toUpperCase() + string.slice(1);
-	    }
-	    static lcfirst(string) {
-	        return string[0].toLowerCase() + string.slice(1);
-	    }
-	    static parameters(str, params) {
-	        Object.entries(params).forEach(([key, value]) => str = str.replace(new RegExp(':' + key, 'g'), value));
-	        return str;
-	    }
-	}
-	/**
-	 *
-	 * @param obj
-	 * @param k
-	 * @param v
-	 * @example
-	 *
-	 * params = Object.entries(params).filter(([ key, value ]) => {
-	 *     return value.toString().length > 0;
-	 * }).reduce(utils.objectify, {});
-	 *
-	 */
-	const objectify = (obj, [k, v]) => (Object.assign(Object.assign({}, obj), { [k]: v }));
-
 	class FieldCollection extends Collection {
 	    constructor(fields) {
 	        super(fields);
@@ -4634,7 +4658,7 @@ var streamsApi = (function (exports, Axios, qs) {
 	        __classPrivateFieldSet(this, _Stream_fields, new FieldCollection(fields), "f");
 	    }
 	    serialize() {
-	        let stream = cjs({}, __classPrivateFieldGet(this, _Stream_stream, "f"), { clone: true });
+	        let stream = Obj.exclude(__classPrivateFieldGet(this, _Stream_stream, "f"), ['id', 'handle']);
 	        stream.fields = Object
 	            .entries(this.getFields().toObject())
 	            .map(([id, field]) => [id, field.serialize()])
@@ -7281,6 +7305,7 @@ var streamsApi = (function (exports, Axios, qs) {
 	exports.Field = Field;
 	exports.FieldCollection = FieldCollection;
 	exports.Http = Http;
+	exports.Obj = Obj;
 	exports.PaginatedEntryCollection = PaginatedEntryCollection;
 	exports.Repository = Repository;
 	exports.Request = Request;

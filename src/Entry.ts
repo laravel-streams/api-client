@@ -1,5 +1,6 @@
 import { Stream } from './Stream';
 import { IStreams, StreamID } from './types';
+import { Obj } from './utils';
 
 export type IEntry<ID extends StreamID = StreamID> =
     Entry<ID>
@@ -56,14 +57,22 @@ export class Entry<ID extends StreamID = StreamID> {
                 this.#fresh = false;
                 return true;
             }
-            await http.patchEntry(this.#stream.id, this.#data.id, this.#data);
+            await http.patchEntry(this.#stream.id, this.#data.id, this.getPatchData());
             return true;
         } catch (e) {
             return false;
         }
     }
 
-    serialize(): IStreams[ID]['entries'] {
+    protected getPatchData(){
+        let data=this.toObject();
+        if(this.#stream?.config?.key_name) {
+            return Obj.exclude(data, [ this.#stream.config.key_name ])
+        }
+        return data;
+    }
+
+    toObject(): IStreams[ID]['entries'] {
         return this.#data;
     }
 }

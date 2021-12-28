@@ -6,5 +6,6 @@ export declare class Entry<ID extends StreamID = StreamID> {
     constructor(stream: Stream<ID>, data?: any, fresh?: boolean);
     getStream(): Stream<ID>;
     save(): Promise<boolean>;
-    serialize(): IStreams[ID]['entries'];
+    protected getPatchData(): IStreams[ID]["entries"];
+    toObject(): IStreams[ID]['entries'];
 }

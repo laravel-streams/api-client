@@ -1,3 +1,4 @@
+import deepmerge from 'deepmerge';
 
 export class Str {
     public static random(length = 15) {
@@ -46,11 +47,12 @@ export class Str {
     }
 
     public static parameters(str: string, params: Record<string, string>) {
-        Object.entries(params).forEach(([ key, value ]) => str = str.replace(new RegExp(':'+key,'g'), value));
+        Object.entries(params).forEach(([ key, value ]) => str = str.replace(new RegExp(':' + key, 'g'), value));
         return str;
     }
 
 }
+
 /**
  *
  * @param obj
@@ -64,3 +66,22 @@ export class Str {
  *
  */
 export const objectify = (obj, [ k, v ]) => ({ ...obj, [ k ]: v });
+
+export class Obj {
+    public static merge(...objs) {
+        objs.unshift({});
+        return deepmerge.all(objs, { clone: true });
+    }
+
+    public static clone<T extends object>(obj: T): T {
+        return deepmerge({}, obj, { clone: true }) as any;
+    }
+
+    public static exclude<T extends object, K extends keyof T>(obj: T, keys: K[]) {
+        obj = this.clone(obj);
+        for ( let key of keys ) {
+            delete obj[ key ];
+        }
+        return obj;
+    }
+}

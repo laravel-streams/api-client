@@ -3,8 +3,7 @@ import { Repository } from './Repository';
 import { Criteria } from './Criteria';
 import { ApiLinks, ApiMeta, IBaseStream, IStream, StreamID } from './types';
 import { Streams } from './Streams';
-import deepmerge from 'deepmerge';
-import { objectify } from './utils';
+import { Obj, objectify } from './utils';
 import { FieldCollection } from './FieldCollection';
 
 // export interface Stream<ID extends string = string> extends Omit<IBaseStream<ID>, 'fields'> {}
@@ -34,25 +33,33 @@ export interface Stream<ID extends StreamID = StreamID> extends IStream<ID> {}
  * ```
  */
 export class Stream<ID extends StreamID = StreamID> {
+    #proxy: ProxyHandler<Stream<ID>>;
+    #stream: IBaseStream<ID>;
+    #streams: Streams;
+    #meta?: ApiMeta<'get' | 'post'>;
+    #links?: ApiLinks<'streams', 'get' | 'post'>;
+    #repository: Repository<ID>;
+    #fields: FieldCollection;
+
     constructor(
         streams: Streams,
         stream: IBaseStream<ID>,
-        meta?: ApiMeta<'get'|'post'>,
-        links?: ApiLinks<'streams','get'|'post'>,
+        meta?: ApiMeta<'get' | 'post'>,
+        links?: ApiLinks<'streams', 'get' | 'post'>,
     ) {
         this.#streams = streams;
         this.#stream  = stream;
         this.#meta    = meta;
         this.#links   = links;
         this.unserialize(stream);
-        const self = this
-        let proxy = new Proxy(this, {
+        const self  = this;
+        let proxy   = new Proxy(this, {
             get: (target: Stream<ID>, p: string | symbol, receiver: any) => {
-                if(typeof self[p.toString()] === 'function'){
-                    return self[p.toString()].bind(self);
+                if ( typeof self[ p.toString() ] === 'function' ) {
+                    return self[ p.toString() ].bind(self);
                 }
-                if(self.#stream[p.toString()]){
-                    return self.#stream[p.toString()]
+                if ( self.#stream[ p.toString() ] ) {
+                    return self.#stream[ p.toString() ];
                 }
                 if ( Reflect.has(target.#stream, p) ) {
                     return Reflect.get(target.#stream, p);
@@ -62,8 +69,8 @@ export class Stream<ID extends StreamID = StreamID> {
                 }
             },
             set: (target: Stream<ID>, p: string | symbol, value: any, receiver: any): boolean => {
-                if(self.#stream[p.toString()]){
-                    self.#stream[p.toString()] = value;
+                if ( self.#stream[ p.toString() ] ) {
+                    self.#stream[ p.toString() ] = value;
                     return true;
                 }
                 if ( Reflect.has(target, p) ) {
@@ -72,24 +79,17 @@ export class Stream<ID extends StreamID = StreamID> {
                 return Reflect.set(this.#stream, p, value);
             },
         });
-        this.#proxy=proxy as any;
+        this.#proxy = proxy as any;
         return proxy;
     }
-    #proxy:ProxyHandler<Stream<ID>>
-    #stream: IBaseStream<ID>;
-    #streams: Streams;
-    #meta?: ApiMeta<'get'|'post'>
-    #links?: ApiLinks<'streams','get'|'post'>
-    #repository: Repository<ID>;
-    #fields: FieldCollection;
 
     public getFields(): FieldCollection {return this.#fields;}
 
     public getStreams(): Streams {return this.#streams;}
 
-    public getMeta(): ApiMeta<'get'|'post'> {return this.#meta;}
+    public getMeta(): ApiMeta<'get' | 'post'> {return this.#meta;}
 
-    public getLinks(): ApiLinks<'streams','get'|'post'> {return this.#links;}
+    public getLinks(): ApiLinks<'streams', 'get' | 'post'> {return this.#links;}
 
     public getRepository(): Repository<ID> {
         if ( !this.#repository ) {
@@ -133,7 +133,7 @@ export class Stream<ID extends StreamID = StreamID> {
     }
 
     public serialize(): IStream<ID> {
-        let stream    = deepmerge({}, this.#stream, { clone: true });
+        let stream    = Obj.exclude(this.#stream, [ 'id', 'handle' ]);
         stream.fields = Object
         .entries(this.getFields().toObject())
         .map(([ id, field ]) => [ id, field.serialize() ])

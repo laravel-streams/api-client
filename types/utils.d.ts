@@ -21,3 +21,8 @@ export declare class Str {
  *
  */
 export declare const objectify: (obj: any, [k, v]: [any, any]) => any;
+export declare class Obj {
+    static merge(...objs: any[]): object;
+    static clone<T extends object>(obj: T): T;
+    static exclude<T extends object, K extends keyof T>(obj: T, keys: K[]): T;
+}
