@@ -53,11 +53,13 @@ export class Entry<ID extends StreamID = StreamID> {
         let http = this.#stream.getStreams().http;
         try {
             if ( this.#fresh ) {
-                await http.postEntry(this.#stream.id, this.#data);
+                const response = await http.postEntry(this.#stream.id, this.#data);
+                this.#data = response.data.data
                 this.#fresh = false;
                 return true;
             }
-            await http.patchEntry(this.#stream.id, this.#data.id, this.getPatchData());
+            const response = await http.patchEntry(this.#stream.id, this.#data.id, this.getPatchData());
+            this.#data = response.data.data
             return true;
         } catch (e) {
             return false;

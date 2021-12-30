@@ -1479,11 +1479,13 @@ var streamsApi = (function (exports, Axios, qs) {
 	            let http = __classPrivateFieldGet(this, _Entry_stream, "f").getStreams().http;
 	            try {
 	                if (__classPrivateFieldGet(this, _Entry_fresh, "f")) {
-	                    yield http.postEntry(__classPrivateFieldGet(this, _Entry_stream, "f").id, __classPrivateFieldGet(this, _Entry_data, "f"));
+	                    const response = yield http.postEntry(__classPrivateFieldGet(this, _Entry_stream, "f").id, __classPrivateFieldGet(this, _Entry_data, "f"));
+	                    __classPrivateFieldSet(this, _Entry_data, response.data.data, "f");
 	                    __classPrivateFieldSet(this, _Entry_fresh, false, "f");
 	                    return true;
 	                }
-	                yield http.patchEntry(__classPrivateFieldGet(this, _Entry_stream, "f").id, __classPrivateFieldGet(this, _Entry_data, "f").id, this.getPatchData());
+	                const response = yield http.patchEntry(__classPrivateFieldGet(this, _Entry_stream, "f").id, __classPrivateFieldGet(this, _Entry_data, "f").id, this.getPatchData());
+	                __classPrivateFieldSet(this, _Entry_data, response.data.data, "f");
 	                return true;
 	            }
 	            catch (e) {
@@ -4196,7 +4198,7 @@ var streamsApi = (function (exports, Axios, qs) {
 	}
 	class PaginatedEntryCollection extends Collection {
 	    constructor(entries, meta, links) {
-	        super(...entries);
+	        super(entries);
 	        this.meta = meta;
 	        this.links = links;
 	    }

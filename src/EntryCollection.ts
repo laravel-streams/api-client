@@ -18,7 +18,7 @@ export class EntryCollection<T extends StreamID = StreamID> extends Collection<I
 
 export class PaginatedEntryCollection<ID extends StreamID = StreamID> extends Collection<IEntry<ID>> {
     constructor(entries: IEntry<ID>[], public readonly meta?: ApiMeta<'list'>, public readonly links?: ApiLinks<'entries', 'list'>) {
-        super(...entries);
+        super(entries);
     }
 
     static fromResponse<ID extends StreamID = StreamID>(response: Response<ApiDataResponse<IEntries[ID][], 'entries', 'list'>>, stream: Stream): PaginatedEntryCollection<ID> {

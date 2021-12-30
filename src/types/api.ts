@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from 'axios';
 import { RequestHeaders } from './headers';
 import { IBaseStream, StreamID } from './streams';
 
+//@ts-node
 export interface RequestConfig<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
     headers?: RequestHeaders;
 }
@@ -20,8 +21,8 @@ export interface BaseApiResponse {
 
 export interface ApiDataResponse<DATA = any,
     ENDPOINT extends keyof links.EndpointLinks = keyof links.EndpointLinks,
-    M extends meta.Method=meta.Method,
-    LINKS extends links.Links<ENDPOINT,M> = links.Links<ENDPOINT,M>,
+    M extends meta.Method = meta.Method,
+    LINKS extends links.Links<ENDPOINT, M> = links.Links<ENDPOINT, M>,
     PARAMS extends keyof any = any,
     META extends ApiMeta<M, PARAMS> = ApiMeta<M, PARAMS>> extends BaseApiResponse {
     meta: META;
@@ -29,7 +30,7 @@ export interface ApiDataResponse<DATA = any,
     data: DATA;
 }
 
-let a: ApiDataResponse<{ a: string }, 'entries','get'>;
+let a: ApiDataResponse<{ a: string }, 'entries', 'get'>;
 
 
 export type IStreamPost<T, ID extends StreamID = StreamID> =
@@ -123,5 +124,6 @@ namespace links {
         VALUE extends string = EndpointLinks[ENDPOINT][METHOD]> = Partial<Record<VALUE, string>>;
 
 }
-import ApiLinks = links.Links
-export {ApiLinks}
+import ApiLinks = links.Links;
+
+export { ApiLinks };
