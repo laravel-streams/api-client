@@ -8,7 +8,7 @@
     "main": "dist/streams-api.cjs.js",
     "module": "dist/streams-api.esm-bundler.js",
     "scripts": {
-        "build": "npm-run-all clean test bundle dts cli:analyze doc:api cli:docs",
+        "build": "npm-run-all clean  bundle dts cli:analyze doc:api cli:docs",
         "clean": "npm-run-all clean:dist clean:doc:api",
         "clean:dist": "rm -rf ./dist ./types",
         "clean:doc:api": "rm -rf ./docs/api",

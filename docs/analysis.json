@@ -1,106 +1,106 @@
 {
     "streams-api.nodedeps.min.esm-browser.js": {
-        "bundled": "224.91 kB",
-        "minified": "110.89 kB",
-        "gzipped": "28.04 kB",
+        "bundled": "225.12 kB",
+        "minified": "111.03 kB",
+        "gzipped": "28.05 kB",
         "rollup": "71.96 kB",
         "import_statements": 52,
         "webpack": "76.32 kB"
     },
     "streams-api.esm-browser.js": {
-        "bundled": "694.3 kB",
-        "minified": "282.89 kB",
-        "gzipped": "77.67 kB",
+        "bundled": "694.5 kB",
+        "minified": "283.02 kB",
+        "gzipped": "77.68 kB",
         "rollup": "219.35 kB",
         "import_statements": 0,
         "webpack": "222.44 kB"
     },
     "streams-api.nodedeps.esm-browser.js": {
-        "bundled": "224.91 kB",
-        "minified": "110.89 kB",
-        "gzipped": "28.04 kB",
+        "bundled": "225.12 kB",
+        "minified": "111.03 kB",
+        "gzipped": "28.05 kB",
         "rollup": "71.96 kB",
         "import_statements": 52,
         "webpack": "76.32 kB"
     },
     "streams-api.min.esm-browser.js": {
-        "bundled": "694.3 kB",
-        "minified": "282.89 kB",
-        "gzipped": "77.67 kB",
+        "bundled": "694.5 kB",
+        "minified": "283.02 kB",
+        "gzipped": "77.68 kB",
         "rollup": "219.35 kB",
         "import_statements": 0,
         "webpack": "222.44 kB"
     },
     "streams-api.esm-bundler.js": {
-        "bundled": "694.3 kB",
-        "minified": "282.89 kB",
-        "gzipped": "77.67 kB",
+        "bundled": "694.5 kB",
+        "minified": "283.02 kB",
+        "gzipped": "77.68 kB",
         "rollup": "219.35 kB",
         "import_statements": 0,
         "webpack": "222.44 kB"
     },
     "streams-api.nodedeps.esm-bundler.js": {
-        "bundled": "224.91 kB",
-        "minified": "110.89 kB",
-        "gzipped": "28.04 kB",
+        "bundled": "225.12 kB",
+        "minified": "111.03 kB",
+        "gzipped": "28.05 kB",
         "rollup": "71.96 kB",
         "import_statements": 52,
         "webpack": "76.32 kB"
     },
     "streams-api.min.esm-bundler.js": {
-        "bundled": "694.3 kB",
-        "minified": "282.89 kB",
-        "gzipped": "77.67 kB",
+        "bundled": "694.5 kB",
+        "minified": "283.02 kB",
+        "gzipped": "77.68 kB",
         "rollup": "219.35 kB",
         "import_statements": 0,
         "webpack": "222.44 kB"
     },
     "streams-api.nodedeps.min.esm-bundler.js": {
-        "bundled": "224.91 kB",
-        "minified": "110.89 kB",
-        "gzipped": "28.04 kB",
+        "bundled": "225.12 kB",
+        "minified": "111.03 kB",
+        "gzipped": "28.05 kB",
         "rollup": "71.96 kB",
         "import_statements": 52,
         "webpack": "76.32 kB"
     },
     "streams-api.cjs.js": {
-        "bundled": "694.81 kB",
-        "minified": "283.35 kB",
-        "gzipped": "77.74 kB"
+        "bundled": "695.02 kB",
+        "minified": "283.48 kB",
+        "gzipped": "77.76 kB"
     },
     "streams-api.nodedeps.cjs.js": {
-        "bundled": "225.66 kB",
-        "minified": "111.53 kB",
-        "gzipped": "28.16 kB"
+        "bundled": "225.86 kB",
+        "minified": "111.66 kB",
+        "gzipped": "28.17 kB"
     },
     "streams-api.min.cjs.js": {
-        "bundled": "694.81 kB",
-        "minified": "283.35 kB",
-        "gzipped": "77.74 kB"
+        "bundled": "695.02 kB",
+        "minified": "283.48 kB",
+        "gzipped": "77.76 kB"
     },
     "streams-api.nodedeps.min.cjs.js": {
-        "bundled": "225.66 kB",
-        "minified": "111.53 kB",
-        "gzipped": "28.16 kB"
+        "bundled": "225.86 kB",
+        "minified": "111.66 kB",
+        "gzipped": "28.17 kB"
     },
     "streams-api.global.js": {
-        "bundled": "715.14 kB",
-        "minified": "242.46 kB",
-        "gzipped": "71.34 kB"
+        "bundled": "715.34 kB",
+        "minified": "242.53 kB",
+        "gzipped": "71.35 kB"
     },
     "streams-api.nodedeps.global.js": {
-        "bundled": "232.11 kB",
-        "minified": "96.37 kB",
-        "gzipped": "25.93 kB"
+        "bundled": "232.31 kB",
+        "minified": "96.44 kB",
+        "gzipped": "25.94 kB"
     },
     "streams-api.min.global.js": {
-        "bundled": "715.14 kB",
-        "minified": "242.46 kB",
-        "gzipped": "71.34 kB"
+        "bundled": "715.34 kB",
+        "minified": "242.53 kB",
+        "gzipped": "71.35 kB"
     },
     "streams-api.nodedeps.min.global.js": {
-        "bundled": "232.11 kB",
-        "minified": "96.37 kB",
-        "gzipped": "25.93 kB"
+        "bundled": "232.31 kB",
+        "minified": "96.44 kB",
+        "gzipped": "25.94 kB"
     }
 }
