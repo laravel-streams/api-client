@@ -5,6 +5,11 @@
         "Does this model need any image or thumb? Content (markdown)?",
         "Should this basically be the connecting stream for the many to one content relation?"
     ],
+    "config": {
+        "cache": {
+            "enabled": true
+        }
+    },
     "fields": {
         "id": {
             "type": "uuid",

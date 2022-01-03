@@ -54,6 +54,7 @@ The StreamsConfiguration has one required option and one optional:
 
 - **baseURL** `string` _[required]_ The url that points to the api, eg `http://127.0.0.1/api`
 - **request** `AxiosRequestConfig` The base HTTP Request configuration. This is similar to Axios configuration
+- **etag** `ETagConfiguration` The base HTTP Request configuration. This is similar to Axios configuration
 
 ### Working with the streams instance
 ```ts

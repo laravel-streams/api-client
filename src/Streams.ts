@@ -1,12 +1,13 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { Repository } from './Repository';
-import { ApiDataResponse, IBaseStream, IEntries, IStream, IStreams, RequestConfig, StreamID, StreamsConfiguration } from './types';
+import { IBaseStream, IEntries, RequestConfig, StreamID, StreamsConfiguration } from './types';
 import { Http } from './Http';
 import { AsyncSeriesWaterfallHook, SyncHook, SyncWaterfallHook } from 'tapable';
 import { Collection } from './Collection';
 import deepmerge from 'deepmerge';
 import { Request } from './Request';
+import { ETag, ETagCache, StorageAdapter } from './cache';
 
 export interface Streams {
 
@@ -37,12 +38,20 @@ export interface Streams {
  * ```
  */
 export class Streams {
-    public readonly hooks = {
-        all                : new AsyncSeriesWaterfallHook<IBaseStream>([ 'data' ]),
-        maked              : new SyncHook<Stream>([ 'stream' ]),
-        created            : new SyncHook<Stream>([ 'stream' ]),
-        createRequestConfig: new SyncWaterfallHook<RequestConfig>([ 'config' ]),
-        createRequest      : new SyncWaterfallHook<Request>([ 'request' ]),
+    public static defaults: Partial<StreamsConfiguration> = {
+        etag: {
+            enabled       : false,
+            manifestKey   : 'streams',
+            compression   : true,
+            StorageAdapter: StorageAdapter,
+        },
+    };
+    public readonly hooks                                 = {
+        all                : new AsyncSeriesWaterfallHook<[ IBaseStream ]>([ 'data' ]),
+        maked              : new SyncHook<[ Stream ]>([ 'stream' ]),
+        created            : new SyncHook<[ Stream ]>([ 'stream' ]),
+        createRequestConfig: new SyncWaterfallHook<[ RequestConfig ]>([ 'config' ]),
+        createRequest      : new SyncWaterfallHook<[ Request ]>([ 'request' ]),
     };
 
     #http: Http;
@@ -56,7 +65,21 @@ export class Streams {
     public config: StreamsConfiguration;
 
     constructor(config: StreamsConfiguration) {
-        this.config = deepmerge.all<StreamsConfiguration>([ config, { request: { baseURL: config.baseURL } } ], { clone: true });
+        this.config = deepmerge.all<StreamsConfiguration>([new.target.defaults, config, { request: { baseURL: config.baseURL } } ], { clone: true });
+        this.registerEtag();
+    }
+
+    protected registerEtag() {
+        const storageAdapter                                        = new StorageAdapter(this, window.localStorage);
+        const etagCache                                             = new ETagCache(this, storageAdapter);
+        this.hooks.createRequest.tap('ETag', (request) => {
+            request.hooks.createAxios.tap('ETag', (axios) => {
+                new ETag(axios, etagCache);
+                this.config.etag.enabled ? axios.etag.enableEtag() : axios.etag.disableEtag();
+                return axios;
+            });
+            return request;
+        });
     }
 
     public createRequest<T = any, D = any>(): Request<T, D> {

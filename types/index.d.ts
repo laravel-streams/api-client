@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { Streams } from './Streams';
+import { ETag } from './cache';
 export * from './types';
 export * from './Collection';
 export * from './Criteria';
@@ -14,4 +15,10 @@ export * from './Response';
 export * from './Stream';
 export * from './Streams';
 export * from './utils';
+export * from './cache';
 export default Streams;
+declare module 'axios' {
+    interface AxiosInstance {
+        etag: ETag;
+    }
+}

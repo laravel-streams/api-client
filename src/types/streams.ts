@@ -1,8 +1,18 @@
 import { RequestConfig } from './api';
+import { Streams } from '../Streams';
+import { StorageAdapterInterface } from '../cache';
+
+export interface ETagConfiguration {
+    enabled?: boolean;
+    manifestKey?: string;
+    compression?: boolean;
+    StorageAdapter?: new (streams: Streams, storage: Storage) => StorageAdapterInterface;
+}
 
 export interface StreamsConfiguration {
     baseURL: string;
     request?: RequestConfig;
+    etag?: ETagConfiguration;
 }
 
 export interface IBaseEntry {
@@ -24,10 +34,10 @@ export interface IBaseStream<ID = any> {
         cache?: {
             enabled?: boolean
             ttl?: number
-            store?:string
+            store?: string
         }
         source: {
-            adapter?:'database'| 'eloquent'| 'file' |'filebase'| 'self'|string
+            adapter?: 'database' | 'eloquent' | 'file' | 'filebase' | 'self' | string
 
             type: string
             /** When using `database` adapter */

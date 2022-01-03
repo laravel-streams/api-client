@@ -15,7 +15,7 @@ export declare class Request<T = any, D = any> {
     protected constructor(config: RequestConfig);
     static create<T = any, D = any>(config: RequestConfig<D>): Request<T, D>;
     send(config?: Partial<RequestConfig>): Promise<Response<T, D>>;
-    protected createAxios(): AxiosInstance;
+    createAxios(): AxiosInstance;
     mergeConfig(config: Partial<RequestConfig>): this;
     cancel(message: string): this;
     header(key: RequestHeader, value: RequestHeaderValue): this;

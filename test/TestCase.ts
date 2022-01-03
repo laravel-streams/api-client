@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { bootstrap, env } from './_support/bootstrap';
 import { Http, Stream, Streams } from '../src';
 import { FS, fs, ProxyEnv } from './_support/utils';
+import { StreamsConfiguration } from '../src';
 
 
 export abstract class TestCase {
@@ -29,9 +30,10 @@ export abstract class TestCase {
         return this.getStreams().http;
     }
 
-    protected getStreams(): Streams {
+    protected getStreams(config:Partial<StreamsConfiguration>={}): Streams {
         let streams = new Streams({
             baseURL: this.env.get('APP_URL', 'http://localhost') + '/' + this.env.get('STREAMS_API_PREFIX', 'api'),
+            ...config
         });
         if ( this.env.get('APP_DEBUG', 'false') === 'true' ) {
             streams.hooks.createRequest.tap('DEBUG', request => {

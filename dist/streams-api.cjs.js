@@ -1287,7 +1287,7 @@ function getEnumerableOwnPropertySymbols(target) {
 		: []
 }
 
-function getKeys(target) {
+function getKeys$1(target) {
 	return Object.keys(target).concat(getEnumerableOwnPropertySymbols(target))
 }
 
@@ -1309,11 +1309,11 @@ function propertyIsUnsafe(target, key) {
 function mergeObject(target, source, options) {
 	var destination = {};
 	if (options.isMergeableObject(target)) {
-		getKeys(target).forEach(function(key) {
+		getKeys$1(target).forEach(function(key) {
 			destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
 		});
 	}
-	getKeys(source).forEach(function(key) {
+	getKeys$1(source).forEach(function(key) {
 		if (propertyIsUnsafe(target, key)) {
 			return
 		}
@@ -22510,8 +22510,8 @@ class Response {
     get headers() { return __classPrivateFieldGet(this, _Response_headers, "f"); }
     get ok() { return this.status >= 200 && this.status <= 299; }
     get redirected() { return this.status === Response.HTTP_TEMPORARY_REDIRECT || this.status === Response.HTTP_PERMANENTLY_REDIRECT; }
-    hasHeader(name) { return __classPrivateFieldGet(this, _Response_headers, "f")[name] !== undefined; }
-    getHeader(name) { return __classPrivateFieldGet(this, _Response_headers, "f")[name]; }
+    hasHeader(name) { return __classPrivateFieldGet(this, _Response_headers, "f")[name.toLocaleLowerCase()] !== undefined; }
+    getHeader(name) { return __classPrivateFieldGet(this, _Response_headers, "f")[name.toLocaleLowerCase()]; }
     static fromAxiosResponse(axiosResponse) {
         const response = new Response();
         Object.assign(response, axiosResponse);
@@ -22823,6 +22823,724 @@ class Request {
     });
 })(Request || (Request = {}));
 
+const byLowerCase = toFind => value => toLowerCase(value) === toFind;
+const toLowerCase = value => value.toLowerCase();
+const getKeys = headers => Object.keys(headers);
+const isCacheableMethod = (config) => ~['GET', 'HEAD'].indexOf(config.method.toUpperCase());
+const getHeaderCaseInsensitive = (headerName, headers = {}) => headers[getKeys(headers).find(byLowerCase(headerName))];
+const getBase64UrlFromConfig = (config) => btoa(config.url);
+class ETag {
+    constructor(axios, cache) {
+        this.axios = axios;
+        this.cache = cache;
+        this.request = null;
+        this.response = null;
+        this.enabled = false;
+        Object.defineProperty(axios, 'etag', {
+            get: () => { return this; },
+            configurable: true,
+            enumerable: true,
+        });
+    }
+    enableEtag() {
+        if (this.enabled)
+            return;
+        this.request = this.axios.interceptors.request.use(this.getRequestInterceptor());
+        this.response = this.axios.interceptors.response.use(this.getResponseInterceptor(), this.getResponseErrorInterceptor());
+        this.enabled = true;
+    }
+    disableEtag() {
+        if (!this.enabled)
+            return;
+        this.axios.interceptors.request.eject(this.request);
+        this.axios.interceptors.response.eject(this.response);
+        this.enabled = false;
+    }
+    isEnabled() { return this.enabled; }
+    getCacheByAxiosConfig(config) {
+        return this.cache.get(getBase64UrlFromConfig(config));
+    }
+    getRequestInterceptor() {
+        return (config) => {
+            if (isCacheableMethod(config)) {
+                const uuid = getBase64UrlFromConfig(config);
+                const lastCachedResult = this.cache.get(uuid);
+                if (lastCachedResult) {
+                    config.headers = Object.assign(Object.assign({}, config.headers), { 'If-None-Match': lastCachedResult.etag });
+                }
+            }
+            return config;
+        };
+    }
+    getResponseInterceptor() {
+        return (response) => {
+            if (isCacheableMethod(response.config)) {
+                const responseETAG = getHeaderCaseInsensitive('etag', response.headers);
+                if (responseETAG) {
+                    this.cache.set(getBase64UrlFromConfig(response.config), responseETAG, response.data);
+                }
+            }
+            return response;
+        };
+    }
+    getResponseErrorInterceptor() {
+        return (error) => {
+            if (error.response && error.response.status === 304) {
+                const getCachedResult = this.getCacheByAxiosConfig(error.response.config);
+                if (!getCachedResult) {
+                    return Promise.reject(error);
+                }
+                const newResponse = error.response;
+                newResponse.status = 200;
+                newResponse.data = getCachedResult.value;
+                return Promise.resolve(newResponse);
+            }
+            return Promise.reject(error);
+        };
+    }
+}
+
+class ETagCache {
+    constructor(streams, storage) {
+        this.streams = streams;
+        this.storage = storage;
+    }
+    get manifestKey() { return this.streams.config.etag.manifestKey; }
+    get(key) {
+        return this.storage.get(key);
+    }
+    set(key, etag, value) {
+        this.addToUuidManifest(key);
+        return this.storage.set(key, { etag, value });
+    }
+    reset() {
+        this.getUuidManifest().forEach(uuid => this.storage.unset(uuid));
+    }
+    getUuidManifest() {
+        if (!this.storage.has(this.manifestKey)) {
+            this.storage.set(this.manifestKey, []);
+        }
+        return this.storage.get(this.manifestKey, []);
+    }
+    addToUuidManifest(uuid) {
+        let manifest = this.getUuidManifest();
+        manifest.push(uuid);
+        this.storage.set(this.manifestKey, manifest);
+    }
+}
+
+var lzString = {exports: {}};
+
+(function (module) {
+// Copyright (c) 2013 Pieroxy <pieroxy@pieroxy.net>
+// This work is free. You can redistribute it and/or modify it
+// under the terms of the WTFPL, Version 2
+// For more information see LICENSE.txt or http://www.wtfpl.net/
+//
+// For more information, the home page:
+// http://pieroxy.net/blog/pages/lz-string/testing.html
+//
+// LZ-based compression algorithm, version 1.4.4
+var LZString = (function() {
+
+// private property
+var f = String.fromCharCode;
+var keyStrBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+var keyStrUriSafe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+var baseReverseDic = {};
+
+function getBaseValue(alphabet, character) {
+  if (!baseReverseDic[alphabet]) {
+    baseReverseDic[alphabet] = {};
+    for (var i=0 ; i<alphabet.length ; i++) {
+      baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+    }
+  }
+  return baseReverseDic[alphabet][character];
+}
+
+var LZString = {
+  compressToBase64 : function (input) {
+    if (input == null) return "";
+    var res = LZString._compress(input, 6, function(a){return keyStrBase64.charAt(a);});
+    switch (res.length % 4) { // To produce valid Base64
+    default: // When could this happen ?
+    case 0 : return res;
+    case 1 : return res+"===";
+    case 2 : return res+"==";
+    case 3 : return res+"=";
+    }
+  },
+
+  decompressFromBase64 : function (input) {
+    if (input == null) return "";
+    if (input == "") return null;
+    return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrBase64, input.charAt(index)); });
+  },
+
+  compressToUTF16 : function (input) {
+    if (input == null) return "";
+    return LZString._compress(input, 15, function(a){return f(a+32);}) + " ";
+  },
+
+  decompressFromUTF16: function (compressed) {
+    if (compressed == null) return "";
+    if (compressed == "") return null;
+    return LZString._decompress(compressed.length, 16384, function(index) { return compressed.charCodeAt(index) - 32; });
+  },
+
+  //compress into uint8array (UCS-2 big endian format)
+  compressToUint8Array: function (uncompressed) {
+    var compressed = LZString.compress(uncompressed);
+    var buf=new Uint8Array(compressed.length*2); // 2 bytes per character
+
+    for (var i=0, TotalLen=compressed.length; i<TotalLen; i++) {
+      var current_value = compressed.charCodeAt(i);
+      buf[i*2] = current_value >>> 8;
+      buf[i*2+1] = current_value % 256;
+    }
+    return buf;
+  },
+
+  //decompress from uint8array (UCS-2 big endian format)
+  decompressFromUint8Array:function (compressed) {
+    if (compressed===null || compressed===undefined){
+        return LZString.decompress(compressed);
+    } else {
+        var buf=new Array(compressed.length/2); // 2 bytes per character
+        for (var i=0, TotalLen=buf.length; i<TotalLen; i++) {
+          buf[i]=compressed[i*2]*256+compressed[i*2+1];
+        }
+
+        var result = [];
+        buf.forEach(function (c) {
+          result.push(f(c));
+        });
+        return LZString.decompress(result.join(''));
+
+    }
+
+  },
+
+
+  //compress into a string that is already URI encoded
+  compressToEncodedURIComponent: function (input) {
+    if (input == null) return "";
+    return LZString._compress(input, 6, function(a){return keyStrUriSafe.charAt(a);});
+  },
+
+  //decompress from an output of compressToEncodedURIComponent
+  decompressFromEncodedURIComponent:function (input) {
+    if (input == null) return "";
+    if (input == "") return null;
+    input = input.replace(/ /g, "+");
+    return LZString._decompress(input.length, 32, function(index) { return getBaseValue(keyStrUriSafe, input.charAt(index)); });
+  },
+
+  compress: function (uncompressed) {
+    return LZString._compress(uncompressed, 16, function(a){return f(a);});
+  },
+  _compress: function (uncompressed, bitsPerChar, getCharFromInt) {
+    if (uncompressed == null) return "";
+    var i, value,
+        context_dictionary= {},
+        context_dictionaryToCreate= {},
+        context_c="",
+        context_wc="",
+        context_w="",
+        context_enlargeIn= 2, // Compensate for the first entry which should not count
+        context_dictSize= 3,
+        context_numBits= 2,
+        context_data=[],
+        context_data_val=0,
+        context_data_position=0,
+        ii;
+
+    for (ii = 0; ii < uncompressed.length; ii += 1) {
+      context_c = uncompressed.charAt(ii);
+      if (!Object.prototype.hasOwnProperty.call(context_dictionary,context_c)) {
+        context_dictionary[context_c] = context_dictSize++;
+        context_dictionaryToCreate[context_c] = true;
+      }
+
+      context_wc = context_w + context_c;
+      if (Object.prototype.hasOwnProperty.call(context_dictionary,context_wc)) {
+        context_w = context_wc;
+      } else {
+        if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+          if (context_w.charCodeAt(0)<256) {
+            for (i=0 ; i<context_numBits ; i++) {
+              context_data_val = (context_data_val << 1);
+              if (context_data_position == bitsPerChar-1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+            }
+            value = context_w.charCodeAt(0);
+            for (i=0 ; i<8 ; i++) {
+              context_data_val = (context_data_val << 1) | (value&1);
+              if (context_data_position == bitsPerChar-1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = value >> 1;
+            }
+          } else {
+            value = 1;
+            for (i=0 ; i<context_numBits ; i++) {
+              context_data_val = (context_data_val << 1) | value;
+              if (context_data_position ==bitsPerChar-1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = 0;
+            }
+            value = context_w.charCodeAt(0);
+            for (i=0 ; i<16 ; i++) {
+              context_data_val = (context_data_val << 1) | (value&1);
+              if (context_data_position == bitsPerChar-1) {
+                context_data_position = 0;
+                context_data.push(getCharFromInt(context_data_val));
+                context_data_val = 0;
+              } else {
+                context_data_position++;
+              }
+              value = value >> 1;
+            }
+          }
+          context_enlargeIn--;
+          if (context_enlargeIn == 0) {
+            context_enlargeIn = Math.pow(2, context_numBits);
+            context_numBits++;
+          }
+          delete context_dictionaryToCreate[context_w];
+        } else {
+          value = context_dictionary[context_w];
+          for (i=0 ; i<context_numBits ; i++) {
+            context_data_val = (context_data_val << 1) | (value&1);
+            if (context_data_position == bitsPerChar-1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+
+
+        }
+        context_enlargeIn--;
+        if (context_enlargeIn == 0) {
+          context_enlargeIn = Math.pow(2, context_numBits);
+          context_numBits++;
+        }
+        // Add wc to the dictionary.
+        context_dictionary[context_wc] = context_dictSize++;
+        context_w = String(context_c);
+      }
+    }
+
+    // Output the code for w.
+    if (context_w !== "") {
+      if (Object.prototype.hasOwnProperty.call(context_dictionaryToCreate,context_w)) {
+        if (context_w.charCodeAt(0)<256) {
+          for (i=0 ; i<context_numBits ; i++) {
+            context_data_val = (context_data_val << 1);
+            if (context_data_position == bitsPerChar-1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+          }
+          value = context_w.charCodeAt(0);
+          for (i=0 ; i<8 ; i++) {
+            context_data_val = (context_data_val << 1) | (value&1);
+            if (context_data_position == bitsPerChar-1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        } else {
+          value = 1;
+          for (i=0 ; i<context_numBits ; i++) {
+            context_data_val = (context_data_val << 1) | value;
+            if (context_data_position == bitsPerChar-1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = 0;
+          }
+          value = context_w.charCodeAt(0);
+          for (i=0 ; i<16 ; i++) {
+            context_data_val = (context_data_val << 1) | (value&1);
+            if (context_data_position == bitsPerChar-1) {
+              context_data_position = 0;
+              context_data.push(getCharFromInt(context_data_val));
+              context_data_val = 0;
+            } else {
+              context_data_position++;
+            }
+            value = value >> 1;
+          }
+        }
+        context_enlargeIn--;
+        if (context_enlargeIn == 0) {
+          context_enlargeIn = Math.pow(2, context_numBits);
+          context_numBits++;
+        }
+        delete context_dictionaryToCreate[context_w];
+      } else {
+        value = context_dictionary[context_w];
+        for (i=0 ; i<context_numBits ; i++) {
+          context_data_val = (context_data_val << 1) | (value&1);
+          if (context_data_position == bitsPerChar-1) {
+            context_data_position = 0;
+            context_data.push(getCharFromInt(context_data_val));
+            context_data_val = 0;
+          } else {
+            context_data_position++;
+          }
+          value = value >> 1;
+        }
+
+
+      }
+      context_enlargeIn--;
+      if (context_enlargeIn == 0) {
+        context_enlargeIn = Math.pow(2, context_numBits);
+        context_numBits++;
+      }
+    }
+
+    // Mark the end of the stream
+    value = 2;
+    for (i=0 ; i<context_numBits ; i++) {
+      context_data_val = (context_data_val << 1) | (value&1);
+      if (context_data_position == bitsPerChar-1) {
+        context_data_position = 0;
+        context_data.push(getCharFromInt(context_data_val));
+        context_data_val = 0;
+      } else {
+        context_data_position++;
+      }
+      value = value >> 1;
+    }
+
+    // Flush the last char
+    while (true) {
+      context_data_val = (context_data_val << 1);
+      if (context_data_position == bitsPerChar-1) {
+        context_data.push(getCharFromInt(context_data_val));
+        break;
+      }
+      else context_data_position++;
+    }
+    return context_data.join('');
+  },
+
+  decompress: function (compressed) {
+    if (compressed == null) return "";
+    if (compressed == "") return null;
+    return LZString._decompress(compressed.length, 32768, function(index) { return compressed.charCodeAt(index); });
+  },
+
+  _decompress: function (length, resetValue, getNextValue) {
+    var dictionary = [],
+        enlargeIn = 4,
+        dictSize = 4,
+        numBits = 3,
+        entry = "",
+        result = [],
+        i,
+        w,
+        bits, resb, maxpower, power,
+        c,
+        data = {val:getNextValue(0), position:resetValue, index:1};
+
+    for (i = 0; i < 3; i += 1) {
+      dictionary[i] = i;
+    }
+
+    bits = 0;
+    maxpower = Math.pow(2,2);
+    power=1;
+    while (power!=maxpower) {
+      resb = data.val & data.position;
+      data.position >>= 1;
+      if (data.position == 0) {
+        data.position = resetValue;
+        data.val = getNextValue(data.index++);
+      }
+      bits |= (resb>0 ? 1 : 0) * power;
+      power <<= 1;
+    }
+
+    switch (bits) {
+      case 0:
+          bits = 0;
+          maxpower = Math.pow(2,8);
+          power=1;
+          while (power!=maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb>0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+        c = f(bits);
+        break;
+      case 1:
+          bits = 0;
+          maxpower = Math.pow(2,16);
+          power=1;
+          while (power!=maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb>0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+        c = f(bits);
+        break;
+      case 2:
+        return "";
+    }
+    dictionary[3] = c;
+    w = c;
+    result.push(c);
+    while (true) {
+      if (data.index > length) {
+        return "";
+      }
+
+      bits = 0;
+      maxpower = Math.pow(2,numBits);
+      power=1;
+      while (power!=maxpower) {
+        resb = data.val & data.position;
+        data.position >>= 1;
+        if (data.position == 0) {
+          data.position = resetValue;
+          data.val = getNextValue(data.index++);
+        }
+        bits |= (resb>0 ? 1 : 0) * power;
+        power <<= 1;
+      }
+
+      switch (c = bits) {
+        case 0:
+          bits = 0;
+          maxpower = Math.pow(2,8);
+          power=1;
+          while (power!=maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb>0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+
+          dictionary[dictSize++] = f(bits);
+          c = dictSize-1;
+          enlargeIn--;
+          break;
+        case 1:
+          bits = 0;
+          maxpower = Math.pow(2,16);
+          power=1;
+          while (power!=maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb>0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+          dictionary[dictSize++] = f(bits);
+          c = dictSize-1;
+          enlargeIn--;
+          break;
+        case 2:
+          return result.join('');
+      }
+
+      if (enlargeIn == 0) {
+        enlargeIn = Math.pow(2, numBits);
+        numBits++;
+      }
+
+      if (dictionary[c]) {
+        entry = dictionary[c];
+      } else {
+        if (c === dictSize) {
+          entry = w + w.charAt(0);
+        } else {
+          return null;
+        }
+      }
+      result.push(entry);
+
+      // Add w+entry[0] to the dictionary.
+      dictionary[dictSize++] = w + entry.charAt(0);
+      enlargeIn--;
+
+      w = entry;
+
+      if (enlargeIn == 0) {
+        enlargeIn = Math.pow(2, numBits);
+        numBits++;
+      }
+
+    }
+  }
+};
+  return LZString;
+})();
+
+if( module != null ) {
+  module.exports = LZString;
+}
+}(lzString));
+
+var lzs = lzString.exports;
+
+class Transformer {
+    static get prefixesLength() { return this.typePrefix.length + 5; }
+    static compress(value) {
+        return this.typePrefix + 'lz-s|' + lzs.compressToUTF16(value);
+    }
+    static decompress(value) {
+        let type, length, source;
+        length = value.length;
+        if (length < this.prefixesLength) {
+            // then it wasn't compressed by us
+            return value;
+        }
+        type = value.substr(0, this.prefixesLength - 1);
+        source = value.substring(this.prefixesLength);
+        if (type === this.typePrefix + 'lz-s') {
+            value = lzs.decompressFromUTF16(source);
+        }
+        return value;
+    }
+    static encode(value) {
+        if (Object.prototype.toString.call(value) === '[object Date]') {
+            return this.typePrefix + 'date|' + value.getTime().toString();
+        }
+        if (Object.prototype.toString.call(value) === '[object RegExp]') {
+            return this.typePrefix + 'expr|' + value.source;
+        }
+        if (typeof value === 'number') {
+            return this.typePrefix + 'numb|' + value;
+        }
+        if (typeof value === 'boolean') {
+            return this.typePrefix + 'bool|' + (value ? '1' : '0');
+        }
+        if (typeof value === 'string') {
+            return this.typePrefix + 'strn|' + value;
+        }
+        if (value === Object(value)) {
+            return this.typePrefix + 'objt|' + JSON.stringify(value);
+        }
+        // hmm, we don't know what to do with it,
+        // so just return it as is
+        return value;
+    }
+    static decode(value) {
+        let type, length, source;
+        length = value.length;
+        if (length < this.prefixesLength) {
+            // then it wasn't encoded by us
+            return value;
+        }
+        type = value.substr(0, this.prefixesLength - 1);
+        source = value.substring(this.prefixesLength);
+        switch (type) {
+            case this.typePrefix + 'date':
+                return new Date(parseInt(source));
+            case this.typePrefix + 'expr':
+                return new RegExp(source);
+            case this.typePrefix + 'numb':
+                return Number(source);
+            case this.typePrefix + 'bool':
+                return Boolean(source === '1');
+            case this.typePrefix + 'strn':
+                return '' + source;
+            case this.typePrefix + 'objt':
+                return JSON.parse(source);
+            default:
+                // hmm, we reached here, we don't know the type,
+                // then it means it wasn't encoded by us, so just
+                // return whatever value it is
+                return value;
+        }
+    }
+}
+Transformer.typePrefix = '__ls_';
+
+class StorageAdapter {
+    constructor(streams, storage = localStorage) {
+        this.streams = streams;
+        this.storage = storage;
+    }
+    get config() { return this.streams.config.etag; }
+    get(key, defaultValue) {
+        if (!this.has(key)) {
+            return defaultValue;
+        }
+        let strValue = this.storage.getItem(key);
+        strValue = Transformer.decompress(strValue);
+        return Transformer.decode(strValue);
+    }
+    has(key) {
+        return !!this.storage.getItem(key);
+    }
+    set(key, value) {
+        let strValue = Transformer.encode(value);
+        strValue = Transformer.compress(strValue);
+        this.storage.setItem(key, strValue);
+        return this;
+    }
+    unset(key) {
+        this.storage.removeItem(key);
+        return this;
+    }
+    clear() {
+        this.storage.clear();
+        return this;
+    }
+}
+
 var _Streams_http;
 /**
  * The main class
@@ -22858,13 +23576,26 @@ class Streams {
             createRequest: new SyncWaterfallHook(['request']),
         };
         _Streams_http.set(this, void 0);
-        this.config = cjs.all([config, { request: { baseURL: config.baseURL } }], { clone: true });
+        this.config = cjs.all([new.target.defaults, config, { request: { baseURL: config.baseURL } }], { clone: true });
+        this.registerEtag();
     }
     get http() {
         if (!__classPrivateFieldGet(this, _Streams_http, "f")) {
             __classPrivateFieldSet(this, _Streams_http, new Http(this), "f");
         }
         return __classPrivateFieldGet(this, _Streams_http, "f");
+    }
+    registerEtag() {
+        const storageAdapter = new StorageAdapter(this, window.localStorage);
+        const etagCache = new ETagCache(this, storageAdapter);
+        this.hooks.createRequest.tap('ETag', (request) => {
+            request.hooks.createAxios.tap('ETag', (axios) => {
+                new ETag(axios, etagCache);
+                this.config.etag.enabled ? axios.etag.enableEtag() : axios.etag.disableEtag();
+                return axios;
+            });
+            return request;
+        });
     }
     createRequest() {
         const config = this.hooks.createRequestConfig.call(this.config.request);
@@ -22940,6 +23671,14 @@ class Streams {
     }
 }
 _Streams_http = new WeakMap();
+Streams.defaults = {
+    etag: {
+        enabled: false,
+        manifestKey: 'streams',
+        compression: true,
+        StorageAdapter: StorageAdapter,
+    },
+};
 
 const mimes = {
     'application/andrew-inset': ['ez'],
@@ -23247,6 +23986,8 @@ const mimes = {
 
 exports.Collection = Collection;
 exports.Criteria = Criteria;
+exports.ETag = ETag;
+exports.ETagCache = ETagCache;
 exports.Entry = Entry;
 exports.EntryCollection = EntryCollection;
 exports.Field = Field;
@@ -23257,9 +23998,11 @@ exports.PaginatedEntryCollection = PaginatedEntryCollection;
 exports.Repository = Repository;
 exports.Request = Request;
 exports.Response = Response;
+exports.StorageAdapter = StorageAdapter;
 exports.Str = Str;
 exports.Stream = Stream$1;
 exports.Streams = Streams;
+exports.Transformer = Transformer;
 exports.comparisonOperators = comparisonOperators;
 exports["default"] = Streams;
 exports.isFieldData = isFieldData;

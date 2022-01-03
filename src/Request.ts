@@ -62,7 +62,7 @@ export class Request<T = any, D = any> {
         return response;
     }
 
-    protected createAxios(): AxiosInstance {
+    public createAxios(): AxiosInstance {
         let axios = Axios.create(this.config as any);
         axios     = this.hooks.createAxios.call(axios, this);
         return axios;

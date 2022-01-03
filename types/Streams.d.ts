@@ -34,16 +34,18 @@ export interface Streams {
  */
 export declare class Streams {
     #private;
+    static defaults: Partial<StreamsConfiguration>;
     readonly hooks: {
-        all: AsyncSeriesWaterfallHook<IBaseStream<any>, import("tapable").UnsetAdditionalOptions>;
-        maked: SyncHook<Stream<string | number>, void, import("tapable").UnsetAdditionalOptions>;
-        created: SyncHook<Stream<string | number>, void, import("tapable").UnsetAdditionalOptions>;
-        createRequestConfig: SyncWaterfallHook<RequestConfig<any>, import("tapable").UnsetAdditionalOptions>;
-        createRequest: SyncWaterfallHook<Request<any, any>, import("tapable").UnsetAdditionalOptions>;
+        all: AsyncSeriesWaterfallHook<[IBaseStream<any>], import("tapable").UnsetAdditionalOptions>;
+        maked: SyncHook<[Stream<string | number>], void, import("tapable").UnsetAdditionalOptions>;
+        created: SyncHook<[Stream<string | number>], void, import("tapable").UnsetAdditionalOptions>;
+        createRequestConfig: SyncWaterfallHook<[RequestConfig<any>], import("tapable").UnsetAdditionalOptions>;
+        createRequest: SyncWaterfallHook<[Request<any, any>], import("tapable").UnsetAdditionalOptions>;
     };
     get http(): Http;
     config: StreamsConfiguration;
     constructor(config: StreamsConfiguration);
+    protected registerEtag(): void;
     createRequest<T = any, D = any>(): Request<T, D>;
     /**
      * Return all streams.

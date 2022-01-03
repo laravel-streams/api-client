@@ -25,9 +25,9 @@ export class Response<T = any, D = any> {
     public statusText: string;
     public request: XMLHttpRequest;
 
-    public hasHeader(name: AnyHeader): boolean {return this.#headers[ name ] !== undefined;}
+    public hasHeader(name: AnyHeader): boolean {return this.#headers[ name.toLocaleLowerCase() ] !== undefined;}
 
-    public getHeader(name: AnyHeader): HeaderValue {return this.#headers[ name ];}
+    public getHeader(name: AnyHeader): HeaderValue {return this.#headers[ name.toLocaleLowerCase() ];}
 
     public static fromAxiosResponse<T = any, D = any>(axiosResponse: AxiosResponse<T, D>) {
         const response = new Response<T, D>();

@@ -17,6 +17,7 @@
         "noImplicitAny": false,
         "noImplicitReturns": false,
         "noImplicitThis": false,
+        "importHelpers": false,
         "resolveJsonModule": true,
         "noImplicitUseStrict": false,
         "baseUrl": ".",

@@ -1,7 +1,16 @@
 import { RequestConfig } from './api';
+import { Streams } from '../Streams';
+import { StorageAdapterInterface } from '../cache';
+export interface ETagConfiguration {
+    enabled?: boolean;
+    manifestKey?: string;
+    compression?: boolean;
+    StorageAdapter?: new (streams: Streams, storage: Storage) => StorageAdapterInterface;
+}
 export interface StreamsConfiguration {
     baseURL: string;
     request?: RequestConfig;
+    etag?: ETagConfiguration;
 }
 export interface IBaseEntry {
     [key: string]: any;
