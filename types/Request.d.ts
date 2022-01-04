@@ -1,5 +1,5 @@
 import { AxiosInstance, CancelTokenSource, CancelTokenStatic } from 'axios';
-import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue, StreamsConfiguration } from './types';
+import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue } from './types';
 import { SyncWaterfallHook } from 'tapable';
 import { Response } from './Response';
 export declare class Request<T = any, D = any> {
@@ -27,5 +27,5 @@ export declare class Request<T = any, D = any> {
     authorization(key: 'Basic' | 'Bearer', value: string): this;
 }
 export declare namespace Request {
-    const getDefaultConfig: () => StreamsConfiguration;
+    const getDefaultConfig: () => RequestConfig;
 }

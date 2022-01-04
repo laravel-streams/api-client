@@ -1,7 +1,7 @@
 import { Stream } from './Stream';
 import { Criteria } from './Criteria';
 import { EntryCollection } from './EntryCollection';
-import { Entry } from './Entry';
+import { Entry, IEntry } from './Entry';
 import { StreamID } from './types';
 
 
@@ -23,7 +23,7 @@ export class Repository<ID extends StreamID> {
      *
      * @returns EntryCollection
      */
-    async all(): Promise<EntryCollection> {
+    async all(): Promise<EntryCollection<ID>> {
         let response = await this.http.getEntries<any>(this.stream.id);
         let entries  = response.data.data.map(entry => new Entry(this.stream, entry, false));
         return new EntryCollection(entries, response.data.meta, response.data.links);
@@ -35,7 +35,7 @@ export class Repository<ID extends StreamID> {
      * @param id
      * @returns Entry
      */
-    async find(id: string | number): Promise<Entry> {
+    async find(id: string | number): Promise<IEntry<ID>> {
 
         let criteria = this.stream.getEntries();
 
@@ -48,7 +48,7 @@ export class Repository<ID extends StreamID> {
      * @param ids
      * @returns EntryCollection
      */
-    async findAll(ids: Array<string | number>): Promise<EntryCollection> {
+    async findAll(ids: Array<string | number>): Promise<EntryCollection<ID>> {
 
         let criteria = this.stream.getEntries();
 
@@ -62,7 +62,7 @@ export class Repository<ID extends StreamID> {
      * @param value
      * @returns Entry
      */
-    async findBy(field: string, value: any): Promise<Entry> {
+    async findBy(field: string, value: any): Promise<IEntry<ID>> {
 
         let criteria = this.stream.getEntries();
 
@@ -82,7 +82,7 @@ export class Repository<ID extends StreamID> {
      * @param attributes
      * @returns
      */
-    async create(attributes: any): Promise<Entry> {
+    async create(attributes: any): Promise<IEntry<ID>> {
 
         let entry = this.newCriteria().newInstance(attributes);
 
@@ -123,7 +123,7 @@ export class Repository<ID extends StreamID> {
      * @param attributes
      * @returns
      */
-    newInstance(attributes: any): Entry<ID> {
+    newInstance(attributes: any): IEntry<ID> {
         return this.newCriteria().newInstance(attributes);
     }
 
