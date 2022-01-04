@@ -6,14 +6,22 @@ const toLowerCase              = value => value.toLowerCase();
 const getKeys                  = headers => Object.keys(headers);
 const isCacheableMethod        = (config: AxiosRequestConfig) => ~ [ 'GET', 'HEAD' ].indexOf(config.method.toUpperCase());
 const getHeaderCaseInsensitive = (headerName, headers = {}) => headers[ getKeys(headers).find(byLowerCase(headerName)) ];
-const getBase64UrlFromConfig   = (config: AxiosRequestConfig) => btoa(config.url);
+const getBase64UrlFromConfig   = (config: AxiosRequestConfig) => {
+    let url = config.url;
+    if ( config.paramsSerializer ) {
+        url += '?' + config.paramsSerializer(config.params);
+    } else {
+        url+= '?' + JSON.stringify(config.params)
+    }
+    return btoa(url);
+};
 
 export class ETag {
     protected request: number  = null;
     protected response: number = null;
     protected enabled: boolean = false;
 
-    constructor(protected axios: AxiosInstance, public cache:ETagCache) {
+    constructor(protected axios: AxiosInstance, public cache: ETagCache) {
         Object.defineProperty(axios, 'etag', {
             get         : () => {return this;},
             configurable: true,

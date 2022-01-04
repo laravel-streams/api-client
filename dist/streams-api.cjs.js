@@ -22828,7 +22828,16 @@ const toLowerCase = value => value.toLowerCase();
 const getKeys = headers => Object.keys(headers);
 const isCacheableMethod = (config) => ~['GET', 'HEAD'].indexOf(config.method.toUpperCase());
 const getHeaderCaseInsensitive = (headerName, headers = {}) => headers[getKeys(headers).find(byLowerCase(headerName))];
-const getBase64UrlFromConfig = (config) => btoa(config.url);
+const getBase64UrlFromConfig = (config) => {
+    let url = config.url;
+    if (config.paramsSerializer) {
+        url += '?' + config.paramsSerializer(config.params);
+    }
+    else {
+        url += '?' + JSON.stringify(config.params);
+    }
+    return btoa(url);
+};
 class ETag {
     constructor(axios, cache) {
         this.axios = axios;
@@ -23519,7 +23528,9 @@ class StorageAdapter {
             return defaultValue;
         }
         let strValue = this.storage.getItem(key);
-        strValue = Transformer.decompress(strValue);
+        if (this.config.compression) {
+            strValue = Transformer.decompress(strValue);
+        }
         return Transformer.decode(strValue);
     }
     has(key) {
@@ -23527,7 +23538,9 @@ class StorageAdapter {
     }
     set(key, value) {
         let strValue = Transformer.encode(value);
-        strValue = Transformer.compress(strValue);
+        if (this.config.compression) {
+            strValue = Transformer.compress(strValue);
+        }
         this.storage.setItem(key, strValue);
         return this;
     }

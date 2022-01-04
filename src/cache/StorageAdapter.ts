@@ -16,8 +16,9 @@ export class StorageAdapter implements StorageAdapterInterface {
             return defaultValue;
         }
         let strValue = this.storage.getItem(key);
-
-        strValue     = Transformer.decompress(strValue);
+        if(this.config.compression) {
+            strValue = Transformer.decompress(strValue);
+        }
         return Transformer.decode(strValue);
     }
 
@@ -27,7 +28,9 @@ export class StorageAdapter implements StorageAdapterInterface {
 
     public set(key: string, value: any): this {
         let strValue = Transformer.encode(value);
-        strValue     = Transformer.compress(strValue);
+        if(this.config.compression) {
+            strValue = Transformer.compress(strValue);
+        }
         this.storage.setItem(key, strValue);
         return this;
     }
