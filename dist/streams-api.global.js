@@ -4441,8 +4441,9 @@ var streamsApi = (function (exports) {
 	     */
 	    find(id) {
 	        return __awaiter(this, void 0, void 0, function* () {
-	            let criteria = this.stream.getEntries();
-	            return criteria.where('id', id).first();
+	            let response = yield this.http.getEntry(this.stream.id, id);
+	            let entry = new Entry(this.stream, response.data.data, false);
+	            return entry;
 	        });
 	    }
 	    /**

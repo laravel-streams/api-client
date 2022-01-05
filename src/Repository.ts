@@ -37,9 +37,10 @@ export class Repository<ID extends StreamID> {
      */
     async find(id: string | number): Promise<IEntry<ID>> {
 
-        let criteria = this.stream.getEntries();
+        let response = await this.http.getEntry<ID>(this.stream.id, id);
+        let entry  = new Entry(this.stream, response.data.data, false);
 
-        return criteria.where('id', id).first();
+        return entry;
     }
 
     /**

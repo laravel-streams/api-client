@@ -2,19 +2,61 @@
     "__created_at": 1638488509,
     "__updated_at": 1638488509,
     "name": "clients",
-    "source": {"type": "file"},
+    "config": {
+        "source": {"type": "file"},
+        "key_name": "id"
+    },
     "fields": {
-        "id": {"type": "number","handle": "id","rules": [],"input": {"type": "number"}},
-        "name": {"type": "string","handle": "name","rules": [],"input": {"type": "string"}},
-        "email": {"type": "email","handle": "email","rules": [],"input": {"type": "email"}},
-        "age": {"type": "number","handle": "age","rules": [],"input": {"type": "number"}},
-        "relative": {"type": "relationship","config": {"related": "clients"},"handle": "relative","rules": [],"input": {"type": "relationship"}},
-        "foo": {"handle": "foo","type": "boolean"}
+        "id": {
+            "type": "number",
+            "handle": "id",
+            "config": {
+                "default": "increment"
+            },
+            "rules": [],
+            "input": {
+                "type": "number"
+            }
+        },
+        "name": {
+            "type": "string",
+            "handle": "name",
+            "rules": [],
+            "input": {
+                "type": "string"
+            }
+        },
+        "email": {
+            "type": "email",
+            "handle": "email",
+            "rules": [],
+            "input": {
+                "type": "email"
+            }
+        },
+        "age": {
+            "type": "number",
+            "handle": "age",
+            "rules": [],
+            "input": {
+                "type": "number"
+            }
+        },
+        "relative": {
+            "type": "relationship",
+            "config": {
+                "related": "clients"
+            },
+            "handle": "relative",
+            "rules": [],
+            "input": {
+                "type": "relationship"
+            }
+        }
     },
     "ui": {"table": {"columns": ["id","email"],"buttons": {"edit": {"href": "cp\/clients\/{entry.id}\/edit"}}},"form": []},
     "handle": null,
     "routes": [],
     "rules": {"id": ["numeric"],"age": ["numeric"]},
-    "validators": [],
-    "config": {"source": {"type": "file"}}
+    "validators": []
 }
