@@ -8,7 +8,7 @@
     },
     "fields": {
         "id": {
-            "type": "number",
+            "type": "integer",
             "handle": "id",
             "config": {
                 "default": "increment"

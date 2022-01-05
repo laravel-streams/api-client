@@ -5,7 +5,9 @@
         "abstract": "App\\Models\\User",
         "cache": {
             "enabled": true
-        }
+        },
+        "source": {"type": "filebase"},
+        "key_name": "id"
     },
     "fields": {
         "id": {

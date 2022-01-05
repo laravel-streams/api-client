@@ -98,10 +98,17 @@ export function proxyEnv<T extends object>(env: T): ProxyEnv<T> {
 }
 
 export abstract class StreamDirectoryStorage extends DirectoryStorage {
+    static defaultStreamConfig: Partial<IStream['config']> = {
+        key_name: 'id',
+        source  : {
+            type: 'filebase',
+        },
+    };
     protected abstract streamsDir: string;
     protected abstract dataDir: string;
 
     createStream(name: string, stream: IStream) {
+        stream.config = merge({} as any, StreamDirectoryStorage.defaultStreamConfig, stream.config || {});
         this.deleteStream(name);
         this.writeJson(this.path(this.streamsDir, name + '.json'), stream, { pretty: true });
         return this.getStream(name);
@@ -112,7 +119,7 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
         this.deleteStreamData(name);
     }
 
-    deleteStreamData(name:string){
+    deleteStreamData(name: string) {
         this.delete(this.path(this.dataDir, name + '.json'));
         if ( this.isFile(this.dataDir, name + '.json') ) {
             this.delete(this.path(this.dataDir, name + '.json'));
@@ -151,20 +158,22 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
         }
     }
 
-    generateFakeStreamEntries(name:string, amount:number){
-        let stream = this.getStream(name)
+    generateFakeStreamEntries(name: string, amount: number) {
+        let stream  = this.getStream(name);
         let entries = Generator.fromStream(stream, amount);
         this.createStreamEntries(name, entries);
         return entries;
     }
 
-    createStreamEntries(name, data: object | Array<any>) {
+    createStreamEntries(name, data: Array<any>) {
         this.ensureDir(this.dataDir);
-        if ( Array.isArray(data) ) {
-            this.ensureDir(this.dataDir,name);
+        const stream=this.getStream(name);
+        const usesMultipleFiles = stream?.config?.source?.type !== 'file';
+        if ( usesMultipleFiles ) {
+            this.ensureDir(this.dataDir, name);
             for ( const entry of data ) {
                 let fileName = (entry.id || entry.handle || entry.__filename).toString();
-                if(!fileName.endsWith('.json')) fileName += '.json';
+                if ( !fileName.endsWith('.json') ) fileName += '.json';
                 this.writeJson(this.path(this.dataDir, name, fileName), entry);
             }
         } else {
@@ -173,7 +182,7 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
     }
 
     copyStream(name, dest: StreamDirectoryStorage) {
-        let stream = this.getStream(name)
+        let stream = this.getStream(name);
         dest.createStream(name, stream.obj);
         dest.createStreamEntries(name, this.getStreamEntries(name));
         return this;
