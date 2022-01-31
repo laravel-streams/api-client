@@ -40,7 +40,6 @@ export class EtagTest extends TestCase {
         this.fs.fixtures.copyStream('posts', this.fs.project);
         const response = await streams.http.getEntries<any>('posts');
         response.hasHeader('ETag').should.equal(true);
-
         this.fs.project.deleteStream('posts');
     }
 }

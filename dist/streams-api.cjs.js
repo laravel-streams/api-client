@@ -4487,7 +4487,7 @@ class Repository {
     create(attributes) {
         return __awaiter(this, void 0, void 0, function* () {
             let entry = this.newCriteria().newInstance(attributes);
-            entry.save();
+            yield entry.save();
             return entry;
         });
     }

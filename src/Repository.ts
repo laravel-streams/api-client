@@ -87,7 +87,7 @@ export class Repository<ID extends StreamID> {
 
         let entry = this.newCriteria().newInstance(attributes);
 
-        entry.save();
+        await entry.save();
 
         return entry;
     }
