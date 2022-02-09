@@ -57,6 +57,10 @@ export class Generator implements FieldTypeFakers {
         return f.internet.color();
     }
 
+    public uuid(field?: Field): FieldTypes['uuid'] {
+        return f.datatype.uuid();
+    }
+
     public date(field?: Field): FieldTypes['date'] {
         return f.date.recent().toDateString();
     }
@@ -149,10 +153,13 @@ export class Generator implements FieldTypeFakers {
     }
 
     public relationship(field?: Field): FieldTypes['relationship'] {
-        return f.random.alpha();
+        return f.datatype.number(200);
     }
 
     public select(field?: Field): FieldTypes['select'] {
+        if(isDetailedField(field) && field?.config?.options){
+            return f.random.arrayElement(Object.keys(field?.config?.options));
+        }
         return f.random.word();
     }
 

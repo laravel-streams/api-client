@@ -139,7 +139,7 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
 
     getStreamEntries(name): any {
         if ( !this.hasStreamData(name) ) {
-            return null;
+            return [];
         }
         if ( this.isDirectory(this.dataDir, name) ) {
             return this.glob(join(this.dataDir, name + '/*.json')).map(jsonFile => {
@@ -161,7 +161,7 @@ export abstract class StreamDirectoryStorage extends DirectoryStorage {
     generateFakeStreamEntries(name: string, amount: number) {
         let stream  = this.getStream(name);
         let entries = Generator.fromStream(stream, amount);
-        this.createStreamEntries(name, entries);
+        this.createStreamEntries(name, Object.values(entries));
         return entries;
     }
 

@@ -4191,6 +4191,12 @@ var streamsApi = (function (exports) {
 	        const entries = Object.values(response.data.data).map(entry => new Entry(stream, entry, false));
 	        return new EntryCollection(entries, response.data.meta, response.data.links);
 	    }
+	    toObject() {
+	        let obj = Object.entries(super.toObject()).map(([key, value]) => {
+	            return [key, value.toObject()];
+	        }).reduce(objectify, {});
+	        return obj;
+	    }
 	}
 	class PaginatedEntryCollection extends Collection {
 	    constructor(entries, meta, links) {
@@ -22720,6 +22726,8 @@ var streamsApi = (function (exports) {
 	            send: new SyncWaterfallHook(['config', 'axios', 'request']),
 	            response: new SyncWaterfallHook(['response', 'config', 'request']),
 	        };
+	        this.stringifyFunction = stringify;
+	        this.stringifyOptions = {};
 	        this.CancelToken = axios.CancelToken;
 	        this.CancelTokenSource = this.CancelToken.source();
 	        this.config = cjs.all([
@@ -22727,9 +22735,14 @@ var streamsApi = (function (exports) {
 	            config,
 	        ], { clone: true });
 	        this.config.cancelToken = this.CancelTokenSource.token;
-	        this.config.paramsSerializer = params => stringify(params);
+	        // this.config.paramsSerializer = params => stringify(params);
+	        this.config.paramsSerializer = params => this.stringifyFunction(params, this.stringifyOptions);
 	    }
 	    get cancelToken() { return this.CancelTokenSource.token; }
+	    setStringifyOptions(options) {
+	        this.stringifyOptions = options;
+	        return this;
+	    }
 	    static create(config) {
 	        return new Request(config);
 	    }
