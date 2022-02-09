@@ -3,6 +3,7 @@ import { Collection } from './Collection';
 import { Response } from './Response';
 import { ApiDataResponse, ApiLinks, ApiMeta, IEntries, StreamID } from './types';
 import { Stream } from './Stream';
+import { objectify } from './utils';
 
 
 export class EntryCollection<T extends StreamID = StreamID> extends Collection<IEntry<T>> {
@@ -13,6 +14,14 @@ export class EntryCollection<T extends StreamID = StreamID> extends Collection<I
     static fromResponse<ID extends StreamID = StreamID>(response: Response<ApiDataResponse<IEntries[ID][], 'entries', 'list'>>, stream: Stream<ID>): EntryCollection<ID> {
         const entries = Object.values(response.data.data).map(entry => new Entry(stream, entry, false));
         return new EntryCollection<ID>(entries as any, response.data.meta, response.data.links);
+    }
+
+    public toObject(): Record<string, IEntry<T>> {
+        let obj = Object.entries(super.toObject()).map(([ key, value ]) => {
+            return [ key, value.toObject() ];
+        }).reduce(objectify, {});
+
+        return obj;
     }
 }
 
