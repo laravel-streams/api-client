@@ -15,6 +15,47 @@ export interface StreamsConfiguration {
 export interface IBaseEntry {
     [key: string]: any;
 }
+export interface IBaseStreamConfig {
+    key_name: string;
+    cache?: {
+        enabled?: boolean;
+        ttl?: number;
+        store?: string;
+    };
+    source: {
+        adapter?: 'database' | 'eloquent' | 'file' | 'filebase' | 'self' | string;
+        type: 'database' | 'eloquent' | 'file' | 'filebase' | 'self' | string;
+        /** When using `database` adapter */
+        connection?: string;
+        /** When using `database` adapter */
+        table?: string;
+        /** When using `eloquent` adapter */
+        model?: string;
+        /** When using `file`, `filebase` or `self` adapter */
+        format?: 'json' | 'php' | 'yaml' | 'md' | 'tpl';
+        /** When using the `filebase` adapter, path to directory */
+        path?: string;
+        /** When using the `file` adapter, path to file */
+        file?: string;
+        [key: string]: any;
+    };
+    meta?: {
+        key_name?: string;
+    };
+    /** FQN of the abstract class to use */
+    abstract?: string;
+    /** FQN of the collection class to use */
+    collection?: string;
+    /** FQN of the criteria class to use */
+    criteria?: string;
+    /** FQN of the repository class to use */
+    repository?: string;
+    /** FQN of the factory class to use */
+    factory?: string;
+    /** FQN of the schema class to use */
+    schema?: string;
+    [key: string]: any;
+}
 export interface IBaseStream<ID = any> {
     id?: ID;
     handle?: ID;
@@ -25,47 +66,7 @@ export interface IBaseStream<ID = any> {
     fields?: IStreamFields;
     routes?: Array<any>;
     validators?: Array<any>;
-    config: {
-        key_name: string;
-        cache?: {
-            enabled?: boolean;
-            ttl?: number;
-            store?: string;
-        };
-        source: {
-            adapter?: 'database' | 'eloquent' | 'file' | 'filebase' | 'self' | string;
-            type: string;
-            /** When using `database` adapter */
-            connection?: string;
-            /** When using `database` adapter */
-            table?: string;
-            /** When using `eloquent` adapter */
-            model?: string;
-            /** When using `file`, `filebase` or `self` adapter */
-            format?: 'json' | 'php' | 'yaml' | 'md' | 'tpl';
-            /** When using the `filebase` adapter, path to directory */
-            path?: string;
-            /** When using the `file` adapter, path to file */
-            file?: string;
-            [key: string]: any;
-        };
-        meta?: {
-            key_name?: string;
-        };
-        /** FQN of the abstract class to use */
-        abstract?: string;
-        /** FQN of the collection class to use */
-        collection?: string;
-        /** FQN of the criteria class to use */
-        criteria?: string;
-        /** FQN of the repository class to use */
-        repository?: string;
-        /** FQN of the factory class to use */
-        factory?: string;
-        /** FQN of the schema class to use */
-        schema?: string;
-        [key: string]: any;
-    };
+    config?: IBaseStreamConfig;
     entries?: IBaseEntry[];
     [key: string]: any;
 }
@@ -76,6 +77,10 @@ export interface IStreams {
     [key: string]: any;
 }
 export declare type StreamID = keyof IStreams;
+export interface IBaseFieldConfig {
+    default?: any;
+    [key: string]: any;
+}
 export interface IBaseField<T extends FieldType = FieldType> {
     handle?: string;
     type: T;
@@ -83,7 +88,7 @@ export interface IBaseField<T extends FieldType = FieldType> {
         type: T;
     };
     rules?: any[];
-    config?: Record<string, any>;
+    config?: IBaseFieldConfig;
     [key: string]: any;
 }
 export declare type IStreamFields = Record<string, IBaseField | FieldType>;

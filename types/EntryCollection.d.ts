@@ -8,6 +8,7 @@ export declare class EntryCollection<T extends StreamID = StreamID> extends Coll
     readonly links?: ApiLinks<'entries', 'list'>;
     constructor(entries: IEntry<T>[], meta?: ApiMeta<'list'>, links?: ApiLinks<'entries', 'list'>);
     static fromResponse<ID extends StreamID = StreamID>(response: Response<ApiDataResponse<IEntries[ID][], 'entries', 'list'>>, stream: Stream<ID>): EntryCollection<ID>;
+    toObject(): Record<string, IEntry<T>>;
 }
 export declare class PaginatedEntryCollection<ID extends StreamID = StreamID> extends Collection<IEntry<ID>> {
     readonly meta?: ApiMeta<'list'>;
