@@ -22724,7 +22724,9 @@ class Request {
             response: new SyncWaterfallHook(['response', 'config', 'request']),
         };
         this.stringifyFunction = stringify;
-        this.stringifyOptions = {};
+        this.stringifyOptions = {
+            encode: false,
+        };
         this.CancelToken = axios.CancelToken;
         this.CancelTokenSource = this.CancelToken.source();
         this.config = cjs.all([

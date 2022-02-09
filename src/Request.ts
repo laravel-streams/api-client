@@ -3,9 +3,6 @@ import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue } from './ty
 import deepmerge from 'deepmerge';
 import { SyncWaterfallHook } from 'tapable';
 import { Response } from './Response';
-import { IStringifyOptions, stringify } from 'qs';
-
-export { IStringifyOptions };
 
 interface BackendException {
     exception: string;
@@ -30,16 +27,6 @@ export class Request<T = any, D = any> {
 
     get cancelToken() {return this.CancelTokenSource.token; }
 
-    public readonly stringifyFunction: typeof stringify = stringify;
-    protected stringifyOptions: IStringifyOptions       = {
-        encode: false,
-    };
-
-    public setStringifyOptions(options: IStringifyOptions) {
-        this.stringifyOptions = options;
-        return this;
-    }
-
     protected constructor(config: RequestConfig) {
         this.CancelToken             = Axios.CancelToken;
         this.CancelTokenSource       = this.CancelToken.source();
@@ -50,7 +37,7 @@ export class Request<T = any, D = any> {
         ], { clone: true });
         this.config.cancelToken      = this.CancelTokenSource.token;
         // this.config.paramsSerializer = params => stringify(params);
-        this.config.paramsSerializer = params => this.stringifyFunction(params, this.stringifyOptions)
+        // this.config.paramsSerializer = params => this.stringifyFunction(params, this.stringifyOptions)
     }
 
     static create<T = any, D = any>(config: RequestConfig<D>) {

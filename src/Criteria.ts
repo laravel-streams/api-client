@@ -3,6 +3,7 @@ import { Entry, IEntry } from './Entry';
 import { EntryCollection, PaginatedEntryCollection } from './EntryCollection';
 import { Http } from './Http';
 import { IEntries, StreamID } from './types';
+import { paramsToQueryString } from './utils';
 
 export type OrderByDirection =
     'asc'
@@ -292,7 +293,12 @@ export class Criteria<ID extends StreamID = StreamID> {
      *
      * @returns
      */
-    public compileParameters() {
-        return this.parameters.map(statement => ({ [ statement.name ]: ensureArray(statement.value) }));
+    public standardizeParameters() {
+        return this.parameters.map(statement => ({ [ statement.name ]: ensureArray(statement.value) }))
     }
+
+    public compileParameters() {
+        return paramsToQueryString(this.standardizeParameters());
+    }
+
 }

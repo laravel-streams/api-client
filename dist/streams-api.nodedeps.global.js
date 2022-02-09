@@ -6783,7 +6783,9 @@ var streamsApi = (function (exports, Axios, qs) {
 	            response: new SyncWaterfallHook(['response', 'config', 'request']),
 	        };
 	        this.stringifyFunction = qs.stringify;
-	        this.stringifyOptions = {};
+	        this.stringifyOptions = {
+	            encode: false,
+	        };
 	        this.CancelToken = Axios__default["default"].CancelToken;
 	        this.CancelTokenSource = this.CancelToken.source();
 	        this.config = cjs.all([

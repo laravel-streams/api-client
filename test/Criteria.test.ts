@@ -9,14 +9,14 @@ import f from 'faker';
 export class CriteriaTest extends TestCase {
 
     @test
-    async 'test compileStatements'() {
+    async 'test standardizeParameters'() {
         let stream   = mock(Stream);
         let criteria = new Criteria(stream as any);
         let compiled = criteria.where('a', 'foo')
                                .where('b', '>', 2)
                                .orderBy('b', 'asc')
                                .limit(4)
-                               .compileParameters();
+                               .standardizeParameters();
         compiled.should.be.an('array');
         for ( const stm of compiled ) {
             stm.should.be.an('object');
@@ -59,10 +59,11 @@ export class CriteriaTest extends TestCase {
     }
 
     createClientsStream() {
-        this.FS.createStream('clients', this.getStreamDefinition('clients'));
-        let entries = {};
-        this.createEntriesData(100).forEach(entry => entries[ entry.id ] = entry);
-        this.FS.create('streams/data/clients.json', entries);
+        this.fs.fixtures.copyStream('clients',this.fs.project)
+        this.fs.project.generateFakeStreamEntries('clients', 100)
+        // let entries = {};
+        // this.createEntriesData(100).forEach(entry => entries[ entry.id ] = entry);
+        // this.FS.create('streams/data/clients.json', entries);
     }
 
     createEntriesData(length: number) {
