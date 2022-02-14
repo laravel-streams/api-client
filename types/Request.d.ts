@@ -1,22 +1,17 @@
 import { AxiosInstance, CancelTokenSource, CancelTokenStatic } from 'axios';
 import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue } from './types';
-import { SyncWaterfallHook } from 'tapable';
+import { AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
 import { Response } from './Response';
-import { IStringifyOptions, stringify } from 'qs';
-export { IStringifyOptions };
 export declare class Request<T = any, D = any> {
     readonly hooks: {
         createAxios: SyncWaterfallHook<[AxiosInstance, Request<any, any>], import("tapable").UnsetAdditionalOptions>;
-        send: SyncWaterfallHook<[RequestConfig<any>, AxiosInstance, Request<any, any>], import("tapable").UnsetAdditionalOptions>;
+        send: AsyncSeriesWaterfallHook<[RequestConfig<any>, AxiosInstance, Request<any, any>], import("tapable").UnsetAdditionalOptions>;
         response: SyncWaterfallHook<[Response<any, any>, RequestConfig<any>, Request<any, any>], import("tapable").UnsetAdditionalOptions>;
     };
     config: RequestConfig;
     protected CancelToken: CancelTokenStatic;
     protected CancelTokenSource: CancelTokenSource;
     get cancelToken(): import("axios").CancelToken;
-    readonly stringifyFunction: typeof stringify;
-    protected stringifyOptions: IStringifyOptions;
-    setStringifyOptions(options: IStringifyOptions): this;
     protected constructor(config: RequestConfig);
     static create<T = any, D = any>(config: RequestConfig<D>): Request<T, D>;
     send(config?: Partial<RequestConfig>): Promise<Response<T, D>>;

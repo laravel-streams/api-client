@@ -1435,6 +1435,9 @@ class Obj {
         return obj;
     }
 }
+function paramsToQueryString(params) {
+    return encodeURIComponent(btoa(JSON.stringify(params)));
+}
 
 var _Entry_stream, _Entry_data, _Entry_fresh;
 class Entry {
@@ -2137,7 +2140,7 @@ var flatMap = function flatMap(fn) {
 };
 
 var _require$h = is,
-    isArray$d = _require$h.isArray,
+    isArray$c = _require$h.isArray,
     isObject$b = _require$h.isObject;
 
 var flatten = function flatten(depth) {
@@ -2149,9 +2152,9 @@ var flatten = function flatten(depth) {
   var flat = function flat(items) {
     collection = [];
 
-    if (isArray$d(items)) {
+    if (isArray$c(items)) {
       items.forEach(function (item) {
-        if (isArray$d(item)) {
+        if (isArray$c(item)) {
           collection = collection.concat(item);
         } else if (isObject$b(item)) {
           Object.keys(item).forEach(function (property) {
@@ -2163,7 +2166,7 @@ var flatten = function flatten(depth) {
       });
     } else {
       Object.keys(items).forEach(function (property) {
-        if (isArray$d(items[property])) {
+        if (isArray$c(items[property])) {
           collection = collection.concat(items[property]);
         } else if (isObject$b(items[property])) {
           Object.keys(items[property]).forEach(function (prop) {
@@ -2469,7 +2472,7 @@ var make = function make() {
   return new this.constructor(items);
 };
 
-var map$3 = function map(fn) {
+var map$2 = function map(fn) {
   var _this = this;
 
   if (Array.isArray(this.items)) {
@@ -2836,7 +2839,7 @@ var pipe = function pipe(fn) {
 };
 
 var _require$c = is,
-    isArray$c = _require$c.isArray,
+    isArray$b = _require$c.isArray,
     isObject$a = _require$c.isObject;
 
 var nestedValue$5 = nestedValue$8;
@@ -2850,7 +2853,7 @@ var buildKeyPathMap = function buildKeyPathMap(items) {
         Object.keys(val).forEach(function (prop) {
           buildKeyPath(val[prop], keyPath + '.' + prop);
         });
-      } else if (isArray$c(val)) {
+      } else if (isArray$b(val)) {
         val.forEach(function (v, i) {
           buildKeyPath(v, keyPath + '.' + i);
         });
@@ -2963,7 +2966,7 @@ var deleteKeys$2 = function deleteKeys(obj) {
 };
 
 var _require$b = is,
-    isArray$b = _require$b.isArray,
+    isArray$a = _require$b.isArray,
     isObject$9 = _require$b.isObject;
 
 var deleteKeys$1 = deleteKeys$2;
@@ -2977,7 +2980,7 @@ var pop = function pop() {
     return null;
   }
 
-  if (isArray$b(this.items)) {
+  if (isArray$a(this.items)) {
     if (count === 1) {
       return this.items.pop();
     }
@@ -3184,7 +3187,7 @@ var reverse = function reverse() {
 /* eslint-disable eqeqeq */
 
 var _require$9 = is,
-    isArray$a = _require$9.isArray,
+    isArray$9 = _require$9.isArray,
     isObject$8 = _require$9.isObject,
     isFunction$a = _require$9.isFunction;
 
@@ -3205,7 +3208,7 @@ var search = function search(valueOrFunction, strict) {
     return _this.items[key] == valueOrFunction;
   };
 
-  if (isArray$a(this.items)) {
+  if (isArray$9(this.items)) {
     result = this.items.findIndex(find);
   } else if (isObject$8(this.items)) {
     result = Object.keys(this.items).find(function (key) {
@@ -3221,7 +3224,7 @@ var search = function search(valueOrFunction, strict) {
 };
 
 var _require$8 = is,
-    isArray$9 = _require$8.isArray,
+    isArray$8 = _require$8.isArray,
     isObject$7 = _require$8.isObject;
 
 var deleteKeys = deleteKeys$2;
@@ -3235,7 +3238,7 @@ var shift = function shift() {
     return null;
   }
 
-  if (isArray$9(this.items)) {
+  if (isArray$8(this.items)) {
     if (count === 1) {
       return this.items.shift();
     }
@@ -3310,7 +3313,7 @@ var skip = function skip(number) {
 };
 
 var _require$6 = is,
-    isArray$8 = _require$6.isArray,
+    isArray$7 = _require$6.isArray,
     isObject$5 = _require$6.isObject,
     isFunction$9 = _require$6.isFunction;
 
@@ -3327,7 +3330,7 @@ var skipUntil = function skipUntil(valueOrFunction) {
     callback = valueOrFunction;
   }
 
-  if (isArray$8(this.items)) {
+  if (isArray$7(this.items)) {
     items = this.items.filter(function (item) {
       if (previous !== true) {
         previous = callback(item);
@@ -3355,7 +3358,7 @@ var skipUntil = function skipUntil(valueOrFunction) {
 };
 
 var _require$5 = is,
-    isArray$7 = _require$5.isArray,
+    isArray$6 = _require$5.isArray,
     isObject$4 = _require$5.isObject,
     isFunction$8 = _require$5.isFunction;
 
@@ -3372,7 +3375,7 @@ var skipWhile = function skipWhile(valueOrFunction) {
     callback = valueOrFunction;
   }
 
-  if (isArray$7(this.items)) {
+  if (isArray$6(this.items)) {
     items = this.items.filter(function (item) {
       if (previous !== true) {
         previous = !callback(item);
@@ -3592,7 +3595,7 @@ var take = function take(length) {
 };
 
 var _require$2 = is,
-    isArray$6 = _require$2.isArray,
+    isArray$5 = _require$2.isArray,
     isObject$3 = _require$2.isObject,
     isFunction$5 = _require$2.isFunction;
 
@@ -3609,7 +3612,7 @@ var takeUntil = function takeUntil(valueOrFunction) {
     callback = valueOrFunction;
   }
 
-  if (isArray$6(this.items)) {
+  if (isArray$5(this.items)) {
     items = this.items.filter(function (item) {
       if (previous !== false) {
         previous = !callback(item);
@@ -3637,7 +3640,7 @@ var takeUntil = function takeUntil(valueOrFunction) {
 };
 
 var _require$1 = is,
-    isArray$5 = _require$1.isArray,
+    isArray$4 = _require$1.isArray,
     isObject$2 = _require$1.isObject,
     isFunction$4 = _require$1.isFunction;
 
@@ -3654,7 +3657,7 @@ var takeWhile = function takeWhile(valueOrFunction) {
     callback = valueOrFunction;
   }
 
-  if (isArray$5(this.items)) {
+  if (isArray$4(this.items)) {
     items = this.items.filter(function (item) {
       if (previous !== false) {
         previous = callback(item);
@@ -4092,7 +4095,7 @@ Collection$1.prototype.keys = keys$1;
 Collection$1.prototype.last = last;
 Collection$1.prototype.macro = macro;
 Collection$1.prototype.make = make;
-Collection$1.prototype.map = map$3;
+Collection$1.prototype.map = map$2;
 Collection$1.prototype.mapSpread = mapSpread;
 Collection$1.prototype.mapToDictionary = mapToDictionary;
 Collection$1.prototype.mapInto = mapInto;
@@ -4411,8 +4414,11 @@ class Criteria {
      *
      * @returns
      */
-    compileParameters() {
+    standardizeParameters() {
         return this.parameters.map(statement => ({ [statement.name]: ensureArray(statement.value) }));
+    }
+    compileParameters() {
+        return paramsToQueryString(this.standardizeParameters());
     }
 }
 
@@ -5235,7 +5241,7 @@ function formatValue(ctx, value, recurseTimes) {
   var base = '', array = false, braces = ['{', '}'];
 
   // Make Array say that they are Array
-  if (isArray$4(value)) {
+  if (isArray$3(value)) {
     array = true;
     braces = ['[', ']'];
   }
@@ -5414,7 +5420,7 @@ function reduceToSingleString(output, base, braces) {
 
 // NOTE: These type checking functions intentionally don't use `instanceof`
 // because it is fragile and can be easily faked with `Object.create()`.
-function isArray$4(ar) {
+function isArray$3(ar) {
   return Array.isArray(ar);
 }
 
@@ -5541,7 +5547,7 @@ var _polyfillNode_util = {
   isNullOrUndefined: isNullOrUndefined,
   isNull: isNull,
   isBoolean: isBoolean,
-  isArray: isArray$4,
+  isArray: isArray$3,
   inspect: inspect$1,
   deprecate: deprecate,
   format: format$1,
@@ -5554,7 +5560,7 @@ var _polyfillNode_util$1 = /*#__PURE__*/Object.freeze({
 	deprecate: deprecate,
 	debuglog: debuglog,
 	inspect: inspect$1,
-	isArray: isArray$4,
+	isArray: isArray$3,
 	isBoolean: isBoolean,
 	isNull: isNull,
 	isNullOrUndefined: isNullOrUndefined,
@@ -6640,7 +6646,7 @@ var toString$1 = Object.prototype.toString;
  * @param {Object} val The value to test
  * @returns {boolean} True if value is an Array, otherwise false
  */
-function isArray$3(val) {
+function isArray$2(val) {
   return toString$1.call(val) === '[object Array]';
 }
 
@@ -6867,7 +6873,7 @@ function forEach$1(obj, fn) {
     obj = [obj];
   }
 
-  if (isArray$3(obj)) {
+  if (isArray$2(obj)) {
     // Iterate over array values
     for (var i = 0, l = obj.length; i < l; i++) {
       fn.call(null, obj[i], i, obj);
@@ -6906,7 +6912,7 @@ function merge(/* obj1, obj2, obj3, ... */) {
       result[key] = merge(result[key], val);
     } else if (isPlainObject(val)) {
       result[key] = merge({}, val);
-    } else if (isArray$3(val)) {
+    } else if (isArray$2(val)) {
       result[key] = val.slice();
     } else {
       result[key] = val;
@@ -6952,7 +6958,7 @@ function stripBOM(content) {
 }
 
 var utils$e = {
-  isArray: isArray$3,
+  isArray: isArray$2,
   isArrayBuffer: isArrayBuffer,
   isBuffer: isBuffer$1,
   isFormData: isFormData,
@@ -8359,7 +8365,7 @@ function write (buffer, value, offset, isLE, mLen, nBytes) {
 
 var toString = {}.toString;
 
-var isArray$2 = Array.isArray || function (arr) {
+var isArray$1 = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
@@ -8634,7 +8640,7 @@ function fromObject (that, obj) {
       return fromArrayLike(that, obj)
     }
 
-    if (obj.type === 'Buffer' && isArray$2(obj.data)) {
+    if (obj.type === 'Buffer' && isArray$1(obj.data)) {
       return fromArrayLike(that, obj.data)
     }
   }
@@ -8699,7 +8705,7 @@ Buffer$1.isEncoding = function isEncoding (encoding) {
 };
 
 Buffer$1.concat = function concat (list, length) {
-  if (!isArray$2(list)) {
+  if (!isArray$1(list)) {
     throw new TypeError('"list" argument must be an Array of Buffers')
   }
 
@@ -12561,7 +12567,7 @@ function error(type) {
  * item.
  * @returns {Array} A new array of values returned by the callback function.
  */
-function map$2(array, fn) {
+function map$1(array, fn) {
   var length = array.length;
   var result = [];
   while (length--) {
@@ -12592,7 +12598,7 @@ function mapDomain(string, fn) {
   // Avoid `split(regex)` for IE8 compatibility. See #17.
   string = string.replace(regexSeparators, '\x2E');
   var labels = string.split('.');
-  var encoded = map$2(labels, fn).join('.');
+  var encoded = map$1(labels, fn).join('.');
   return result + encoded;
 }
 
@@ -12828,10 +12834,10 @@ function toASCII(input) {
 function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
-var isArray$1 = Array.isArray || function (xs) {
+var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
-function stringifyPrimitive$1(v) {
+function stringifyPrimitive(v) {
   switch (typeof v) {
     case 'string':
       return v;
@@ -12847,7 +12853,7 @@ function stringifyPrimitive$1(v) {
   }
 }
 
-function stringify$1 (obj, sep, eq, name) {
+function stringify (obj, sep, eq, name) {
   sep = sep || '&';
   eq = eq || '=';
   if (obj === null) {
@@ -12855,24 +12861,24 @@ function stringify$1 (obj, sep, eq, name) {
   }
 
   if (typeof obj === 'object') {
-    return map$1(objectKeys$2(obj), function(k) {
-      var ks = encodeURIComponent(stringifyPrimitive$1(k)) + eq;
-      if (isArray$1(obj[k])) {
-        return map$1(obj[k], function(v) {
-          return ks + encodeURIComponent(stringifyPrimitive$1(v));
+    return map(objectKeys$1(obj), function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (isArray(obj[k])) {
+        return map(obj[k], function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
         }).join(sep);
       } else {
-        return ks + encodeURIComponent(stringifyPrimitive$1(obj[k]));
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
       }
     }).join(sep);
 
   }
 
   if (!name) return '';
-  return encodeURIComponent(stringifyPrimitive$1(name)) + eq +
-         encodeURIComponent(stringifyPrimitive$1(obj));
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
 }
-function map$1 (xs, f) {
+function map (xs, f) {
   if (xs.map) return xs.map(f);
   var res = [];
   for (var i = 0; i < xs.length; i++) {
@@ -12881,7 +12887,7 @@ function map$1 (xs, f) {
   return res;
 }
 
-var objectKeys$2 = Object.keys || function (obj) {
+var objectKeys$1 = Object.keys || function (obj) {
   var res = [];
   for (var key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
@@ -12930,7 +12936,7 @@ function parse$1(qs, sep, eq, options) {
 
     if (!hasOwnProperty(obj, k)) {
       obj[k] = v;
-    } else if (isArray$1(obj[k])) {
+    } else if (isArray(obj[k])) {
       obj[k].push(v);
     } else {
       obj[k] = [obj[k], v];
@@ -13325,7 +13331,7 @@ function format(self) {
   if (self.query &&
     isObject$1(self.query) &&
     Object.keys(self.query).length) {
-    query = stringify$1(self.query);
+    query = stringify(self.query);
   }
 
   var search = self.search || (query && ('?' + query)) || '';
@@ -14054,7 +14060,7 @@ function compare(a, b) {
 }
 var hasOwn = Object.prototype.hasOwnProperty;
 
-var objectKeys$1 = Object.keys || function (obj) {
+var objectKeys = Object.keys || function (obj) {
   var keys = [];
   for (var key in obj) {
     if (hasOwn.call(obj, key)) keys.push(key);
@@ -14337,8 +14343,8 @@ function objEquiv(a, b, strict, actualVisitedObjects) {
     b = pSlice.call(b);
     return _deepEqual(a, b, strict);
   }
-  var ka = objectKeys$1(a);
-  var kb = objectKeys$1(b);
+  var ka = objectKeys(a);
+  var kb = objectKeys(b);
   var key, i;
   // having the same number of owned properties (keys incorporates
   // hasOwnProperty)
@@ -22656,80 +22662,14 @@ _Response_headers = new WeakMap();
     };
 })(Response || (Response = {}));
 
-// Copyright Joyent, Inc. and other Node contributors.
-var isArray = Array.isArray || function (xs) {
-  return Object.prototype.toString.call(xs) === '[object Array]';
-};
-function stringifyPrimitive(v) {
-  switch (typeof v) {
-    case 'string':
-      return v;
-
-    case 'boolean':
-      return v ? 'true' : 'false';
-
-    case 'number':
-      return isFinite(v) ? v : '';
-
-    default:
-      return '';
-  }
-}
-
-function stringify (obj, sep, eq, name) {
-  sep = sep || '&';
-  eq = eq || '=';
-  if (obj === null) {
-    obj = undefined;
-  }
-
-  if (typeof obj === 'object') {
-    return map(objectKeys(obj), function(k) {
-      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
-      if (isArray(obj[k])) {
-        return map(obj[k], function(v) {
-          return ks + encodeURIComponent(stringifyPrimitive(v));
-        }).join(sep);
-      } else {
-        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
-      }
-    }).join(sep);
-
-  }
-
-  if (!name) return '';
-  return encodeURIComponent(stringifyPrimitive(name)) + eq +
-         encodeURIComponent(stringifyPrimitive(obj));
-}
-function map (xs, f) {
-  if (xs.map) return xs.map(f);
-  var res = [];
-  for (var i = 0; i < xs.length; i++) {
-    res.push(f(xs[i], i));
-  }
-  return res;
-}
-
-var objectKeys = Object.keys || function (obj) {
-  var res = [];
-  for (var key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
-  }
-  return res;
-};
-
 const isAxiosError = (val) => val && val.isAxiosError;
 const hasException = (val) => { var _a, _b; return isAxiosError(val) && ((_b = (_a = val === null || val === void 0 ? void 0 : val.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.exception) !== undefined; };
 class Request {
     constructor(config) {
         this.hooks = {
             createAxios: new SyncWaterfallHook(['axios', 'request']),
-            send: new SyncWaterfallHook(['config', 'axios', 'request']),
+            send: new AsyncSeriesWaterfallHook(['config', 'axios', 'request']),
             response: new SyncWaterfallHook(['response', 'config', 'request']),
-        };
-        this.stringifyFunction = stringify;
-        this.stringifyOptions = {
-            encode: false,
         };
         this.CancelToken = axios.CancelToken;
         this.CancelTokenSource = this.CancelToken.source();
@@ -22739,20 +22679,16 @@ class Request {
         ], { clone: true });
         this.config.cancelToken = this.CancelTokenSource.token;
         // this.config.paramsSerializer = params => stringify(params);
-        this.config.paramsSerializer = params => this.stringifyFunction(params, this.stringifyOptions);
+        // this.config.paramsSerializer = params => this.stringifyFunction(params, this.stringifyOptions)
     }
     get cancelToken() { return this.CancelTokenSource.token; }
-    setStringifyOptions(options) {
-        this.stringifyOptions = options;
-        return this;
-    }
     static create(config) {
         return new Request(config);
     }
     send(config = {}) {
         return __awaiter(this, void 0, void 0, function* () {
             const axios = this.createAxios();
-            config = this.hooks.send.call(config, axios, this);
+            config = yield this.hooks.send.promise(config, axios, this);
             let response;
             try {
                 let axiosResponse = yield axios.request(config);
@@ -24038,4 +23974,5 @@ exports.logicalOperators = logicalOperators;
 exports.mimes = mimes;
 exports.objectify = objectify;
 exports.operators = operators;
+exports.paramsToQueryString = paramsToQueryString;
 //# sourceMappingURL=streams-api.cjs.js.map

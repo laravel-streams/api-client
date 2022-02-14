@@ -1,7 +1,7 @@
 import Axios, { AxiosError, AxiosInstance, CancelTokenSource, CancelTokenStatic } from 'axios';
 import { MimeType, RequestConfig, RequestHeader, RequestHeaderValue } from './types';
 import deepmerge from 'deepmerge';
-import { SyncWaterfallHook } from 'tapable';
+import {AsyncSeriesWaterfallHook, SyncWaterfallHook } from 'tapable';
 import { Response } from './Response';
 
 interface BackendException {
@@ -18,7 +18,7 @@ const hasException = (val: any): val is AxiosError<BackendException> => isAxiosE
 export class Request<T = any, D = any> {
     public readonly hooks = {
         createAxios: new SyncWaterfallHook<[ AxiosInstance, Request ]>([ 'axios', 'request' ]),
-        send       : new SyncWaterfallHook<[ RequestConfig, AxiosInstance, Request ]>([ 'config', 'axios', 'request' ]),
+        send       : new AsyncSeriesWaterfallHook<[ RequestConfig, AxiosInstance, Request ]>([ 'config', 'axios', 'request' ]),
         response   : new SyncWaterfallHook<[ Response, RequestConfig, Request ]>([ 'response', 'config', 'request' ]),
     };
     public config: RequestConfig;
@@ -46,7 +46,7 @@ export class Request<T = any, D = any> {
 
     async send(config: Partial<RequestConfig> = {}): Promise<Response<T, D>> {
         const axios = this.createAxios();
-        config      = this.hooks.send.call(config, axios, this);
+        config      = await this.hooks.send.promise(config, axios, this);
         let response;
         try {
             let axiosResponse = await axios.request<T>(config as any);

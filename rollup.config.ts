@@ -1,12 +1,9 @@
 import ts from 'rollup-plugin-typescript2';
 import { defineConfig, OutputOptions, RollupOptions } from 'rollup';
-import { visualizer } from 'rollup-plugin-visualizer';
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
 import progress from 'rollup-plugin-progress';
-// import dts from 'rollup-plugin-dts'
 import nodePolyfills from 'rollup-plugin-polyfill-node';
 import deepmerge from 'deepmerge';
-import { terser } from 'rollup-plugin-terser';
 import { existsSync, mkdirSync } from 'fs';
 import path from 'path';
 
@@ -31,28 +28,14 @@ const packageConfigs = [];
 const configs: Record<string, Options> = {
     'esm-bundler': {
         output: {
-            file  : name, //resolve(`dist/${name}.esm-bundler.js`),
-            format: `es`,
-        },
-    },
-    'esm-browser': {
-        output: {
-            file  : name, //resolve(`dist/${name}.esm-browser.js`),
+            file  : name,
             format: `es`,
         },
     },
     cjs          : {
         output: {
-            file   : name, //resolve(`dist/${name}.cjs.js`),
+            file   : name,
             format : `cjs`,
-            exports: 'named',
-        },
-    },
-    global       : {
-        output: {
-            file   : name, //resolve(`dist/${name}.global.js`),
-            format : `iife`,
-            name   : 'streamsApi',
             exports: 'named',
         },
     },
@@ -67,33 +50,6 @@ formats.forEach(format => {
             sourcemap: true,
         },
     }));
-    packageConfigs.push(createConfig(format, {
-        external: [ 'axios', 'qs' ],
-        output  : {
-            file     : config.output.file + '.nodedeps',
-            sourcemap: true,
-            globals  : {
-                axios: 'Axios',
-                qs   : 'qs',
-            },
-        },
-    }));
-    packageConfigs.push(createMinifiedConfig(format, {
-        output: {
-            file: config.output.file + '.min',
-        },
-    }));
-    packageConfigs.push(createMinifiedConfig(format, {
-        external: [ 'axios', 'qs' ],
-        output  : {
-            file     : config.output.file + '.nodedeps.min',
-            sourcemap: true,
-            globals  : {
-                axios: 'Axios',
-                qs   : 'qs',
-            },
-        },
-    }));
 });
 export default packageConfigs;
 
@@ -102,7 +58,7 @@ function createConfig(format: string, options: Options = {}) {
     options          = deepmerge.all([ configs[ format ] as Options, (options as Options) || {} ], { clone: true });
     let output       = options.output;
     output.sourcemap = output.sourcemap === undefined ? false : output.sourcemap;
-    const fileName = `${output.file}.${format}.js`;
+    const fileName   = `${output.file}.${format}.js`;
     output.file      = resolve(dir, fileName);
 
     const config = defineConfig({
@@ -117,7 +73,7 @@ function createConfig(format: string, options: Options = {}) {
             nodePolyfills({
                 baseDir: resolve('../../../node_modules'),
                 include: [ 'util' ],
-                exclude: ['/.*/']
+                exclude: [ '/.*/' ],
             }),
             require('@rollup/plugin-node-resolve').nodeResolve({
                     moduleDirectories: [ resolve('node_modules'), resolve('../../../node_modules') ],
@@ -141,39 +97,10 @@ function createConfig(format: string, options: Options = {}) {
                     exclude        : [ '**/__tests__', 'test-dts' ],
                 },
             }),
-            visualizer({
-                filename: resolve(__dirname,`docs/visualizer/${fileName.replace('.js','')}.html`),
-                gzipSize: true,
-                open    : false,
-                title: `Streams JS API client :: ${format}`,
-                projectRoot:__dirname
-            }),
-            progress({ clearLine: true,            }),
+            progress({ clearLine: true }),
             sizeSnapshot({ printInfo: false }),
         ],
     });
     return deepmerge(config, options);
 }
 
-
-function createMinifiedConfig(format, options: Partial<Options> = {}) {
-    const { terser } = require('rollup-plugin-terser');
-    options          = deepmerge(configs[ format ], options, { clone: true });
-    options          = deepmerge(options, {
-        output : {
-            format   : options.output.format,
-            sourcemap: false,
-        },
-        plugins: [
-            terser({
-                module  : /^esm/.test(format),
-                compress: {
-                    ecma        : 2015,
-                    pure_getters: true,
-                },
-                safari10: true,
-            }),
-        ],
-    }, { clone: true });
-    return createConfig(format, options);
-}

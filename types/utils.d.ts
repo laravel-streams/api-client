@@ -26,3 +26,4 @@ export declare class Obj {
     static clone<T extends object>(obj: T): T;
     static exclude<T extends object, K extends keyof T>(obj: T, keys: K[]): T;
 }
+export declare function paramsToQueryString(params: any): string;

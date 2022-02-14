@@ -127,7 +127,8 @@ export declare class Criteria<ID extends StreamID = StreamID> {
      *
      * @returns
      */
-    compileParameters(): {
+    standardizeParameters(): {
         [x: string]: any[];
     }[];
+    compileParameters(): string;
 }
