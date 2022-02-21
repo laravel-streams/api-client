@@ -113,12 +113,8 @@ export class Request<T = any, D = any> {
 }
 
 export namespace Request {
-
-    const url     = new URL(window.location.toString());
-    const baseURL = [ url.protocol, '//', url.host, '/api' ].join('');
-
     export const getDefaultConfig = (): RequestConfig => ({
-        baseURL,
+        baseURL:'',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
         },

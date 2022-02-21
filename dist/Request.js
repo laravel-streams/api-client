@@ -95,10 +95,8 @@ export class Request {
     }
 }
 (function (Request) {
-    const url = new URL(window.location.toString());
-    const baseURL = [url.protocol, '//', url.host, '/api'].join('');
     Request.getDefaultConfig = () => ({
-        baseURL,
+        baseURL: '',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
         },
