@@ -87,5 +87,5 @@ export class Obj {
 }
 
 export function paramsToQueryString(params:any):string{
-    return encodeURIComponent(JSON.stringify(params));
+    return encodeURIComponent(btoa(JSON.stringify(params)));
 }
