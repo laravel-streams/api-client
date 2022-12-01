@@ -1,6 +1,6 @@
 import { params, suite, test } from '@testdeck/mocha';
 import { TestCase } from './TestCase';
-import { Entry, Field, Streams } from '../src';
+import { Entry, Field, Streams } from '../src2';
 
 
 @suite

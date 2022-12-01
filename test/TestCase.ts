@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { bootstrap, env } from './_support/bootstrap';
-import { Http, Stream, Streams } from '../src';
+import { Http, Stream, Streams } from '../src2';
 import { FS, fs, ProxyEnv } from './_support/utils';
-import { StreamsConfiguration } from '../src';
+import { StreamsConfiguration } from '../src2';
 
 
 export abstract class TestCase {

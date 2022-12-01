@@ -1,5 +1,5 @@
 import f from 'faker';
-import { FieldTypes, IBaseField, IStream } from '../../src';
+import { FieldTypes, IBaseField, IStream } from '../../src2';
 
 
 type SimpleFieldDefinition = FieldType

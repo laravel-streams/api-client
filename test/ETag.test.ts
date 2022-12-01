@@ -1,6 +1,6 @@
 import { suite, test } from '@testdeck/mocha';
 import { TestCase } from './TestCase';
-import { Http } from '../src';
+import { Http } from '../src2';
 
 @suite('ETag')
 export class EtagTest extends TestCase {

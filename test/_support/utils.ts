@@ -4,7 +4,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { config } from 'dotenv';
 import { get, has, merge, set, unset } from 'lodash';
 import { DirectoryStorage, DirectoryStorageOptions } from './DirectoryStorage';
-import { IStream } from '../../src';
+import { IStream } from '../../src2';
 import { Generator } from './generator';
 
 export function getBigDataObject() {

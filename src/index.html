@@ -6,15 +6,14 @@
 </head>
 <body>
 
-<script type="module" src="index.mjs"></script>
-<!--<script type="module">-->
-<!--(async () => {-->
-<!--    const Client = await import('./src/index.js');-->
+<script type="module">
+(async () => {
+    const {Client} = await import('./index.js');
 
-<!--    console.log('Client', Client);-->
-<!--    const client = new Client({});-->
-<!--    console.log('client', client);-->
-<!--})();-->
-<!--</script>-->
+    console.log('Client', Client);
+    const client = new Client({});
+    console.log('client', client);
+})();
+</script>
 </body>
 </html>

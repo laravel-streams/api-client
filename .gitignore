@@ -13,3 +13,6 @@ package-lock.json
 .size-snapshot.json
 test/http-client.private.env.json
 test/http-client.env.json
+src2
+.idea
+.parcel-cache

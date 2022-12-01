@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { TestCase } from './TestCase';
 import { skip, suite, test } from '@testdeck/mocha';
-import { Criteria, Stream } from '../src';
+import { Criteria, Stream } from '../src2';
 import { mock } from 'sinon';
 import f from 'faker';
 

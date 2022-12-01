@@ -1,6 +1,6 @@
 import { params, skip, suite, test } from '@testdeck/mocha';
 import { TestCase } from './TestCase';
-import { Http } from '../src';
+import { Http } from '../src2';
 
 import f from 'faker';
 import { expect } from 'chai';
