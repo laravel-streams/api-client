@@ -203,10 +203,10 @@ export class FixturesDirectoryStorage extends StreamDirectoryStorage {
 
 const dsoptions = (basePath: string): DirectoryStorageOptions => ({ basePath, encoding: 'utf8', json: { pretty: true } });
 
-export const fs = {
-    project : new ProjectDirectoryStorage(dsoptions(getProjectRootPath() as string)),
-    fixtures: new FixturesDirectoryStorage(dsoptions(resolve(__dirname, '..', 'fixtures'))),
-};
+// export const fs = {
+//     project : new ProjectDirectoryStorage(dsoptions(getProjectRootPath() as string)),
+//     fixtures: new FixturesDirectoryStorage(dsoptions(resolve(__dirname, '..', 'fixtures'))),
+// };
 
 export class FS {
     rootPath: string;

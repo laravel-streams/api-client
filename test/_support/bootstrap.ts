@@ -6,15 +6,21 @@
 //
 // }
 import 'reflect-metadata';
-import 'chai/register-assert'; // Using Assert style
-import 'chai/register-expect'; // Using Expect style
-import 'chai/register-should'; // Using Should style
+// import 'chai/register-assert'; // Using Assert style
+// import 'chai/register-expect'; // Using Expect style
+// import 'chai/register-should'; // Using Should style
 import chai from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import btoa from 'btoa';
 import { JSDOM } from 'jsdom';
 import { getEnv } from './utils';
+
+
+global.assert = chai.assert;
+global.expect = chai.expect;
+// @ts-ignore
+global.should = chai.should();
 
 
 const env = getEnv();
@@ -31,6 +37,9 @@ global.XMLHttpRequest = dom.window.XMLHttpRequest;
 global.btoa           = btoa;
 global.location       = dom.window.location;
 global['window'] = dom.window as any
+
+Object.assign(dom.window,require('node-fetch/src/index.js'))
+
 chai.use(sinonChai);
 
 export function bootstrap(): any {
