@@ -16,3 +16,5 @@ test/http-client.env.json
 src2
 .idea
 .parcel-cache
+.cache
+.env
