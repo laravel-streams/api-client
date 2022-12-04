@@ -17,8 +17,20 @@ export class ClientTest extends TestCase {
     async 'get streams'() {
         const client = this.getClient();
         const streams = await client.streams.get();
+        return;
+    }
 
+    @test
+    async 'get stream "docs"'() {
+        const client = this.getClient();
+        const stream = await client.streams.find('docs');
+        return;
+    }
 
+    @test
+    async 'get stream "docs" entries'() {
+        const client = this.getClient();
+        const entries = await client.entries.get('docs');
         return;
     }
 

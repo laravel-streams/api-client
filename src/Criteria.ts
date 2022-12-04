@@ -50,8 +50,8 @@ export interface CriteriaParameter {
 export class Criteria {
     parameters: CriteriaParameter[] = [];
 
-    public static make():Criteria{
-        return new this()
+    public static make(): Criteria {
+        return new this();
     }
 
     /**
@@ -69,7 +69,7 @@ export class Criteria {
      *
      * @returns
      */
-    public first():this {
+    public first(): this {
         return this.limit(1);
     }
 
@@ -177,9 +177,9 @@ export class Criteria {
      * @returns
      */
     public paginate(per_page: number = 100, page: number = 1): any {
-        this.addParameter('paginate',true)
-        this.addParameter('per_page',per_page)
-        this.addParameter('page',page)
+        this.addParameter('paginate', true);
+        this.addParameter('per_page', per_page);
+        this.addParameter('page', page);
         return this;
     }
 
@@ -189,7 +189,7 @@ export class Criteria {
      *
      * @returns
      */
-    public get(): any[] {
+    public getParameters(): any[] {
         return this.parameters;
     }
 
@@ -225,11 +225,16 @@ export class Criteria {
      *
      * @returns
      */
-    public standardizeParameters(): any[] {
-        return this.parameters.map(statement => ({ [ statement.name ]: ensureArray(statement.value) }))
+    public standardizeParameters(): Record<string, any> {
+        return this.parameters.map(kv => [ kv[ 'name' ], kv[ 'value' ] ]).reduce((obj, [ k, v ], i, data) => {
+            if ( Array.isArray(v) ) {
+                data.slice().filter(kv => kv[ 'name' ] === k);
+            }
+            return { ...obj, [ k ]: v };
+        }, {});
     }
 
-    public compile():string {
+    public compile(): string {
         return paramsToQueryString(this.standardizeParameters());
     }
 

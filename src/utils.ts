@@ -103,3 +103,40 @@ export const isObject = (item: any): item is object => {
 const isMergebleObject = (item): boolean => {
     return isObject(item) && !Array.isArray(item);
 };
+
+export interface CustomMap<K=any,V=any> extends Map<K,V> {
+    toObject(): Record<keyof K, V>
+
+    toKeys(): K[]
+
+    merge(obj:any):this
+
+    empty():boolean
+}
+
+export function createCustomMap(obj):CustomMap{
+    const map = new class extends Map<any,any> {
+        constructor(init?:any) {
+            super(init);
+        }
+        toObject() {
+            return Array.from(this.entries()).map(kv => ([ kv[ 0 ], kv[ 1 ] ])).reduce(objectify, {});
+        }
+
+        toKeys() {
+            return Array.from(this.keys())
+        }
+
+        merge(obj) {
+            obj = mergeObjects(this.toObject(), obj);
+            Object.entries(obj).forEach(([ k, v ]) => this.set(k, v));
+            return this;
+        }
+
+        empty(){
+            return this.size === 0;
+        }
+    }
+    map.merge(obj);
+    return map;
+}

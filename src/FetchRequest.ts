@@ -1,28 +1,30 @@
-import { ClientResponse, RequestConfig,ResponseType } from '../types';
+import { ClientResponse, RequestConfig, ResponseType } from './types';
 import { FetchHeaders } from './FetchHeaders';
-import { Criteria } from '../Criteria';
+import { Criteria } from './Criteria';
+import { createCustomMap, CustomMap } from './utils';
 
 export class FetchRequest extends Request {
     response: ClientResponse;
     headers: FetchHeaders;
-    responseType:ResponseType;
-    params?:any
-    criteria?:Criteria
+    query: CustomMap<string>;
+    responseType: ResponseType;
+    criteria?: Criteria;
+    data?:any
 
     constructor(input: RequestInfo | URL, init: RequestConfig = {}) {
         super(input, init);
         this.responseType = init.responseType || 'json';
-        this.params = init.params;
-        this.criteria = init.criteria;
-        delete this.headers;
+        this.query        = createCustomMap(init.query || {});
+        this.criteria     = init.criteria;
+        this.data     = init.data;
         Object.defineProperty(this, 'headers', {
             value   : new FetchHeaders(init.headers),
             writable: false,
         });
     }
 
-    isResponseType(responseType:ResponseType){
-        return this.responseType === responseType
+    isResponseType(responseType: ResponseType) {
+        return this.responseType === responseType;
     }
 
     fetch(): Promise<this> {
@@ -31,6 +33,11 @@ export class FetchRequest extends Request {
             response.request = this;
             return this;
         });
+    }
+
+    setUrl(url: string):this {
+        Object.defineProperty(this, 'url', { value: url, writable: false });
+        return this;
     }
 
 }

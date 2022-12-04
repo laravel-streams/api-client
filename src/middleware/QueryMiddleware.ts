@@ -1,16 +1,16 @@
 import { Middleware, MiddlewareOptions } from './Middleware';
 import { Client } from '../Client';
-import { FetchRequest } from '../fetch/FetchRequest';
+import { FetchRequest } from '../FetchRequest';
 import { default as stringifyFn } from 'qs/lib/stringify';
 import type { IStringifyOptions } from 'qs';
 
-export interface ParamsMiddlewareOptions extends MiddlewareOptions {
+export interface QueryMiddlewareOptions extends MiddlewareOptions {
     stringify?: IStringifyOptions;
     stringifyFn?: (obj: any, options?: IStringifyOptions) => string;
 }
 
-export class ParamsMiddleware extends Middleware<ParamsMiddlewareOptions> {
-    static defaultOptions: ParamsMiddlewareOptions = {
+export class QueryMiddleware extends Middleware<QueryMiddlewareOptions> {
+    static defaultOptions: QueryMiddlewareOptions = {
         stringify: {
             encodeValuesOnly: true,
         },
@@ -18,8 +18,8 @@ export class ParamsMiddleware extends Middleware<ParamsMiddlewareOptions> {
     };
 
     public async request(request: FetchRequest, client: Client): Promise<FetchRequest> {
-        if ( request.params ) {
-            const url = request.url + '?' + this.options.stringifyFn(request.params, this.options.stringify);
+        if ( !request.query.empty() ) {
+            const url = request.url + '?' + this.options.stringifyFn(request.query, this.options.stringify);
             request   = new FetchRequest(url, request);
             return request;
         }

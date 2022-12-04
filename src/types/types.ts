@@ -1,4 +1,4 @@
-import { FetchRequest } from '../fetch/FetchRequest';
+import { FetchRequest } from '../FetchRequest';
 import { Client } from '../Client';
 import { Criteria } from '../Criteria';
 
@@ -24,7 +24,7 @@ export interface RequestConfig extends RequestInit {
     responseType?:ResponseType
     criteria?: Criteria
     // query parameters
-    params?:any
+    query?:any
     // json payload
     data?:any
 }

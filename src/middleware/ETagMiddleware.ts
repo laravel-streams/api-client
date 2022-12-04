@@ -1,6 +1,6 @@
 import { Middleware, MiddlewareOptions } from './Middleware';
 import { ClientResponse } from '../types';
-import { FetchRequest } from '../fetch/FetchRequest';
+import { FetchRequest } from '../FetchRequest';
 import { Client } from '../Client';
 import { Transformer } from '../Transformer';
 
@@ -17,7 +17,7 @@ export interface ETagCacheValue {
     value: any;
 }
 
-class ETagCache {
+export class ETagCache {
 
     public transformer      = Transformer;
     public storage: Storage = localStorage;
@@ -111,7 +111,7 @@ export class ETagMiddleware extends Middleware<ETagMiddlewareOptions> {
             const uuid             = getBase64UrlFromRequest(request);
             const lastCachedResult = this.cache.get(uuid);
             if ( lastCachedResult ) {
-                request.headers.IfNoneMatch(lastCachedResult.etag);
+                request.headers.ifNoneMatch(lastCachedResult.etag);
             }
         }
         return request;

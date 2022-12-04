@@ -1,4 +1,4 @@
-import { FetchRequest } from './fetch/FetchRequest';
+import { FetchRequest } from './FetchRequest';
 import { ClientResponse } from './types';
 
 

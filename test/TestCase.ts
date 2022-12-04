@@ -21,18 +21,18 @@ export abstract class TestCase {
         bootstrap();
     }
 
-    protected getClient(xdebug=false){
+    protected getClient(){
         let headers={};
         let params={};
         let middlewares=[];
-        if(xdebug){
+        if(this.env.get('XDEBUG', false)){
             params['XDEBUG_SESSION']='phpstorm';
         }
         return new Client({
             baseURL: this.env.get('API_URL','http://localhost') + '/' + env.get('STREAMS_API_PREFIX', 'api'),
             request: {
                 headers,
-                params
+                query: params
             },
             middlewares
         });

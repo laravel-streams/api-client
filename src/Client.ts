@@ -1,11 +1,10 @@
 import { mergeObjects, Str } from './utils';
 import { Streams } from './Streams';
-import { FetchRequest } from './fetch/FetchRequest';
+import { FetchRequest } from './FetchRequest';
 import { ClientResponse, RequestConfig } from './types';
-import { Middleware, ResultDataMiddleware } from './middleware';
+import { CriteriaMiddleware, Middleware, QueryMiddleware, RequestDataMiddleware, ResponseDataMiddleware } from './middleware';
 import { FetchError } from './FetchError';
-import { ParamsMiddleware } from './middleware/ParamsMiddleware';
-import { CriteriaMiddleware } from './middleware/CriteriaMiddleware';
+import { Entries } from './Entries';
 
 export interface ClientOptions {
     baseURL: string,
@@ -20,15 +19,17 @@ export interface ClientConstructorOptions extends ClientOptions {
 export class Client {
     public options: ClientOptions;
     public readonly streams: Streams;
+    public readonly entries: Entries;
     public readonly middlewares: Middleware[] = [];
 
     constructor(options: ClientConstructorOptions) {
         options                                            = {
             middlewares       : [],
             defaultMiddlewares: [
+                new RequestDataMiddleware(),
                 new CriteriaMiddleware(),
-                new ParamsMiddleware(),
-                new ResultDataMiddleware(),
+                new QueryMiddleware(),
+                new ResponseDataMiddleware(),
             ],
             ...options,
         };
@@ -45,6 +46,7 @@ export class Client {
         this.options                                       = mergeObjects(this.options, opts);
         this.middlewares                                   = defaultMiddlewares.concat(middlewares);
         this.streams                                       = new Streams(this);
+        this.entries                                       = new Entries(this);
     }
 
     public use(middleware: Middleware) {

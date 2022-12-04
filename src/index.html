@@ -11,45 +11,40 @@
 const {
           Client,
           AuthorizationMiddleware,
-          ResultDataMiddleware,
+          ResponseDataMiddleware,
           ETagMiddleware
       } = window.streams_api;
 console.log('Client', Client);
 const client = new Client({
-    baseURL: 'http://streams-dev.local/api'
+    baseURL: 'http://streams-dev.local/api',
+    middlewares: [
+        new AuthorizationMiddleware({
+            type: 'bearer',
+            token:  'asdfsdf'
+        }),
+        new ETagMiddleware()
+    ]
 });
-client.use(new ResultDataMiddleware());
-client.use(new AuthorizationMiddleware({
-    type : 'bearer',
-    token: 'asdfsdf'
-}));
-client.use(new ETagMiddleware());
 
 console.log('client', client);
-
-
 let streams;
 client.streams.get().then(response => {
     streams = response.data;
-    console.log('response', response);
-    console.log('streams', streams);
-    return Promise.all(streams.data.map(stream => client.streams.find(stream.id)))
+    console.log('client.streams.get()', response);
+    console.log('client.streams.get() streams', streams);
+    return Promise.all(response.data.data.map(stream => client.streams.find(stream.id)))
 }).then(responses => {
-    console.log('responses', responses);
-});
-</script>
-<!--
-<script type="module">
-(async () => {
-    const {Client} = await import('./index');
+    console.log('streams.data.data.map.find responses', responses);
+    return Promise.all(responses.map(response => client.entries.get(response.data.stream.id)))
+}).then(responses => {
+    console.log('client.entries.find(stream.id, entry.id) responses', responses);
+    return Promise.all(responses.map(response => {
+        return Promise.all(response.data.data.map(entry => client.entries.find(response.data.stream.id,entry.id)))
+    }))
+}).then(responses => {
+    console.log('final responses', responses)
+})
 
-    console.log('Client', Client);
-    const client = new Client({
-        baseURL: 'http://streams-dev.local/api'
-    });
-    console.log('client', client);
-})();
 </script>
--->
 </body>
 </html>

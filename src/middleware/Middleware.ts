@@ -1,5 +1,5 @@
 import { Client } from '../Client';
-import { FetchRequest } from '../fetch/FetchRequest';
+import { FetchRequest } from '../FetchRequest';
 import { ClientResponse } from '../types';
 import { FetchError } from '../FetchError';
 import { isObject, mergeObjects } from '../utils';
