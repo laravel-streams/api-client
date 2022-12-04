@@ -1,14 +1,14 @@
-import { Middleware } from './Middleware';
+import { Middleware, MiddlewareOptions } from './Middleware';
 import { Client } from '../Client';
 import { FetchRequest } from '../fetch/FetchRequest';
 
-export interface BasicAuthorizationMiddlewareOptions {
+export interface BasicAuthorizationMiddlewareOptions extends MiddlewareOptions{
     type: 'basic';
     username: string;
     password: string;
 }
 
-export interface BearerAuthorizationMiddlewareOptions {
+export interface BearerAuthorizationMiddlewareOptions extends MiddlewareOptions{
     type: 'bearer';
     token: string;
 }
@@ -17,11 +17,8 @@ export type AuthorizationMiddlewareOptions =
     BasicAuthorizationMiddlewareOptions
     | BearerAuthorizationMiddlewareOptions
 
-export class AuthorizationMiddleware extends Middleware {
-    constructor(public options: AuthorizationMiddlewareOptions) {
-        super();
-    }
-
+export class AuthorizationMiddleware extends Middleware<AuthorizationMiddlewareOptions> {
+    public static defaultOptions:Partial<AuthorizationMiddlewareOptions> = {}
     public async request(request: FetchRequest, client: Client): Promise<FetchRequest> {
         if ( this.options.type === 'basic' ) {
             request.headers.basic(this.options.username, this.options.password);

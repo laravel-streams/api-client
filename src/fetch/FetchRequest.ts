@@ -1,14 +1,19 @@
 import { ClientResponse, RequestConfig,ResponseType } from '../types';
 import { FetchHeaders } from './FetchHeaders';
+import { Criteria } from '../Criteria';
 
 export class FetchRequest extends Request {
     response: ClientResponse;
     headers: FetchHeaders;
     responseType:ResponseType;
+    params?:any
+    criteria?:Criteria
 
     constructor(input: RequestInfo | URL, init: RequestConfig = {}) {
         super(input, init);
         this.responseType = init.responseType || 'json';
+        this.params = init.params;
+        this.criteria = init.criteria;
         delete this.headers;
         Object.defineProperty(this, 'headers', {
             value   : new FetchHeaders(init.headers),
@@ -27,4 +32,5 @@ export class FetchRequest extends Request {
             return this;
         });
     }
+
 }

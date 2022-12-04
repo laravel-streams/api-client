@@ -885,22 +885,7 @@ var Client = /*#__PURE__*/function () {
                       }
                     }, _callee, this, [[3, 15, 18, 21]]);
                   }));
-                })
-                // return fetch(request.url, request)
-                // .then<ClientResponse>(async (response: ClientResponse) => {
-                //     request.setResponse(response);
-                //     response.request = request;
-                //     if ( !response.ok ) {
-                //         throw new RequestError(request);
-                //     }
-                //     for ( const middleware of this.middlewares ) {
-                //         if ( typeof middleware.response === 'function' ) {
-                //             response = await middleware.response(response, this);
-                //         }
-                //     }
-                //     return response;
-                // })
-                .catch(function (error) {
+                }).catch(function (error) {
                   var _iterator3 = _createForOfIteratorHelper(_this.middlewares),
                     _step3;
                   try {
@@ -923,48 +908,6 @@ var Client = /*#__PURE__*/function () {
             }
           }
         }, _callee2, this, [[4, 16, 19, 22]]);
-      }));
-    }
-  }, {
-    key: "requestJSON",
-    value: function requestJSON(method, uri) {
-      var config = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      return __awaiter(this, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
-        var _this2 = this;
-        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
-          while (1) {
-            switch (_context4.prev = _context4.next) {
-              case 0:
-                return _context4.abrupt("return", new Promise(function (resolve, reject) {
-                  _this2.request(method, uri, config).then(function (response) {
-                    return __awaiter(_this2, void 0, void 0, /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-                      return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-                        while (1) {
-                          switch (_context3.prev = _context3.next) {
-                            case 0:
-                              _context3.t0 = resolve;
-                              _context3.next = 3;
-                              return response.json();
-                            case 3:
-                              _context3.t1 = _context3.sent;
-                              return _context3.abrupt("return", (0, _context3.t0)(_context3.t1));
-                            case 5:
-                            case "end":
-                              return _context3.stop();
-                          }
-                        }
-                      }, _callee3);
-                    }));
-                  }).catch(function (reason) {
-                    return reject(reason);
-                  });
-                }));
-              case 1:
-              case "end":
-                return _context4.stop();
-            }
-          }
-        }, _callee4);
       }));
     }
   }]);
@@ -1302,23 +1245,27 @@ var ETagCache = /*#__PURE__*/function () {
       this.getUuidManifest().forEach(function (uuid) {
         return _this.unset(uuid);
       });
-      this.storage.set(this.manifestKey, []);
+      this.storage.setItem(this.manifestKey, this.transformer.encode([]));
       return this;
     }
   }, {
     key: "getUuidManifest",
     value: function getUuidManifest() {
-      if (!this.storage.has(this.manifestKey)) {
-        this.storage.set(this.manifestKey, []);
+      if (!this.has(this.manifestKey)) {
+        this.storage.setItem(this.manifestKey, this.transformer.encode([]));
       }
-      return this.storage.get(this.manifestKey, []);
+      var value = this.storage.getItem(this.manifestKey);
+      if (typeof value !== 'string') {
+        return [];
+      }
+      return this.transformer.decode(value);
     }
   }, {
     key: "addToUuidManifest",
     value: function addToUuidManifest(uuid) {
       var manifest = this.getUuidManifest();
       manifest.push(uuid);
-      this.storage.set(this.manifestKey, manifest);
+      this.storage.setItem(this.manifestKey, this.transformer.encode(manifest));
     }
   }]);
   return ETagCache;

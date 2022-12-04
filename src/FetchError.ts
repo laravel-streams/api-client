@@ -2,7 +2,7 @@ import { FetchRequest } from './fetch/FetchRequest';
 import { ClientResponse } from './types';
 
 
-export class RequestError extends Error {
+export class FetchError extends Error {
     public get response(): ClientResponse { return this.request.response;}
     public readonly status: number;
     public readonly statusText: string;

@@ -1,16 +1,15 @@
 import 'reflect-metadata';
 import { bootstrap, env } from './_support/bootstrap';
-import { FS,  ProxyEnv } from './_support/utils';
+import {  ProxyEnv } from './_support/utils';
+import { Client, Middleware } from '../src';
 
 
 export abstract class TestCase {
 
     static env: ProxyEnv<any> = env;
     env: ProxyEnv<any>        = env;
-    FS: FS;
 
     async before() {
-        this.FS  = new FS();
         this.env = env;
     }
 
@@ -22,4 +21,20 @@ export abstract class TestCase {
         bootstrap();
     }
 
+    protected getClient(xdebug=false){
+        let headers={};
+        let params={};
+        let middlewares=[];
+        if(xdebug){
+            params['XDEBUG_SESSION']='phpstorm';
+        }
+        return new Client({
+            baseURL: this.env.get('API_URL','http://localhost') + '/' + env.get('STREAMS_API_PREFIX', 'api'),
+            request: {
+                headers,
+                params
+            },
+            middlewares
+        });
+    }
 }

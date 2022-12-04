@@ -68,6 +68,7 @@ export const objectify = (obj, [ k, v ]) => ({ ...obj, [ k ]: v });
 
 
 export function paramsToQueryString(params:any):string{
+
     return encodeURIComponent(btoa(JSON.stringify(params)));
 }
 export const mergeObjects = <T extends object = object>(target: T, ...sources: T[]): T  => {
@@ -95,7 +96,7 @@ export const mergeObjects = <T extends object = object>(target: T, ...sources: T
     return mergeObjects(target, ...sources);
 };
 
-const isObject = (item: any): item is object => {
+export const isObject = (item: any): item is object => {
     return item !== null && typeof item === 'object';
 };
 

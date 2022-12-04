@@ -2,11 +2,13 @@ import {Client} from './Client';
 import { AuthorizationMiddleware,Middleware,ETagMiddleware,ResultDataMiddleware } from './middleware';
 import { FetchRequest } from './fetch/FetchRequest';
 import { FetchHeaders } from './fetch/FetchHeaders';
+import { Criteria } from './Criteria';
+
 export * from './middleware'
-export {Client,FetchHeaders,FetchRequest,Middleware,ETagMiddleware,ResultDataMiddleware};
+export {Client,FetchHeaders,FetchRequest,Middleware,ETagMiddleware,ResultDataMiddleware,Criteria};
 
 // @ts-ignore
-global['streams_api'] = {Client,AuthorizationMiddleware,FetchHeaders,FetchRequest,Middleware,ETagMiddleware,ResultDataMiddleware};
+global['streams_api'] = {Client,AuthorizationMiddleware,FetchHeaders,FetchRequest,Middleware,ETagMiddleware,ResultDataMiddleware,Criteria};
 
 interface Window {
     streams_api:{
@@ -17,5 +19,6 @@ interface Window {
         Middleware:typeof Middleware
         ETagMiddleware:typeof ETagMiddleware
         ResultDataMiddleware:typeof ResultDataMiddleware
+        Criteria:typeof Criteria
     }
 }

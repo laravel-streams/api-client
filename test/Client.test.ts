@@ -3,14 +3,8 @@ import { TestCase } from './TestCase';
 import { Client } from '../src';
 
 
-@suite
+@suite('Client')
 export class ClientTest extends TestCase {
-
-    protected getClient(){
-        return new Client({
-            baseURL: 'http://streams-dev.local/api'
-        });
-    }
 
     @test
     async 'create'() {

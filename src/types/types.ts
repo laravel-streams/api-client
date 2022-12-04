@@ -1,5 +1,6 @@
 import { FetchRequest } from '../fetch/FetchRequest';
 import { Client } from '../Client';
+import { Criteria } from '../Criteria';
 
 export type Constructor<Type = any> = new (...args: any[]) => Type
 
@@ -21,6 +22,11 @@ export type ResponseType =
 export interface RequestConfig extends RequestInit {
     uri?: string;
     responseType?:ResponseType
+    criteria?: Criteria
+    // query parameters
+    params?:any
+    // json payload
+    data?:any
 }
 
 export interface ClientResponse<T=any> extends Response {

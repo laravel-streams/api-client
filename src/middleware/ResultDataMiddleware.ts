@@ -1,9 +1,11 @@
-import { Middleware } from './Middleware';
+import { Middleware, MiddlewareOptions } from './Middleware';
 import { ClientResponse } from '../types';
 import { Client } from '../Client';
 
 
-export class ResultDataMiddleware extends Middleware {
+export interface ResultDataMiddlewareOptions extends MiddlewareOptions {}
+export class ResultDataMiddleware extends Middleware<ResultDataMiddlewareOptions> {
+    static defaultOptions: ResultDataMiddlewareOptions = {};
     public async response(response: ClientResponse, client: Client): Promise<ClientResponse> {
         const request = response.request;
         if ( request.isResponseType('arraybuffer') ) {

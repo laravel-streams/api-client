@@ -1,4 +1,4 @@
-### GET streams
+### GET streams2
 GET http://{{host}}/{{path}}/streams
 Accept: application/json
 
@@ -8,6 +8,16 @@ client.test("Headers option exists", function() {
 });
 %}
 
+### GET streams
+GET http://streams-dev.local/api/streams?XDEBUG_SESSION=phpstorm
+Accept: application/json
+Cookie: XDEBUG_SESSION=phpstorm
+
+{
+"parameters": "per_page=2"
+}
+
+
 ### POST streams
 POST http://streams-dev.local/api/streams
 Accept: application/json
@@ -15,6 +25,10 @@ Accept: application/json
 ### GET streams/users
 GET http://streams-dev.local/api/streams/users
 Accept: application/json
+
+{
+    "key": "{{my-var}}"
+}
 
 ### GET streams/roles
 GET http://streams-dev.local/api/streams/roles

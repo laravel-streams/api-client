@@ -15,7 +15,7 @@ import sinonChai from 'sinon-chai';
 import btoa from 'btoa';
 import { JSDOM } from 'jsdom';
 import { getEnv } from './utils';
-
+import 'whatwg-fetch';
 
 global.assert = chai.assert;
 global.expect = chai.expect;
@@ -30,15 +30,14 @@ const dom             = new JSDOM(``, {
     contentType         : 'text/html',
     includeNodeLocations: true,
     storageQuota        : 10000000,
-
-
 });
+// Object.assign(dom.window,require('node-fetch/src/index.js'))
+// Object.assign(global,require('node-fetch/src/index.js'))
 global.XMLHttpRequest = dom.window.XMLHttpRequest;
 global.btoa           = btoa;
 global.location       = dom.window.location;
-global['window'] = dom.window as any
 
-Object.assign(dom.window,require('node-fetch/src/index.js'))
+global['window'] = dom.window as any
 
 chai.use(sinonChai);
 

@@ -1,4 +1,4 @@
-import { Middleware } from './Middleware';
+import { Middleware, MiddlewareOptions } from './Middleware';
 import { ClientResponse } from '../types';
 import { FetchRequest } from '../fetch/FetchRequest';
 import { Client } from '../Client';
@@ -7,7 +7,7 @@ import { Transformer } from '../Transformer';
 const isCacheableMethod       = (request: FetchRequest) => ~ [ 'GET', 'HEAD' ].indexOf(request.method.toUpperCase());
 const getBase64UrlFromRequest = (request: FetchRequest) => btoa(request.url);
 
-export interface ETagMiddlewareOptions {
+export interface ETagMiddlewareOptions extends MiddlewareOptions{
     manifestKey?: string;
     compression?: boolean;
 }
@@ -60,37 +60,39 @@ class ETagCache {
 
     public clear() {
         this.getUuidManifest().forEach(uuid => this.unset(uuid));
-        this.storage.set(this.manifestKey, []);
+        this.storage.setItem(this.manifestKey, this.transformer.encode([]));
         return this;
     }
 
     protected getUuidManifest(): string[] {
-        if ( !this.storage.has(this.manifestKey) ) {
-            this.storage.set(this.manifestKey, []);
+        if ( !this.has(this.manifestKey) ) {
+            this.storage.setItem(this.manifestKey, this.transformer.encode([]));
         }
-        return this.storage.get(this.manifestKey, []);
+        let value=this.storage.getItem(this.manifestKey);
+        if(typeof value !== 'string'){
+            return [];
+        }
+        return this.transformer.decode(value);
     }
 
     protected addToUuidManifest(uuid) {
         let manifest = this.getUuidManifest();
         manifest.push(uuid);
-        this.storage.set(this.manifestKey, manifest);
+        this.storage.setItem(this.manifestKey, this.transformer.encode(manifest));
     }
 }
 
 
-export class ETagMiddleware extends Middleware {
+export class ETagMiddleware extends Middleware<ETagMiddlewareOptions> {
+    public static defaultOptions: ETagMiddlewareOptions = {
+        compression:false,
+        manifestKey: 'streams_api_cache',
+    };
     public readonly cache: ETagCache;
-    public options: ETagMiddlewareOptions;
     protected enabled: boolean = true;
 
-    constructor(options: ETagMiddlewareOptions = {}) {
-        super();
-        this.options = {
-            compression:false,
-            manifestKey: 'streams_api_cache',
-            ...options,
-        };
+    constructor(options?: ETagMiddlewareOptions) {
+        super(options);
         this.cache   = new ETagCache(this);
     }
 
