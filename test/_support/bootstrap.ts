@@ -5,7 +5,6 @@
 // export function bootstrap(): void {
 //
 // }
-import 'reflect-metadata';
 // import 'chai/register-assert'; // Using Assert style
 // import 'chai/register-expect'; // Using Expect style
 // import 'chai/register-should'; // Using Should style

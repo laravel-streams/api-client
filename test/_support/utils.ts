@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { config } from 'dotenv';
