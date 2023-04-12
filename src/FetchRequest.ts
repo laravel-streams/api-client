@@ -9,13 +9,19 @@ export class FetchRequest extends Request {
     query: CustomMap<string>;
     responseType: ResponseType;
     criteria?: Criteria;
-    data?:any
+    data?: any;
 
     constructor(input: RequestInfo | URL, init: RequestConfig = {}) {
         super(input, init);
         this.responseType = init.responseType || 'json';
-        this.query        = createCustomMap(init.query || {});
-        this.criteria     = init.criteria;
+
+        this.query        = createCustomMap({});
+        if ( typeof input === 'object' && 'query' in input ) {
+            this.query.merge(input.query);
+        }
+        this.query.merge(init.query || {});
+
+        this.criteria = init.criteria;
         this.data     = init.data;
         Object.defineProperty(this, 'headers', {
             value   : new FetchHeaders(init.headers),
@@ -35,7 +41,7 @@ export class FetchRequest extends Request {
         });
     }
 
-    setUrl(url: string):this {
+    setUrl(url: string): this {
         Object.defineProperty(this, 'url', { value: url, writable: false });
         return this;
     }

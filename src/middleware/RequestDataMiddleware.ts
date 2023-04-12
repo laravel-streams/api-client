@@ -9,9 +9,10 @@ export class RequestDataMiddleware extends Middleware<RequestDataMiddlewareOptio
     static defaultOptions: RequestDataMiddlewareOptions = {};
     public async request(request: FetchRequest, client: Client): Promise<FetchRequest> {
         if ( request.data ) {
-            request = new FetchRequest(request, {
-                body: JSON.stringify(request.data)
-            })
+            // request = new FetchRequest(request, {
+            //     body: JSON.stringify(request.data)
+            // })
+            request.headers.contentType('application/json');
         }
         return request;
     }

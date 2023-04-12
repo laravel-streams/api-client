@@ -2,7 +2,7 @@ import { mergeObjects, Str } from './utils';
 import { Streams } from './Streams';
 import { FetchRequest } from './FetchRequest';
 import { ClientResponse, RequestConfig } from './types';
-import { CriteriaMiddleware, Middleware, QueryMiddleware, RequestDataMiddleware, ResponseDataMiddleware } from './middleware';
+import {  Middleware, QueryMiddleware, RequestDataMiddleware, ResponseDataMiddleware } from './middleware';
 import { FetchError } from './FetchError';
 import { Entries } from './Entries';
 
@@ -27,7 +27,6 @@ export class Client {
             middlewares       : [],
             defaultMiddlewares: [
                 new RequestDataMiddleware(),
-                new CriteriaMiddleware(),
                 new QueryMiddleware(),
                 new ResponseDataMiddleware(),
             ],

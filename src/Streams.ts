@@ -1,9 +1,10 @@
 import { Resource } from './Resource';
-import { ClientResponse, RequestConfig } from './types';
+import { ClientResponse, GetEntriesQuery, RequestConfig } from './types';
 
 
 export class Streams extends Resource {
-    async get<T>(config: RequestConfig = {}): Promise<ClientResponse<T[]>> {
+    async get<T>(query: GetEntriesQuery = {}, config: RequestConfig = {}): Promise<ClientResponse<T[]>> {
+        config.query = config.query || query;
         return this.client.request('get', '/streams', config);
     }
 

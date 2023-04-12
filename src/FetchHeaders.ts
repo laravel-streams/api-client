@@ -41,6 +41,8 @@ export class FetchHeaders extends Headers {
     }
 
     toObject(): Record<string, string> {
-        return Object.entries(this).map(kv => ([ kv[ 0 ], kv[ 1 ] ])).reduce(objectify, {});
+        let obj = {}
+        this.forEach((v,k) => obj[k]=v);
+        return obj;
     }
 }

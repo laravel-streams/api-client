@@ -128,6 +128,10 @@ export function createCustomMap(obj):CustomMap{
         }
 
         merge(obj) {
+            if(obj instanceof Map && 'toObject' in obj){
+                // @ts-ignore
+                obj=obj.toObject();
+            }
             obj = mergeObjects(this.toObject(), obj);
             Object.entries(obj).forEach(([ k, v ]) => this.set(k, v));
             return this;
