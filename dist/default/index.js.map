@@ -1,1 +1,0 @@
-{"mappings":"ACEO,MAAM;AAEb;;ADJA;IAIA,2CAAe,CAAA,GAAA,yCAAK","sources":["src/index.js","src/Client.js"],"sourcesContent":["import {Client} from './Client';\n\nexport {Client};\n\nexport default Client;","\n\nexport class Client {\n\n}"],"names":[],"version":3,"file":"index.js.map","sourceRoot":"../../"}
