@@ -599,6 +599,6 @@ const post = await safeApiCall(() => getPost(123));
 
 ## Next Steps
 
-- [Client Configuration](03-client.md) - Advanced client setup
-- [Criteria](06-criteria.md) - Query building techniques
-- [Middleware](07-middleware.md) - Custom middleware patterns
+- [Client Configuration](client) - Advanced client setup
+- [Criteria](criteria) - Query building techniques
+- [Middleware](middleware) - Custom middleware patterns

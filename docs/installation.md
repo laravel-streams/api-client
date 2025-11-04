@@ -148,6 +148,6 @@ Expected output:
 
 ## Next Steps
 
-- [Quick Start Guide](02-quickstart.md) - Get up and running quickly
-- [Client Configuration](03-client.md) - Configure the client for your needs
-- [Working with Entries](05-entries.md) - Start interacting with your data
+- [Quick Start Guide](quickstart) - Get up and running quickly
+- [Client Configuration](client) - Configure the client for your needs
+- [Working with Entries](entries) - Start interacting with your data

@@ -346,5 +346,5 @@ const popularPublishedPosts = publishedPosts()
 
 ## Next Steps
 
-- [Working with Entries](05-entries.md) - Apply criteria to entry queries
-- [Examples](08-examples.md) - See more complex examples
+- [Working with Entries](entries) - Apply criteria to entry queries
+- [Examples](examples) - See more complex examples

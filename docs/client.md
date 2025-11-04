@@ -234,6 +234,6 @@ export default client;
 
 ## Next Steps
 
-- [Working with Streams](04-streams.md)
-- [Working with Entries](05-entries.md)
-- [Middleware](07-middleware.md)
+- [Working with Streams](streams)
+- [Working with Entries](entries)
+- [Middleware](middleware)

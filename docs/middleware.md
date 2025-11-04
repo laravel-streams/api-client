@@ -557,5 +557,5 @@ class ConfigurableMiddleware extends Middleware {
 
 ## Next Steps
 
-- [Examples](08-examples.md) - See middleware in real-world scenarios
-- [Client Configuration](03-client.md) - Learn more about client setup
+- [Examples](examples) - See middleware in real-world scenarios
+- [Client Configuration](client) - Learn more about client setup

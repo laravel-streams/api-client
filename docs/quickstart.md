@@ -200,7 +200,7 @@ await createPost({
 
 ## Next Steps
 
-- [Client Configuration](03-client.md) - Learn about all configuration options
-- [Criteria Query Builder](06-criteria.md) - Master the query builder
-- [Middleware](07-middleware.md) - Extend functionality with middleware
-- [Examples](08-examples.md) - See more real-world examples
+- [Client Configuration](client) - Learn about all configuration options
+- [Criteria Query Builder](criteria) - Master the query builder
+- [Middleware](middleware) - Extend functionality with middleware
+- [Examples](examples) - See more real-world examples

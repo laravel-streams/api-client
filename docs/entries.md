@@ -325,6 +325,6 @@ async function updateProfile(userId, data) {
 
 ## Next Steps
 
-- [Criteria Query Builder](06-criteria.md) - Learn advanced querying
-- [Middleware](07-middleware.md) - Add custom functionality
-- [Examples](08-examples.md) - See more examples
+- [Criteria Query Builder](criteria) - Learn advanced querying
+- [Middleware](middleware) - Add custom functionality
+- [Examples](examples) - See more examples

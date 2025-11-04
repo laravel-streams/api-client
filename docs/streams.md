@@ -488,6 +488,6 @@ await client.streams.patch('posts', updates);
 
 ## Next Steps
 
-- [Working with Entries](05-entries.md) - CRUD operations on stream entries
-- [Criteria](06-criteria.md) - Query builder for filtering and sorting
-- [Examples](08-examples.md) - Real-world usage patterns
+- [Working with Entries](entries) - CRUD operations on stream entries
+- [Criteria](criteria) - Query builder for filtering and sorting
+- [Examples](examples) - Real-world usage patterns
