@@ -18,7 +18,9 @@
         "dev": "parcel src/index.html",
         "watch": "parcel watch",
         "build": "parcel build",
-        "clean": "rm -rf dist .parcel-cache"
+        "clean": "rm -rf dist .parcel-cache",
+        "test": "node --test test/*.test.js",
+        "test:watch": "node --test --watch test/*.test.js"
     },
     "dependencies": {},
     "devDependencies": {
