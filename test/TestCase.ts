@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { bootstrap, env } from './_support/bootstrap';
 import {  ProxyEnv } from './_support/utils';
 import { Client, Middleware } from '../src';

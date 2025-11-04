@@ -30,7 +30,27 @@ export class ClientTest extends TestCase {
     @test
     async 'get stream "docs" entries'() {
         const client = this.getClient();
-        const entries = await client.entries.get('docs');
+        const entries = await client.entries.get('docs', {
+            page: 1,
+            per_page: 3,
+            limit: 13,
+            where: {
+                created_on: Date.now()
+            },
+            constraint: {
+                created_on: '<'
+            },
+        });
+        return;
+    }
+
+    @test
+    async 'query stream "docs" entries'() {
+        const client = this.getClient();
+
+        const entries = await client.entries.query('docs', [
+            {where: ['created_on','<',Date.now()]}
+        ]);
         return;
     }
 
