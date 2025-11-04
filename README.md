@@ -2,6 +2,17 @@
 
 A simplified JavaScript client for interacting with the [Laravel Streams API](https://github.com/laravel-streams/streams-api).
 
+> **Version 3.0** - Rebuilt with native JavaScript. Zero runtime dependencies. Simple and maintainable.
+
+## Features
+
+✨ **Zero Dependencies** - Uses native fetch API  
+🎯 **PHP Laravel-style Criteria** - Familiar query builder interface  
+🔌 **Middleware System** - Extensible request/response pipeline  
+📦 **Tiny Bundle** - ~22KB CommonJS, ~21KB ESM  
+🧪 **Fully Tested** - 70 tests, 100% passing  
+⚡ **Modern JS** - ES6+ with both ESM and CommonJS builds
+
 ## Installation
 
 ```bash
@@ -40,6 +51,17 @@ await client.entries.patch('posts', 1, {
 // Delete an entry
 await client.entries.delete('posts', 1);
 ```
+
+## Documentation
+
+- [Installation](docs/01-installation.md) - Installation and setup
+- [Quick Start](docs/02-quickstart.md) - Get started quickly
+- [Client Configuration](docs/03-client.md) - Client initialization and configuration
+- [Working with Streams](docs/04-streams.md) - Managing streams
+- [Working with Entries](docs/05-entries.md) - CRUD operations for entries
+- [Criteria Query Builder](docs/06-criteria.md) - PHP Laravel-style querying
+- [Middleware](docs/07-middleware.md) - Request/response middleware
+- [Examples](docs/08-examples.md) - Real-world usage examples
 
 ## Using Criteria (Query Builder)
 
@@ -98,6 +120,33 @@ const client = new Client({
 - `orderBy(field, direction)` - Order results
 - `limit(number)` - Limit results
 - `paginate(perPage, page)` - Paginate results
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Run tests
+npm test
+
+# Watch mode for tests
+npm run test:watch
+
+# Clean build artifacts
+npm run clean
+```
+
+## Migration from 2.x
+
+If you're upgrading from version 2.x (TypeScript), see the [Migration Guide](MIGRATION.md) for details on changes and how to upgrade.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
