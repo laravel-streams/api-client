@@ -76,4 +76,39 @@ export class Client {
                 throw error;
             });
     }
+
+    /**
+     * Make a GET request
+     */
+    async get(uri, config = {}) {
+        return this.request('GET', uri, config);
+    }
+
+    /**
+     * Make a POST request
+     */
+    async post(uri, config = {}) {
+        return this.request('POST', uri, config);
+    }
+
+    /**
+     * Make a PATCH request
+     */
+    async patch(uri, config = {}) {
+        return this.request('PATCH', uri, config);
+    }
+
+    /**
+     * Make a PUT request
+     */
+    async put(uri, config = {}) {
+        return this.request('PUT', uri, config);
+    }
+
+    /**
+     * Make a DELETE request
+     */
+    async delete(uri, config = {}) {
+        return this.request('DELETE', uri, config);
+    }
 }

@@ -12,7 +12,9 @@ export class AuthorizationMiddleware extends Middleware {
 
     async request(request, client) {
         if (this.token) {
+            console.log('AuthorizationMiddleware: Setting token', this.type, this.token);
             request.headers.authorization(this.type, this.token);
+            console.log('AuthorizationMiddleware: Header set, checking...', request.headers.get('Authorization'));
         }
         return request;
     }

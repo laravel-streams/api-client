@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel Streams API Client - Playground</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        textarea {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .output pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .success {
+            color: #4CAF50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .info {
+            color: #2196F3;
+        }
+
+        .warning {
+            color: #ff9800;
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .example-btn {
+            background: #2196F3;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .example-btn:hover {
+            background: #1976D2;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .status.ready {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status.loading {
+            background: #ff9800;
+            color: white;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                🚀 Laravel Streams API Client - Playground
+                <span id="status" class="status ready">Ready</span>
+            </h1>
+            <p class="subtitle">
+                Interactive testing environment for the Streams API Client
+                <br>
+                <small>Loading from: <code>./src/index.js</code></small>
+            </p>
+        </header>
+
+        <div class="grid">
+            <!-- Configuration Panel -->
+            <div class="panel">
+                <h2>⚙️ Configuration</h2>
+                <div class="form-group">
+                    <label for="baseUrl">Base URL</label>
+                    <input type="text" id="baseUrl" value="https://jsonplaceholder.typicode.com" placeholder="http://127.0.0.1:8000/api">
+                </div>
+                <div class="form-group">
+                    <label for="token">API Token (Optional)</label>
+                    <input type="text" id="token" placeholder="pat_XJUOeykhS9BzRhBGOKemiPi5j8DDt89j7IIcdJX0">
+                </div>
+                <div class="form-group">
+                    <label for="tokenType">Token Type</label>
+                    <select id="tokenType">
+                        <option value="bearer">Bearer (Header)</option>
+                        <option value="query">Query String (?token=...)</option>
+                    </select>
+                </div>
+                <button onclick="initializeClient()">Initialize Client</button>
+            </div>
+
+            <!-- Quick Examples -->
+            <div class="panel">
+                <h2>📚 Quick Examples</h2>
+                <div class="examples">
+                    <button class="example-btn" onclick="runExample('listGroups')">List Groups</button>
+                    <button class="example-btn" onclick="runExample('getGroup')">Get Group #1</button>
+                    <button class="example-btn" onclick="runExample('createGroup')">Create Group</button>
+                    <button class="example-btn" onclick="runExample('updateGroup')">Update Group</button>
+                    <button class="example-btn" onclick="runExample('deleteGroup')">Delete Group</button>
+                    <button class="example-btn" onclick="runExample('criteria')">With Criteria</button>
+                </div>
+            </div>
+
+            <!-- Custom Request Panel -->
+            <div class="panel full-width">
+                <h2>🔧 Custom Request</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="method">Method</label>
+                        <select id="method">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="endpoint">Endpoint</label>
+                        <input type="text" id="endpoint" value="/groups" placeholder="/groups or /streams/posts/entries">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="requestData">Request Data (JSON)</label>
+                    <textarea id="requestData" placeholder='{"title": "foo", "body": "bar", "userId": 1}'></textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="executeCustomRequest()">Execute Request</button>
+                    <button onclick="clearOutput()" style="background: #666;">Clear Output</button>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="panel full-width">
+                <h2>📤 Output</h2>
+                <div class="output" id="output">
+                    <pre class="info">👋 Welcome to the Streams API Client Playground!
+
+Click "Initialize Client" to get started, then try the quick examples or create your own custom requests.
+
+The client is loaded from GitHub via CDN, so you're testing the latest develop branch code.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Define utility functions first
+        window.log = function(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type || 'info';
+            output.innerHTML += `<pre class="${className}">[${timestamp}] ${message}</pre>`;
+            output.scrollTop = output.scrollHeight;
+        };
+
+        window.clearOutput = function() {
+            document.getElementById('output').innerHTML = '';
+        };
+
+        window.setStatus = function(status, text) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = text;
+        };
+
+        // Try to import from local first, then CDN as fallback
+        let Client, Criteria, AuthorizationMiddleware, CriteriaMiddleware, Middleware;
+        
+        try {
+            // Use local source in development
+            const module = await import('./src/index.js');
+            Client = module.Client;
+            Criteria = module.Criteria;
+            AuthorizationMiddleware = module.AuthorizationMiddleware;
+            CriteriaMiddleware = module.CriteriaMiddleware;
+            Middleware = module.Middleware;
+            window.log('✅ Loaded from local source', 'success');
+        } catch (e) {
+            console.error('Failed to load module:', e);
+            window.log('❌ Failed to load API client module.', 'error');
+            window.log('Error: ' + e.message, 'error');
+        }
+
+        // Make available globally for the onclick handlers
+        window.Client = Client;
+        window.Criteria = Criteria;
+        window.AuthorizationMiddleware = AuthorizationMiddleware;
+        window.CriteriaMiddleware = CriteriaMiddleware;
+        window.Middleware = Middleware;
+
+        window.client = null;
+        window.queryToken = null;
+
+        window.initializeClient = function() {
+            if (!Client) {
+                log('❌ Client module not loaded yet!', 'error');
+                return;
+            }
+
+            const baseUrl = document.getElementById('baseUrl').value;
+            const token = document.getElementById('token').value;
+            const tokenType = document.getElementById('tokenType').value;
+
+            // Save to localStorage
+            localStorage.setItem('playground_baseUrl', baseUrl);
+            localStorage.setItem('playground_token', token);
+            localStorage.setItem('playground_tokenType', tokenType);
+
+            clearOutput();
+            log('🔧 Initializing client...', 'info');
+
+            const middleware = [new CriteriaMiddleware()];
+            
+            // Add debug middleware to log headers
+            const DebugMiddleware = class extends Middleware {
+                async request(request, client) {
+                    console.log('Request headers:', request.headers);
+                    const headers = {};
+                    request.headers.forEach((value, key) => {
+                        headers[key] = value;
+                    });
+                    console.log('Headers object:', headers);
+                    return request;
+                }
+            };
+            middleware.push(new DebugMiddleware());
+            
+            if (token) {
+                if (tokenType === 'bearer') {
+                    middleware.push(new AuthorizationMiddleware({ token: token }));
+                    log(`🔐 Added Bearer token authorization`, 'info');
+                } else if (tokenType === 'query') {
+                    // Create custom middleware for query string token
+                    const QueryTokenMiddleware = class extends window.Client.prototype.constructor {
+                        constructor(token) {
+                            super();
+                            this.token = token;
+                        }
+                    };
+                    
+                    // Store token for use in requests
+                    window.queryToken = token;
+                    log(`🔐 Token will be added to query string: ?token=${token}`, 'info');
+                }
+            }
+
+            window.client = new Client({
+                baseURL: baseUrl,
+                middlewares: middleware
+            });
+
+            log(`✅ Client initialized with base URL: ${baseUrl}`, 'success');
+            log(`Middlewares: ${window.client.middlewares.map(m => m.constructor.name).join(', ')}`, 'info');
+            log('Ready to make requests!', 'success');
+            setStatus('ready', 'Ready');
+        };
+
+        window.runExample = async function(example) {
+            if (!window.client) {
+                log('❌ Please initialize the client first!', 'error');
+                return;
+            }
+
+            setStatus('loading', 'Loading...');
+            clearOutput();
+
+            // Helper to add token to endpoint
+            const addToken = (endpoint) => {
+                if (window.queryToken && !endpoint.includes('token=')) {
+                    const separator = endpoint.includes('?') ? '&' : '?';
+                    return `${endpoint}${separator}token=${window.queryToken}`;
+                }
+                return endpoint;
+            };
+
+            try {
+                switch(example) {
+                    case 'listGroups':
+                        log('📋 Fetching all groups...', 'info');
+                        const groupsEndpoint = addToken('/groups');
+                        const groups = await window.client.get(groupsEndpoint);
+                        const groupData = Array.isArray(groups.data) ? groups.data : (groups.data.data || []);
+                        log(`✅ Retrieved ${groupData.length} groups`, 'success');
+                        log(JSON.stringify(groupData.slice(0, 3), null, 2), 'info');
+                        break;
+
+                    case 'getGroup':
+                        log('📄 Fetching group #1...', 'info');
+                        const groupEndpoint = addToken('/groups/1');
+                        const group = await window.client.get(groupEndpoint);
+                        log('✅ Group retrieved successfully', 'success');
+                        log(JSON.stringify(group.data, null, 2), 'info');
+                        break;
+
+                    case 'createGroup':
+                        log('➕ Creating new group...', 'info');
+                        const createEndpoint = addToken('/groups');
+                        const newGroup = await window.client.post(createEndpoint, {
+                            data: {
+                                name: 'Test Group from Playground',
+                                description: 'This is a test group created from the playground'
+                            }
+                        });
+                        log('✅ Group created successfully', 'success');
+                        log(JSON.stringify(newGroup.data, null, 2), 'info');
+                        break;
+
+                    case 'updateGroup':
+                        log('✏️ Updating group #1...', 'info');
+                        const updateEndpoint = addToken('/groups/1');
+                        const updated = await window.client.patch(updateEndpoint, {
+                            data: {
+                                name: 'Updated Group Name'
+                            }
+                        });
+                        log('✅ Group updated successfully', 'success');
+                        log(JSON.stringify(updated.data, null, 2), 'info');
+                        break;
+
+                    case 'deleteGroup':
+                        log('🗑️ Deleting group #1...', 'info');
+                        const deleteEndpoint = addToken('/groups/1');
+                        const deleted = await window.client.delete(deleteEndpoint);
+                        log(`✅ Group deleted (Status: ${deleted.status})`, 'success');
+                        break;
+
+                    case 'criteria':
+                        log('🔍 Using Criteria to filter groups...', 'info');
+                        const criteria = new Criteria()
+                            .limit(5);
+                        log('Criteria query: limit 5', 'info');
+                        const criteriaEndpoint = addToken('/groups');
+                        const filtered = await window.client.get(criteriaEndpoint, { 
+                            query: {
+                                _limit: 5
+                            }
+                        });
+                        const filteredData = Array.isArray(filtered.data) ? filtered.data : (filtered.data.data || []);
+                        log(`✅ Retrieved ${filteredData.length} filtered groups`, 'success');
+                        log(JSON.stringify(filteredData, null, 2), 'info');
+                        break;
+                }
+                setStatus('ready', 'Ready');
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                if (error.data) {
+                    log(JSON.stringify(error.data, null, 2), 'error');
+                }
+                setStatus('ready', 'Ready');
+            }
+        };
+
+        window.executeCustomRequest = async function() {
+            if (!window.client) {
+                log('❌ Please initialize the client first!', 'error');
+                return;
+            }
+
+            const method = document.getElementById('method').value;
+            let endpoint = document.getElementById('endpoint').value;
+            const dataStr = document.getElementById('requestData').value;
+
+            // Add query token if configured
+            if (window.queryToken && !endpoint.includes('token=')) {
+                const separator = endpoint.includes('?') ? '&' : '?';
+                endpoint = `${endpoint}${separator}token=${window.queryToken}`;
+            }
+
+            setStatus('loading', 'Loading...');
+            clearOutput();
+
+            log(`📤 ${method} ${endpoint}`, 'info');
+            
+            // Log the client middleware for debugging
+            if (window.client && window.client.middlewares) {
+                const authMiddleware = window.client.middlewares.find(m => m.constructor.name === 'AuthorizationMiddleware');
+                if (authMiddleware) {
+                    log(`Auth: ${authMiddleware.type} ${authMiddleware.token.substring(0, 20)}...`, 'info');
+                }
+            }
+
+            try {
+                let data = null;
+                if (dataStr && (method === 'POST' || method === 'PATCH' || method === 'PUT')) {
+                    data = JSON.parse(dataStr);
+                    log('Request data:', 'info');
+                    log(JSON.stringify(data, null, 2), 'info');
+                }
+
+                let response;
+                const options = data ? { data } : {};
+                
+                // If bearer token is configured, add it to request headers
+                if (window.client.middlewares.find(m => m.constructor.name === 'AuthorizationMiddleware')) {
+                    const authMw = window.client.middlewares.find(m => m.constructor.name === 'AuthorizationMiddleware');
+                    if (!options.headers) options.headers = {};
+                    options.headers['Authorization'] = `Bearer ${authMw.token}`;
+                    log(`Manually adding header: Authorization: Bearer ${authMw.token.substring(0, 20)}...`, 'warning');
+                }
+
+                switch(method) {
+                    case 'GET':
+                        response = await window.client.get(endpoint, options);
+                        break;
+                    case 'POST':
+                        response = await window.client.post(endpoint, options);
+                        break;
+                    case 'PATCH':
+                        response = await window.client.patch(endpoint, options);
+                        break;
+                    case 'PUT':
+                        response = await window.client.put(endpoint, options);
+                        break;
+                    case 'DELETE':
+                        response = await window.client.delete(endpoint, options);
+                        break;
+                }
+
+                log(`✅ Response (Status: ${response.status})`, 'success');
+                log('Response data:', 'info');
+                log(JSON.stringify(response.data, null, 2), 'info');
+                
+                if (response.headers) {
+                    log('Response headers:', 'info');
+                    const headers = {};
+                    response.headers.forEach((value, key) => {
+                        headers[key] = value;
+                    });
+                    log(JSON.stringify(headers, null, 2), 'info');
+                }
+
+                setStatus('ready', 'Ready');
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                if (error.status) {
+                    log(`Status: ${error.status}`, 'error');
+                }
+                if (error.response) {
+                    // Log response headers if available
+                    log('Response headers:', 'error');
+                    const respHeaders = {};
+                    error.response.headers.forEach((value, key) => {
+                        respHeaders[key] = value;
+                    });
+                    log(JSON.stringify(respHeaders, null, 2), 'error');
+                }
+                if (error.data) {
+                    log('Error data:', 'error');
+                    log(JSON.stringify(error.data, null, 2), 'error');
+                }
+                setStatus('ready', 'Ready');
+            }
+        };
+
+        // Log that modules loaded successfully
+        if (Client) {
+            window.log('✅ Modules loaded successfully', 'success');
+            window.log('Client, Criteria, and Middleware classes are ready!', 'success');
+            window.log('Click "Initialize Client" to get started.', 'info');
+            
+            // Restore saved configuration
+            const savedBaseUrl = localStorage.getItem('playground_baseUrl');
+            const savedToken = localStorage.getItem('playground_token');
+            const savedTokenType = localStorage.getItem('playground_tokenType');
+            
+            if (savedBaseUrl) {
+                document.getElementById('baseUrl').value = savedBaseUrl;
+            }
+            if (savedToken) {
+                document.getElementById('token').value = savedToken;
+            }
+            if (savedTokenType) {
+                document.getElementById('tokenType').value = savedTokenType;
+            }
+            
+            if (savedBaseUrl) {
+                window.log('📋 Restored saved configuration', 'info');
+            }
+        }
+    </script>
+</body>
+</html>

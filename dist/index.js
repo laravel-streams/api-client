@@ -240,7 +240,20 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
         return this.responseType === responseType;
     }
     async fetch() {
-        const response = await fetch(this.url, this);
+        // Build fetch options from this request
+        const options = {
+            method: this.method,
+            headers: this.headers,
+            mode: this.mode,
+            credentials: this.credentials,
+            cache: this.cache,
+            redirect: this.redirect,
+            referrer: this.referrer,
+            integrity: this.integrity
+        };
+        // Add body if present
+        if (this.body) options.body = this.body;
+        const response = await fetch(this.url, options);
         this.response = response;
         response.request = this;
         return this;
@@ -329,7 +342,11 @@ class $cbc2e4173dc2f076$export$6e29424e2d1846ed extends (0, $39d6e140d9c03804$ex
         this.type = options.type || 'Bearer';
     }
     async request(request, client) {
-        if (this.token) request.headers.authorization(this.type, this.token);
+        if (this.token) {
+            console.log('AuthorizationMiddleware: Setting token', this.type, this.token);
+            request.headers.authorization(this.type, this.token);
+            console.log('AuthorizationMiddleware: Header set, checking...', request.headers.get('Authorization'));
+        }
         return request;
     }
     setToken(token, type = 'Bearer') {
@@ -470,6 +487,31 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
             error = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, error, 'error');
             throw error;
         });
+    }
+    /**
+     * Make a GET request
+     */ async get(uri, config = {}) {
+        return this.request('GET', uri, config);
+    }
+    /**
+     * Make a POST request
+     */ async post(uri, config = {}) {
+        return this.request('POST', uri, config);
+    }
+    /**
+     * Make a PATCH request
+     */ async patch(uri, config = {}) {
+        return this.request('PATCH', uri, config);
+    }
+    /**
+     * Make a PUT request
+     */ async put(uri, config = {}) {
+        return this.request('PUT', uri, config);
+    }
+    /**
+     * Make a DELETE request
+     */ async delete(uri, config = {}) {
+        return this.request('DELETE', uri, config);
     }
 }
 
@@ -647,21 +689,21 @@ class $67738b032127bbc4$export$9bcb229a699e7da1 {
 
 // Make available globally if in browser
 if (typeof window !== 'undefined') window.streams_api = {
-    Client: Client,
-    Criteria: Criteria,
-    Entries: Entries,
-    FetchError: FetchError,
-    FetchHeaders: FetchHeaders,
-    FetchRequest: FetchRequest,
-    Resource: Resource,
-    Streams: Streams,
-    AuthorizationMiddleware: AuthorizationMiddleware,
-    CriteriaMiddleware: CriteriaMiddleware,
-    ETagMiddleware: ETagMiddleware,
-    Middleware: Middleware,
-    QueryMiddleware: QueryMiddleware,
-    RequestDataMiddleware: RequestDataMiddleware,
-    ResponseDataMiddleware: ResponseDataMiddleware
+    Client: $8921af6a8136d8e3$export$1f2bb630327ac4b6,
+    Criteria: $67738b032127bbc4$export$9bcb229a699e7da1,
+    Entries: $4bb31526c70c167d$export$be81f2ab9a4121eb,
+    FetchError: $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894,
+    FetchHeaders: $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c,
+    FetchRequest: $1db99460b351f96f$export$319b96fe59834522,
+    Resource: $34d0bca0da7ee085$export$39a853cfb5a94a63,
+    Streams: $0c1e8edf525968d2$export$8ee3a38db681f49d,
+    AuthorizationMiddleware: $cbc2e4173dc2f076$export$6e29424e2d1846ed,
+    CriteriaMiddleware: $1b87c2c0b7f5abad$export$b79367ae2b118768,
+    ETagMiddleware: $c272e73d90bc0a59$export$faa9a44a513b92c4,
+    Middleware: $39d6e140d9c03804$export$7dc23e3ab61f5f49,
+    QueryMiddleware: $cb618720e3539df9$export$a74cfeef44e69e22,
+    RequestDataMiddleware: $db0116cc62677c9f$export$81bc91ba859dba8e,
+    ResponseDataMiddleware: $30421c5a2897c231$export$60dea4b97ea2ef30
 };
 
 
