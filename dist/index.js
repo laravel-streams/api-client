@@ -442,7 +442,8 @@ class $c272e73d90bc0a59$export$faa9a44a513b92c4 extends (0, $39d6e140d9c03804$ex
             });
             replay.request = request;
             replay.revalidated = true;
-            return replay;
+            // Persist updated validators and cache directives from revalidation.
+            response = replay;
         }
         if (response.ok) {
             const etag = response.headers.get('ETag');

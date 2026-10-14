@@ -107,4 +107,35 @@ describe('client variables', () => {
 
         assert.deepEqual(conditional, [null, null, null, null]);
     });
+
+    it('ETag revalidation updates validators and honors no-store response metadata', async (t) => {
+        let count = 0;
+        t.mock.method(globalThis, 'fetch', async (url, options) => {
+            count += 1;
+            if (count === 1) {
+                return json({ id: 1 }, { headers: { ETag: '"v1"' } });
+            }
+            if (count === 2) {
+                assert.equal(options.headers.get('If-None-Match'), '"v1"');
+                return new Response(null, { status: 304, headers: { ETag: '"v2"' } });
+            }
+            if (count === 3) {
+                assert.equal(options.headers.get('If-None-Match'), '"v2"');
+                return new Response(null, { status: 304, headers: { 'Cache-Control': 'no-store' } });
+            }
+            assert.equal(options.headers.get('If-None-Match'), null);
+            return json({ id: 2 });
+        });
+
+        const client = new Client({
+            baseURL: 'https://example.test/api',
+            middlewares: [new ETagMiddleware()],
+        });
+        await client.get('/posts/1');
+        const updated = await client.get('/posts/1');
+        assert.deepEqual(updated.data, { id: 1 });
+        assert.equal(updated.headers.get('ETag'), '"v2"');
+        assert.deepEqual((await client.get('/posts/1')).data, { id: 1 });
+        assert.deepEqual((await client.get('/posts/1')).data, { id: 2 });
+    });
 });

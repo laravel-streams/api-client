@@ -77,7 +77,8 @@ export class ETagMiddleware extends Middleware {
             });
             replay.request = request;
             replay.revalidated = true;
-            return replay;
+            // Persist updated validators and cache directives from revalidation.
+            response = replay;
         }
 
         if (response.ok) {
