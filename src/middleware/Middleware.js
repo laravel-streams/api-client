@@ -43,7 +43,7 @@ export class Middleware {
      */
     static getDefaultOptions(t, options = {}) {
         if (isObject(t.defaultOptions)) {
-            options = mergeObjects(t.defaultOptions, options);
+            options = mergeObjects({}, t.defaultOptions, options);
         }
         let parent = Object.getPrototypeOf(t);
         if (parent && isObject(parent.defaultOptions)) {

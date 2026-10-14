@@ -8,7 +8,12 @@ export class ResponseDataMiddleware extends Middleware {
 
     async response(response, client) {
         const request = response.request;
-        
+
+        if (response.status === 304) {
+            response.data = null;
+            return response;
+        }
+
         if (request.isResponseType('arraybuffer')) {
             response.data = await response.arrayBuffer();
         } else if (request.isResponseType('blob')) {

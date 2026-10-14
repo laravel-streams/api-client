@@ -56,19 +56,22 @@ export class Client {
      */
     async request(method, uri, config = {}) {
         let url = Str.ensureRight(this.options.baseURL, '/') + Str.stripLeft(uri, '/');
-        config.method = method;
-        config = mergeObjects(this.options.request, config);
-        
+        config = mergeObjects({}, this.options.request, config);
+        config.method = String(method).toUpperCase();
+
         let request = new FetchRequest(url, config);
         request = await Middleware.run(this, request, 'request');
-        
+
         return request
             .fetch()
             .then(async (request) => {
+                // 304 is not ok. Run response hooks first so ETag can replay a stored body.
+                if (request.response.ok || request.response.status === 304) {
+                    request.response = await Middleware.run(this, request.response, 'response');
+                }
                 if (!request.response.ok) {
                     throw new FetchError(request);
                 }
-                request.response = await Middleware.run(this, request.response, 'response');
                 return request.response;
             })
             .catch(async error => {
