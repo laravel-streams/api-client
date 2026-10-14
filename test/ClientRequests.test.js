@@ -281,6 +281,40 @@ describe('Abort and timeout', () => {
         controller.abort();
         assert.equal(signal.aborted, false);
     });
+
+    for (const cancel of ['timeout', 'abort']) {
+        it(`interrupts pending error middleware on ${cancel}`, async t => {
+            const controller = new AbortController();
+            let handled = 0;
+            const middleware = new class extends Middleware {
+                async error() {
+                    handled++;
+                    if (cancel === 'abort') controller.abort();
+                    return new Promise(() => {});
+                }
+            }();
+            t.mock.method(globalThis, 'fetch', async () => json({}, 400));
+            await assert.rejects(makeClient({ middlewares: [middleware] }).get('streams', {
+                signal: controller.signal, timeout: 20,
+            }), { name: cancel === 'abort' ? 'AbortError' : 'TimeoutError' });
+            assert.equal(handled, 1);
+        });
+    }
+
+    it('notifies error middleware once for an already-aborted request', async t => {
+        const controller = new AbortController();
+        controller.abort();
+        let handled = 0;
+        const middleware = new class extends Middleware {
+            async error(error) { handled++; assert.equal(error.name, 'AbortError'); return new Promise(() => {}); }
+        }();
+        const fetch = t.mock.method(globalThis, 'fetch', async () => json());
+        await assert.rejects(makeClient({ middlewares: [middleware] }).get('streams', {
+            signal: controller.signal,
+        }), { name: 'AbortError' });
+        assert.equal(handled, 1);
+        assert.equal(fetch.mock.callCount(), 0);
+    });
 });
 
 describe('Laravel validation errors', () => {

@@ -96,7 +96,8 @@ export class Client {
                 return request.response;
             }
         } catch (error) {
-            error = await Middleware.run(this, error, 'error');
+            // Notify error middleware even on abort, but never let it hold up cancellation.
+            error = await withSignal(() => Middleware.run(this, error, 'error'), scope.signal, true);
             throw error;
         } finally {
             scope.dispose();

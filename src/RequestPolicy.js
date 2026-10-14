@@ -56,8 +56,8 @@ export function requestScope(signal, timeout) {
     };
 }
 
-export async function withSignal(operation, signal) {
-    signal.throwIfAborted();
+export async function withSignal(operation, signal, runWhenAborted = false) {
+    if (!runWhenAborted) signal.throwIfAborted();
     let abort;
     try {
         return await Promise.race([
