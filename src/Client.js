@@ -56,8 +56,8 @@ export class Client {
      */
     async request(method, uri, config = {}) {
         let url = Str.ensureRight(this.options.baseURL, '/') + Str.stripLeft(uri, '/');
-        config.method = method;
-        config = mergeObjects(this.options.request, config);
+        config.method = method.toUpperCase();
+        config = mergeObjects({}, this.options.request, config);
         
         let request = new FetchRequest(url, config);
         request = await Middleware.run(this, request, 'request');
@@ -65,10 +65,10 @@ export class Client {
         return request
             .fetch()
             .then(async (request) => {
+                request.response = await Middleware.run(this, request.response, 'response');
                 if (!request.response.ok) {
                     throw new FetchError(request);
                 }
-                request.response = await Middleware.run(this, request.response, 'response');
                 return request.response;
             })
             .catch(async error => {

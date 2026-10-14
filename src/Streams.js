@@ -13,15 +13,15 @@ export class Streams extends Resource {
     }
 
     async post(data, config = {}) {
-        return this.client.request('post', '/streams', config);
+        return this.client.request('post', '/streams', { ...config, data });
     }
 
-    async patch(config = {}) {
-        return this.client.request('patch', '/streams', config);
+    async patch(stream, data, config = {}) {
+        return this.client.request('patch', `/streams/${stream}`, { ...config, data });
     }
 
-    async put(config = {}) {
-        return this.client.request('put', '/streams', config);
+    async put(stream, data, config = {}) {
+        return this.client.request('put', `/streams/${stream}`, { ...config, data });
     }
 
     async delete(stream, config = {}) {
