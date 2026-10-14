@@ -1,12 +1,13 @@
 ---
-sort_order: 4
-title: Streams
-description: 'Working with stream resources and CRUD operations'
-category: core
-status: published
+title: 'Client: Streams'
+nav_title: Streams
+description: Working with stream resources and CRUD operations
+section: packages
+package: client
+order: 50
+tags: [client, streams]
+status: ready
 ---
-
-# Streams
 
 Streams represent collections or resource types in the Laravel Streams API. The `Streams` class provides methods for managing stream resources.
 
@@ -488,6 +489,6 @@ await client.streams.patch('posts', updates);
 
 ## Next Steps
 
-- [Working with Entries](entries) - CRUD operations on stream entries
-- [Criteria](criteria) - Query builder for filtering and sorting
-- [Examples](examples) - Real-world usage patterns
+- [Working with Entries](/docs/client/entries) - CRUD operations on stream entries
+- [Criteria](/docs/client/criteria) - Query builder for filtering and sorting
+- [Examples](/docs/client/examples) - Real-world usage patterns

@@ -7,16 +7,18 @@ import { createCustomMap } from './utils.js';
 export class FetchRequest extends Request {
     constructor(input, init = {}) {
         super(input, init);
-        
-        this.responseType = init.responseType || 'json';
-        this.query = createCustomMap(init.query || {});
-        this.criteria = init.criteria;
-        this.data = init.data;
+
+        const source = input instanceof FetchRequest ? input : {};
+        this.responseType = init.responseType ?? source.responseType ?? 'json';
+        const query = init.query ?? source.query ?? {};
+        this.query = createCustomMap(query instanceof Map ? Object.fromEntries(query) : query);
+        this.criteria = init.criteria ?? source.criteria;
+        this.data = init.data ?? source.data;
         this.response = null;
 
         // Create custom headers
         Object.defineProperty(this, 'headers', {
-            value: new FetchHeaders(init.headers),
+            value: new FetchHeaders(init.headers ?? (input instanceof Request ? input.headers : undefined)),
             writable: false,
         });
     }
@@ -25,7 +27,7 @@ export class FetchRequest extends Request {
         return this.responseType === responseType;
     }
 
-    async fetch() {
+    async fetch(signal = this.signal) {
         // Build fetch options from this request
         const options = {
             method: this.method,
@@ -35,12 +37,15 @@ export class FetchRequest extends Request {
             cache: this.cache,
             redirect: this.redirect,
             referrer: this.referrer,
-            integrity: this.integrity
+            integrity: this.integrity,
+            signal,
         };
         
         // Add body if present
         if (this.body) {
-            options.body = this.body;
+            // Keep the prepared body readable for a subsequent retry.
+            options.body = this.clone().body;
+            options.duplex = 'half';
         }
         
         const response = await fetch(this.url, options);
