@@ -3,6 +3,7 @@ import { Streams } from './Streams.js';
 import { Entries } from './Entries.js';
 import { FetchRequest } from './FetchRequest.js';
 import { FetchError } from './FetchError.js';
+import { requestPolicy, requestScope, canRetry, retryDelay, withSignal, backoff } from './RequestPolicy.js';
 import {
     CriteriaMiddleware,
     Middleware,
@@ -38,7 +39,7 @@ export class Client {
         };
 
         const { middlewares, defaultMiddlewares, ...opts } = options;
-        this.options = mergeObjects(this.options, opts);
+        this.options = mergeObjects({}, this.options, opts);
         this.middlewares = defaultMiddlewares.concat(middlewares);
         this.streams = new Streams(this);
         this.entries = new Entries(this);
@@ -55,26 +56,52 @@ export class Client {
      * Make an HTTP request
      */
     async request(method, uri, config = {}) {
-        let url = Str.ensureRight(this.options.baseURL, '/') + Str.stripLeft(uri, '/');
-        config.method = method;
-        config = mergeObjects(this.options.request, config);
-        
-        let request = new FetchRequest(url, config);
-        request = await Middleware.run(this, request, 'request');
-        
-        return request
-            .fetch()
-            .then(async (request) => {
-                if (!request.response.ok) {
-                    throw new FetchError(request);
+        const url = Str.ensureRight(this.options.baseURL, '/') + Str.stripLeft(uri, '/');
+        const headers = new Headers(this.options.request.headers);
+        new Headers(config.headers).forEach((value, key) => headers.set(key, value));
+        config = mergeObjects({}, this.options.request, config, { method, headers });
+        const policy = requestPolicy(config);
+        const scope = requestScope(config.signal, policy.timeout);
+
+        try {
+            let request = new FetchRequest(url, { ...config, signal: scope.signal });
+            request = await withSignal(() => Middleware.run(this, request, 'request'), scope.signal);
+            if (config.idempotencyKey !== undefined) {
+                request.headers.set('Idempotency-Key', config.idempotencyKey);
+            }
+
+            for (let attempt = 0; ; attempt++) {
+                let networkError;
+                try {
+                    await withSignal(() => request.fetch(scope.signal), scope.signal);
+                } catch (error) {
+                    scope.signal.throwIfAborted();
+                    if (!(error instanceof TypeError)) throw error;
+                    networkError = error;
                 }
-                request.response = await Middleware.run(this, request.response, 'response');
+                const response = networkError ? null : request.response;
+                if (attempt < policy.retries && canRetry(request, response) && (networkError || !response.ok)) {
+                    const delay = retryDelay(policy, attempt, response);
+                    if (response?.body) await withSignal(() => response.body.cancel(), scope.signal);
+                    await backoff(delay, scope.signal);
+                    continue;
+                }
+                if (networkError) throw networkError;
+                if (!response.ok) {
+                    const error = new FetchError(request);
+                    await withSignal(() => error.mapValidationErrors(), scope.signal);
+                    throw error;
+                }
+                request.response = await withSignal(() => Middleware.run(this, response, 'response'), scope.signal);
                 return request.response;
-            })
-            .catch(async error => {
-                error = await Middleware.run(this, error, 'error');
-                throw error;
-            });
+            }
+        } catch (error) {
+            // Notify error middleware even on abort, but never let it hold up cancellation.
+            error = await withSignal(() => Middleware.run(this, error, 'error'), scope.signal, true);
+            throw error;
+        } finally {
+            scope.dispose();
+        }
     }
 
     /**

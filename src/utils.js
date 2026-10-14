@@ -106,7 +106,7 @@ export const isObject = (item) => {
  * Check if object is mergeable
  */
 const isMergeableObject = (item) => {
-    return isObject(item) && !Array.isArray(item);
+    return isObject(item) && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null);
 };
 
 /**

@@ -170,6 +170,60 @@ const response = await client.request('GET', '/custom/endpoint', {
 });
 ```
 
+## Retries, Cancellation, and Timeouts
+
+Request options can be configured under `request` on the client or overridden for a single call:
+
+```javascript
+const client = new Client({
+    baseURL: 'https://api.example.com',
+    request: {
+        retries: 2,          // Additional attempts; default 0, maximum 10
+        retryDelay: 250,     // Initial backoff in milliseconds; default 250
+        maxRetryDelay: 30000,// Backoff cap in milliseconds; default 30000
+        timeout: 10000       // Total request deadline in milliseconds; default 0 (disabled)
+    }
+});
+
+const controller = new AbortController();
+const pending = client.entries.get('posts', { signal: controller.signal });
+controller.abort();
+await pending; // Rejects with AbortError, or the caller's custom abort reason
+```
+
+Retries cover transport failures and HTTP 408, 429, 500, 502, 503, and 504. Backoff doubles after each failure and honors `Retry-After` seconds or HTTP dates up to `maxRetryDelay`. GET, HEAD, OPTIONS, PUT, and DELETE can be retried. POST and PATCH require an `Idempotency-Key` header or the `idempotencyKey` option:
+
+```javascript
+await client.entries.post('posts', { title: 'Hello' }, {
+    idempotencyKey: 'create-post-unique-operation-id',
+    retries: 2
+});
+```
+
+The key and prepared body stay the same across attempts. Choose a unique key for each logical mutation and reuse it when resubmitting that same operation. The API server must support deduplication for this header; the client only sends the key. Avoid putting a mutation key in shared client defaults.
+
+The timeout covers middleware, all attempts, backoff, and response parsing. Timeout failures have `name === 'TimeoutError'`; aborts and timeouts are never retried. For `responseType: 'stream'`, the deadline ends when the response stream is returned, so callers manage subsequent stream consumption. Request middleware runs once before attempts, response middleware runs on success, and error middleware receives the final failure once. Pending error middleware cannot delay an abort or timeout. Per-call overrides do not alter client defaults.
+
+## Laravel Validation Errors
+
+HTTP 422 responses reject with `FetchError`. Laravel's validation payload is available as `error.errors` (field names mapped to message arrays), `error.data` (the parsed payload), and `error.message` (the server message). Nested field paths are preserved:
+
+```javascript
+import { FetchError } from '@laravel-streams/api-client';
+
+try {
+    await client.entries.post('posts', { title: '' });
+} catch (error) {
+    if (error instanceof FetchError && error.status === 422) {
+        showFieldErrors(error.errors);
+    } else {
+        throw error;
+    }
+}
+```
+
+Validation mapping happens before error middleware. The original `error.response` remains readable. Non-JSON or malformed validation responses remain `FetchError` with an empty `errors` object, and 422 responses are never retried.
+
 ## Complete Example
 
 ```javascript
