@@ -82,12 +82,12 @@ export const mergeObjects = (target, ...sources) => {
     if (isMergeableObject(target) && isMergeableObject(source)) {
         Object.keys(source).forEach(function (key) {
             if (isMergeableObject(source[key])) {
-                if (!target[key]) {
-                    target[key] = {};
+                if (!Object.hasOwn(target, key) || !isMergeableObject(target[key])) {
+                    Object.defineProperty(target, key, { value: {}, enumerable: true, configurable: true, writable: true });
                 }
                 mergeObjects(target[key], source[key]);
             } else {
-                target[key] = source[key];
+                Object.defineProperty(target, key, { value: source[key], enumerable: true, configurable: true, writable: true });
             }
         });
     }
@@ -146,11 +146,12 @@ export function stringify(obj, options = {}) {
     const encodeValuesOnly = options.encodeValuesOnly !== false;
     
     const encode = (str) => {
-        if (encodeValuesOnly) {
-            return encodeURIComponent(str);
-        }
         return encodeURIComponent(str);
     };
+
+    const encodeKey = (key) => encodeValuesOnly
+        ? encodeURIComponent(key).replace(/%5B/g, '[').replace(/%5D/g, ']')
+        : encodeURIComponent(key);
 
     const buildParams = (prefix, value) => {
         if (value === null || value === undefined) {
@@ -167,7 +168,7 @@ export function stringify(obj, options = {}) {
                 .join('&');
         }
 
-        return `${prefix}=${encode(value)}`;
+        return `${encodeKey(prefix)}=${encode(value)}`;
     };
 
     return Object.keys(obj)
@@ -179,7 +180,7 @@ export function stringify(obj, options = {}) {
             if (Array.isArray(value) || typeof value === 'object') {
                 return buildParams(key, value);
             }
-            return `${key}=${encode(value)}`;
+            return `${encodeKey(key)}=${encode(value)}`;
         })
         .filter(Boolean)
         .join('&');

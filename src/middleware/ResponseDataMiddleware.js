@@ -21,7 +21,15 @@ export class ResponseDataMiddleware extends Middleware {
             response.data = await response.formData();
         } else if (request.isResponseType('json')) {
             const text = await response.text();
-            const parsed = text ? JSON.parse(text) : null;
+            let parsed = null;
+            try {
+                parsed = text ? JSON.parse(text) : null;
+            } catch (error) {
+                if (response.ok) throw error;
+                // Preserve the HTTP failure even when a proxy returns a non-JSON body.
+                response.data = text;
+                return response;
+            }
             response.envelope = parsed;
             if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)
                 && Object.hasOwn(parsed, 'data') && (Object.hasOwn(parsed, 'meta')

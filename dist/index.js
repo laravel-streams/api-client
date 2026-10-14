@@ -69,9 +69,19 @@ const $4559ecf940edc78d$export$2321aea138b44780 = (target, ...sources)=>{
     if (source === undefined) return target;
     if ($4559ecf940edc78d$var$isMergeableObject(target) && $4559ecf940edc78d$var$isMergeableObject(source)) Object.keys(source).forEach(function(key) {
         if ($4559ecf940edc78d$var$isMergeableObject(source[key])) {
-            if (!target[key]) target[key] = {};
+            if (!Object.hasOwn(target, key) || !$4559ecf940edc78d$var$isMergeableObject(target[key])) Object.defineProperty(target, key, {
+                value: {},
+                enumerable: true,
+                configurable: true,
+                writable: true
+            });
             $4559ecf940edc78d$export$2321aea138b44780(target[key], source[key]);
-        } else target[key] = source[key];
+        } else Object.defineProperty(target, key, {
+            value: source[key],
+            enumerable: true,
+            configurable: true,
+            writable: true
+        });
     });
     return $4559ecf940edc78d$export$2321aea138b44780(target, ...sources);
 };
@@ -81,7 +91,7 @@ const $4559ecf940edc78d$export$a6cdc56e425d0d0a = (item)=>{
 /**
  * Check if object is mergeable
  */ const $4559ecf940edc78d$var$isMergeableObject = (item)=>{
-    return $4559ecf940edc78d$export$a6cdc56e425d0d0a(item) && !Array.isArray(item);
+    return $4559ecf940edc78d$export$a6cdc56e425d0d0a(item) && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null);
 };
 function $4559ecf940edc78d$export$f81ea438226eca0a(obj = {}) {
     const map = new class extends Map {
@@ -109,20 +119,20 @@ function $4559ecf940edc78d$export$f81ea438226eca0a(obj = {}) {
 function $4559ecf940edc78d$export$fac44ee5b035f737(obj, options = {}) {
     const encodeValuesOnly = options.encodeValuesOnly !== false;
     const encode = (str)=>{
-        if (encodeValuesOnly) return String(str);
         return encodeURIComponent(str);
     };
+    const encodeKey = (key)=>encodeValuesOnly ? encodeURIComponent(key).replace(/%5B/g, '[').replace(/%5D/g, ']') : encodeURIComponent(key);
     const buildParams = (prefix, value)=>{
         if (value === null || value === undefined) return '';
         if (Array.isArray(value)) return value.map((v, i)=>buildParams(`${prefix}[${i}]`, v)).join('&');
         if (typeof value === 'object') return Object.keys(value).map((key)=>buildParams(`${prefix}[${key}]`, value[key])).join('&');
-        return `${prefix}=${encode(value)}`;
+        return `${encodeKey(prefix)}=${encode(value)}`;
     };
     return Object.keys(obj).map((key)=>{
         const value = obj[key];
         if (value === null || value === undefined) return '';
         if (Array.isArray(value) || typeof value === 'object') return buildParams(key, value);
-        return `${key}=${encode(value)}`;
+        return `${encodeKey(key)}=${encode(value)}`;
     }).filter(Boolean).join('&');
 }
 
@@ -144,13 +154,22 @@ class $0c1e8edf525968d2$export$8ee3a38db681f49d extends (0, $34d0bca0da7ee085$ex
         return this.client.request('get', `/streams/${stream}`, config);
     }
     async post(data, config = {}) {
-        return this.client.request('post', '/streams', config);
+        return this.client.request('post', '/streams', {
+            ...config,
+            data: data
+        });
     }
-    async patch(config = {}) {
-        return this.client.request('patch', '/streams', config);
+    async patch(stream, data, config = {}) {
+        return this.client.request('patch', `/streams/${stream}`, {
+            ...config,
+            data: data
+        });
     }
-    async put(config = {}) {
-        return this.client.request('put', '/streams', config);
+    async put(stream, data, config = {}) {
+        return this.client.request('put', `/streams/${stream}`, {
+            ...config,
+            data: data
+        });
     }
     async delete(stream, config = {}) {
         return this.client.request('delete', `/streams/${stream}`, config);
@@ -252,7 +271,11 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
             integrity: this.integrity
         };
         // Add body if present
-        if (this.body) options.body = this.body;
+        if (this.body) {
+            options.body = this.body;
+            options.duplex = 'half';
+        }
+        options.signal = this.signal;
         const response = await fetch(this.url, options);
         this.response = response;
         response.request = this;
@@ -313,7 +336,7 @@ class $39d6e140d9c03804$export$7dc23e3ab61f5f49 {
     /**
      * Get default options with inheritance
      */ static getDefaultOptions(t, options = {}) {
-        if ((0, $4559ecf940edc78d$export$a6cdc56e425d0d0a)(t.defaultOptions)) options = (0, $4559ecf940edc78d$export$2321aea138b44780)(t.defaultOptions, options);
+        if ((0, $4559ecf940edc78d$export$a6cdc56e425d0d0a)(t.defaultOptions)) options = (0, $4559ecf940edc78d$export$2321aea138b44780)({}, t.defaultOptions, options);
         let parent = Object.getPrototypeOf(t);
         if (parent && (0, $4559ecf940edc78d$export$a6cdc56e425d0d0a)(parent.defaultOptions)) options = this.getDefaultOptions(parent, options);
         return options;
@@ -327,8 +350,8 @@ class $39d6e140d9c03804$export$7dc23e3ab61f5f49 {
             'error'
         ];
         kind = kind !== undefined && kinds.includes(kind?.toString()) ? kind : false;
-        if (!kind) kinds.forEach((kind)=>this.options[kind] = priority);
-        else this.options[kind] = priority;
+        if (!kind) kinds.forEach((kind)=>this.options.priority[kind] = priority);
+        else this.options.priority[kind] = priority;
         return this;
     }
 }
@@ -376,17 +399,66 @@ class $1b87c2c0b7f5abad$export$b79367ae2b118768 extends (0, $39d6e140d9c03804$ex
 
 
 class $c272e73d90bc0a59$export$faa9a44a513b92c4 extends (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49) {
-    static defaultOptions = {};
+    static defaultOptions = {
+        priority: {
+            request: 90,
+            response: 10
+        }
+    };
+    constructor(options = {}){
+        super(options);
+        this.caches = new WeakMap();
+    }
+    cache(client) {
+        if (!this.caches.has(client)) this.caches.set(client, new Map());
+        return this.caches.get(client);
+    }
+    key(request) {
+        // Include request headers to keep authorization and negotiated representations isolated.
+        const headers = Array.from(request.headers).filter(([name])=>name !== 'if-none-match').sort();
+        return JSON.stringify([
+            request.url,
+            request.credentials,
+            request.responseType,
+            headers
+        ]);
+    }
     async request(request, client) {
-        // ETag support can be added here
+        if (request.method === 'GET' && request.cache !== 'no-store') {
+            const cached = this.cache(client).get(this.key(request));
+            if (cached && !request.headers.has('If-None-Match')) request.headers.ifNoneMatch(cached.etag);
+        }
         return request;
     }
     async response(response, client) {
-        // ETag support can be added here
+        const request = response.request;
+        const cache = this.cache(client);
+        if (request.method !== 'GET') {
+            if (response.ok) cache.clear();
+            return response;
+        }
+        if (request.cache === 'no-store') return response;
+        const key = this.key(request);
+        const cached = cache.get(key);
+        if (response.status === 304 && cached && request.headers.get('If-None-Match') === cached.etag) {
+            const replay = cached.response.clone();
+            response.headers.forEach((value, name)=>replay.headers.set(name, value));
+            replay.request = request;
+            replay.revalidated = true;
+            return replay;
+        }
+        if (response.ok) {
+            const etag = response.headers.get('ETag');
+            const control = response.headers.get('Cache-Control') || '';
+            if (etag && !/\bno-store\b/i.test(control) && response.headers.get('Vary') !== '*') cache.set(key, {
+                etag: etag,
+                response: response.clone()
+            });
+            else cache.delete(key);
+        }
         return response;
     }
 }
-
 
 
 
@@ -400,8 +472,9 @@ class $cb618720e3539df9$export$a74cfeef44e69e22 extends (0, $39d6e140d9c03804$ex
     async request(request, client) {
         if (!request.query.empty()) {
             const queryString = (0, $4559ecf940edc78d$export$fac44ee5b035f737)(request.query.toObject(), this.options.stringify);
-            const url = request.url + '?' + queryString;
-            request = new (0, $1db99460b351f96f$export$319b96fe59834522)(url, request);
+            const url = new URL(request.url);
+            const separator = url.search ? '&' : '?';
+            request.setUrl(url.origin + url.pathname + url.search + separator + queryString + url.hash);
         }
         return request;
     }
@@ -413,9 +486,16 @@ class $cb618720e3539df9$export$a74cfeef44e69e22 extends (0, $39d6e140d9c03804$ex
 class $db0116cc62677c9f$export$81bc91ba859dba8e extends (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49) {
     static defaultOptions = {};
     async request(request, client) {
-        if (request.data) request = new (0, $1db99460b351f96f$export$319b96fe59834522)(request, {
-            body: JSON.stringify(request.data)
-        });
+        if (request.data !== undefined) {
+            if (!request.headers.has('Content-Type')) request.headers.contentType('application/json');
+            request = new (0, $1db99460b351f96f$export$319b96fe59834522)(request, {
+                body: JSON.stringify(request.data),
+                headers: request.headers,
+                responseType: request.responseType,
+                query: request.query.toObject(),
+                criteria: request.criteria
+            });
+        }
         return request;
     }
 }
@@ -423,14 +503,39 @@ class $db0116cc62677c9f$export$81bc91ba859dba8e extends (0, $39d6e140d9c03804$ex
 
 
 class $30421c5a2897c231$export$60dea4b97ea2ef30 extends (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49) {
-    static defaultOptions = {};
+    static defaultOptions = {
+        priority: {
+            response: 40
+        }
+    };
     async response(response, client) {
         const request = response.request;
+        if (response.status === 204 || response.status === 205 || response.status === 304 || request.method === 'HEAD') {
+            response.data = null;
+            return response;
+        }
         if (request.isResponseType('arraybuffer')) response.data = await response.arrayBuffer();
         else if (request.isResponseType('blob')) response.data = await response.blob();
         else if (request.isResponseType('document')) response.data = await response.formData();
-        else if (request.isResponseType('json')) response.data = await response.json();
-        else if (request.isResponseType('stream')) response.data = await response.body;
+        else if (request.isResponseType('json')) {
+            const text = await response.text();
+            let parsed = null;
+            try {
+                parsed = text ? JSON.parse(text) : null;
+            } catch (error) {
+                if (response.ok) throw error;
+                // Preserve the HTTP failure even when a proxy returns a non-JSON body.
+                response.data = text;
+                return response;
+            }
+            response.envelope = parsed;
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Object.hasOwn(parsed, 'data') && (Object.hasOwn(parsed, 'meta') || Object.hasOwn(parsed, 'links') || Object.hasOwn(parsed, 'errors'))) {
+                response.data = parsed.data;
+                response.meta = parsed.meta;
+                response.links = parsed.links;
+                response.errors = parsed.errors;
+            } else response.data = parsed;
+        } else if (request.isResponseType('stream')) response.data = await response.body;
         else if (request.isResponseType('text')) response.data = await response.text();
         return response;
     }
@@ -475,13 +580,13 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
      * Make an HTTP request
      */ async request(method, uri, config = {}) {
         let url = (0, $4559ecf940edc78d$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $4559ecf940edc78d$export$ed61451db706e904).stripLeft(uri, '/');
-        config.method = method;
-        config = (0, $4559ecf940edc78d$export$2321aea138b44780)(this.options.request, config);
+        config.method = method.toUpperCase();
+        config = (0, $4559ecf940edc78d$export$2321aea138b44780)({}, this.options.request, config);
         let request = new (0, $1db99460b351f96f$export$319b96fe59834522)(url, config);
         request = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, request, 'request');
         return request.fetch().then(async (request)=>{
-            if (!request.response.ok) throw new (0, $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894)(request);
             request.response = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, request.response, 'response');
+            if (!request.response.ok) throw new (0, $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894)(request);
             return request.response;
         }).catch(async (error)=>{
             error = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, error, 'error');
@@ -661,16 +766,31 @@ class $67738b032127bbc4$export$9bcb229a699e7da1 {
     /**
      * Return standardized parameters
      */ standardizeParameters() {
-        return this.parameters.map((kv)=>[
-                kv['name'],
-                kv['value']
-            ]).reduce((obj, [k, v], i, data)=>{
-            if (Array.isArray(v)) data.slice().filter((kv)=>kv['name'] === k);
-            return {
-                ...obj,
-                [k]: v
-            };
-        }, {});
+        const result = {};
+        const filters = new Map();
+        for (const { name: name, value: value } of this.parameters){
+            if (name === 'where') {
+                const [field, operator, operand, boolean] = value;
+                if (boolean && boolean !== 'and') throw new Error('GET criteria do not support OR or nested filters; use the API query endpoint');
+                const conditions = filters.get(field) || new Map();
+                const apiOperator = operator === '==' ? '=' : operator.toLowerCase();
+                if (conditions.has(apiOperator)) throw new Error(`Duplicate ${field} ${operator} filter; use the API query endpoint`);
+                conditions.set(apiOperator, operand);
+                filters.set(field, conditions);
+            } else if (name === 'orderBy') {
+                result.order_by ||= {};
+                Object.defineProperty(result.order_by, value[0], {
+                    value: value[1],
+                    enumerable: true,
+                    configurable: true
+                });
+            } else result[name] = value;
+        }
+        if (filters.size) result.where = Object.fromEntries(Array.from(filters, ([field, conditions])=>[
+                field,
+                conditions.size === 1 && conditions.has('=') && !Array.isArray(conditions.get('=')) && conditions.get('=') !== null ? conditions.get('=') : Object.fromEntries(conditions)
+            ]));
+        return result;
     }
     /**
      * Compile criteria to query string
