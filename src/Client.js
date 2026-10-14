@@ -56,10 +56,21 @@ export class Client {
      */
     async request(method, uri, config = {}) {
         let url = Str.ensureRight(this.options.baseURL, '/') + Str.stripLeft(uri, '/');
+        // `organization` is per request. Merging it would stick a later opt-out
+        // onto the shared request defaults.
+        const hasOrganization = config != null && Object.prototype.hasOwnProperty.call(config, 'organization');
+        const organization = hasOrganization ? config.organization : undefined;
+        if (hasOrganization) {
+            config = { ...config };
+            delete config.organization;
+        }
         config.method = method;
         config = mergeObjects(this.options.request, config);
-        
+
         let request = new FetchRequest(url, config);
+        if (hasOrganization) {
+            request.organization = organization;
+        }
         request = await Middleware.run(this, request, 'request');
         
         return request

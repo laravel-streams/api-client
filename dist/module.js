@@ -210,6 +210,9 @@ class $4eff35de4434c113$export$319b96fe59834522 extends Request {
         this.criteria = init.criteria;
         this.data = init.data;
         this.response = null;
+        // RequestDataMiddleware and QueryMiddleware rebuild the request.
+        // Keep a per-request organization override or opt-out on the new instance.
+        this.organization = Object.prototype.hasOwnProperty.call(init, 'organization') ? init.organization : input instanceof $4eff35de4434c113$export$319b96fe59834522 ? input.organization : undefined;
         // Create custom headers
         Object.defineProperty(this, 'headers', {
             value: new (0, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c)(init.headers),
@@ -369,6 +372,59 @@ class $86b82e06a87407d7$export$faa9a44a513b92c4 extends (0, $b66054862766a59c$ex
 
 
 
+class $f449a45e87a78f07$export$4c5ce066ae8189e1 extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
+    static headerName = 'X-Organization-ID';
+    constructor(options = {}){
+        const { priority: priority, organizationId: organizationId, ...rest } = options;
+        super(rest);
+        this.organizationId = organizationId ?? null;
+        // Run after the default request middleware (priority 50), which can
+        // rebuild the FetchRequest and would otherwise drop this header.
+        this.options = {
+            ...this.options,
+            priority: {
+                request: priority?.request ?? 60,
+                response: priority?.response ?? this.options?.priority?.response ?? 50,
+                error: priority?.error ?? this.options?.priority?.error ?? 50
+            }
+        };
+    }
+    /**
+     * Replace the organization id. Null or '' clears it.
+     */ setOrganization(organizationId) {
+        this.organizationId = organizationId ?? null;
+        return this;
+    }
+    async request(request, client) {
+        const headerName = this.constructor.headerName;
+        if ($f449a45e87a78f07$var$isOptOut(request?.organization)) {
+            request.headers.delete(headerName);
+            return request;
+        }
+        const organizationId = this.resolveOrganizationId(request, client);
+        if (organizationId === null) return request;
+        request.headers.set(headerName, organizationId);
+        return request;
+    }
+    resolveOrganizationId(request, client) {
+        const override = $f449a45e87a78f07$var$organizationIdValue(request?.organization);
+        if (override !== null) return override;
+        const configured = $f449a45e87a78f07$var$organizationIdValue(this.organizationId);
+        if (configured !== null) return configured;
+        return $f449a45e87a78f07$var$organizationIdValue(client?.options?.organizationId);
+    }
+}
+function $f449a45e87a78f07$var$isOptOut(value) {
+    return value === false || value === null || value === '';
+}
+function $f449a45e87a78f07$var$organizationIdValue(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'string' && value !== '') return value;
+    return null;
+}
+
+
+
 
 
 class $d889f0a51d8c2aa1$export$a74cfeef44e69e22 extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
@@ -455,9 +511,20 @@ class $b7042f052a98e3f2$export$1f2bb630327ac4b6 {
      * Make an HTTP request
      */ async request(method, uri, config = {}) {
         let url = (0, $f3ad94c9f84f4d57$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $f3ad94c9f84f4d57$export$ed61451db706e904).stripLeft(uri, '/');
+        // `organization` is per request. Merging it would stick a later opt-out
+        // onto the shared request defaults.
+        const hasOrganization = config != null && Object.prototype.hasOwnProperty.call(config, 'organization');
+        const organization = hasOrganization ? config.organization : undefined;
+        if (hasOrganization) {
+            config = {
+                ...config
+            };
+            delete config.organization;
+        }
         config.method = method;
         config = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)(this.options.request, config);
         let request = new (0, $4eff35de4434c113$export$319b96fe59834522)(url, config);
+        if (hasOrganization) request.organization = organization;
         request = await (0, $b66054862766a59c$export$7dc23e3ab61f5f49).run(this, request, 'request');
         return request.fetch().then(async (request)=>{
             if (!request.response.ok) throw new (0, $827b4d16e4856d30$export$26e841bcf1aeb894)(request);
@@ -680,6 +747,7 @@ if (typeof window !== 'undefined') window.streams_api = {
     AuthorizationMiddleware: $24f116b90a41a6fb$export$6e29424e2d1846ed,
     CriteriaMiddleware: $d3134a7939a75d13$export$b79367ae2b118768,
     ETagMiddleware: $86b82e06a87407d7$export$faa9a44a513b92c4,
+    OrganizationMiddleware: $f449a45e87a78f07$export$4c5ce066ae8189e1,
     Middleware: $b66054862766a59c$export$7dc23e3ab61f5f49,
     QueryMiddleware: $d889f0a51d8c2aa1$export$a74cfeef44e69e22,
     RequestDataMiddleware: $b41a23ef233577d1$export$81bc91ba859dba8e,
@@ -687,5 +755,5 @@ if (typeof window !== 'undefined') window.streams_api = {
 };
 
 
-export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
+export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $f449a45e87a78f07$export$4c5ce066ae8189e1 as OrganizationMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
 //# sourceMappingURL=module.js.map

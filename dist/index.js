@@ -14,6 +14,7 @@ $parcel$export(module.exports, "Streams", () => $0c1e8edf525968d2$export$8ee3a38
 $parcel$export(module.exports, "AuthorizationMiddleware", () => $cbc2e4173dc2f076$export$6e29424e2d1846ed);
 $parcel$export(module.exports, "CriteriaMiddleware", () => $1b87c2c0b7f5abad$export$b79367ae2b118768);
 $parcel$export(module.exports, "ETagMiddleware", () => $c272e73d90bc0a59$export$faa9a44a513b92c4);
+$parcel$export(module.exports, "OrganizationMiddleware", () => $bd7c22ec2501a222$export$4c5ce066ae8189e1);
 $parcel$export(module.exports, "Middleware", () => $39d6e140d9c03804$export$7dc23e3ab61f5f49);
 $parcel$export(module.exports, "QueryMiddleware", () => $cb618720e3539df9$export$a74cfeef44e69e22);
 $parcel$export(module.exports, "RequestDataMiddleware", () => $db0116cc62677c9f$export$81bc91ba859dba8e);
@@ -230,6 +231,9 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
         this.criteria = init.criteria;
         this.data = init.data;
         this.response = null;
+        // RequestDataMiddleware and QueryMiddleware rebuild the request.
+        // Keep a per-request organization override or opt-out on the new instance.
+        this.organization = Object.prototype.hasOwnProperty.call(init, 'organization') ? init.organization : input instanceof $1db99460b351f96f$export$319b96fe59834522 ? input.organization : undefined;
         // Create custom headers
         Object.defineProperty(this, 'headers', {
             value: new (0, $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c)(init.headers),
@@ -389,6 +393,59 @@ class $c272e73d90bc0a59$export$faa9a44a513b92c4 extends (0, $39d6e140d9c03804$ex
 
 
 
+class $bd7c22ec2501a222$export$4c5ce066ae8189e1 extends (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49) {
+    static headerName = 'X-Organization-ID';
+    constructor(options = {}){
+        const { priority: priority, organizationId: organizationId, ...rest } = options;
+        super(rest);
+        this.organizationId = organizationId ?? null;
+        // Run after the default request middleware (priority 50), which can
+        // rebuild the FetchRequest and would otherwise drop this header.
+        this.options = {
+            ...this.options,
+            priority: {
+                request: priority?.request ?? 60,
+                response: priority?.response ?? this.options?.priority?.response ?? 50,
+                error: priority?.error ?? this.options?.priority?.error ?? 50
+            }
+        };
+    }
+    /**
+     * Replace the organization id. Null or '' clears it.
+     */ setOrganization(organizationId) {
+        this.organizationId = organizationId ?? null;
+        return this;
+    }
+    async request(request, client) {
+        const headerName = this.constructor.headerName;
+        if ($bd7c22ec2501a222$var$isOptOut(request?.organization)) {
+            request.headers.delete(headerName);
+            return request;
+        }
+        const organizationId = this.resolveOrganizationId(request, client);
+        if (organizationId === null) return request;
+        request.headers.set(headerName, organizationId);
+        return request;
+    }
+    resolveOrganizationId(request, client) {
+        const override = $bd7c22ec2501a222$var$organizationIdValue(request?.organization);
+        if (override !== null) return override;
+        const configured = $bd7c22ec2501a222$var$organizationIdValue(this.organizationId);
+        if (configured !== null) return configured;
+        return $bd7c22ec2501a222$var$organizationIdValue(client?.options?.organizationId);
+    }
+}
+function $bd7c22ec2501a222$var$isOptOut(value) {
+    return value === false || value === null || value === '';
+}
+function $bd7c22ec2501a222$var$organizationIdValue(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'string' && value !== '') return value;
+    return null;
+}
+
+
+
 
 
 class $cb618720e3539df9$export$a74cfeef44e69e22 extends (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49) {
@@ -475,9 +532,20 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
      * Make an HTTP request
      */ async request(method, uri, config = {}) {
         let url = (0, $4559ecf940edc78d$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $4559ecf940edc78d$export$ed61451db706e904).stripLeft(uri, '/');
+        // `organization` is per request. Merging it would stick a later opt-out
+        // onto the shared request defaults.
+        const hasOrganization = config != null && Object.prototype.hasOwnProperty.call(config, 'organization');
+        const organization = hasOrganization ? config.organization : undefined;
+        if (hasOrganization) {
+            config = {
+                ...config
+            };
+            delete config.organization;
+        }
         config.method = method;
         config = (0, $4559ecf940edc78d$export$2321aea138b44780)(this.options.request, config);
         let request = new (0, $1db99460b351f96f$export$319b96fe59834522)(url, config);
+        if (hasOrganization) request.organization = organization;
         request = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, request, 'request');
         return request.fetch().then(async (request)=>{
             if (!request.response.ok) throw new (0, $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894)(request);
@@ -700,6 +768,7 @@ if (typeof window !== 'undefined') window.streams_api = {
     AuthorizationMiddleware: $cbc2e4173dc2f076$export$6e29424e2d1846ed,
     CriteriaMiddleware: $1b87c2c0b7f5abad$export$b79367ae2b118768,
     ETagMiddleware: $c272e73d90bc0a59$export$faa9a44a513b92c4,
+    OrganizationMiddleware: $bd7c22ec2501a222$export$4c5ce066ae8189e1,
     Middleware: $39d6e140d9c03804$export$7dc23e3ab61f5f49,
     QueryMiddleware: $cb618720e3539df9$export$a74cfeef44e69e22,
     RequestDataMiddleware: $db0116cc62677c9f$export$81bc91ba859dba8e,

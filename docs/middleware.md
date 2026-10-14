@@ -31,6 +31,38 @@ const client = new Client({
 - Adds `Authorization: Bearer {token}` header to all requests
 - Enables authenticated API access
 
+### OrganizationMiddleware
+
+Sends the current organization on each request, with a per-request opt-out.
+
+```javascript
+import { Client, OrganizationMiddleware } from '@laravel-streams/api-client';
+
+const client = new Client({
+    baseURL: 'https://api.example.com',
+    middlewares: [
+        new OrganizationMiddleware({ organizationId: 'org-123' })
+    ]
+});
+
+// X-Organization-ID: org-123
+await client.get('/entries');
+
+// This request does not send X-Organization-ID
+await client.get('/organizations', { organization: false });
+
+// This request sends a different organization
+await client.get('/entries', { organization: 'org-456' });
+```
+
+**What it does:**
+- Adds `X-Organization-ID` from the middleware `organizationId`, or from `client.options.organizationId` when the middleware has none
+- Overrides that id for one request when `organization` is a string or number
+- Opts out when `organization` is `false`, `null`, or `''`, and removes a header already on that request
+- Leaves the header unset when no organization id is configured
+
+`setOrganization(id)` changes the id later. `setOrganization(null)` clears it.
+
 ### CriteriaMiddleware
 
 Converts Criteria objects to query parameters.
