@@ -1,12 +1,13 @@
 ---
-sort_order: 3
 title: Client Configuration
-description: 'Configure the API client for your application'
-category: core
-status: published
+nav_title: Client Configuration
+description: Configure the API client for your application
+section: packages
+package: client
+order: 40
+tags: [client]
+status: ready
 ---
-
-# Client Configuration
 
 The `Client` class is the main entry point for interacting with the Streams API.
 
@@ -234,6 +235,6 @@ export default client;
 
 ## Next Steps
 
-- [Working with Streams](streams)
-- [Working with Entries](entries)
-- [Middleware](middleware)
+- [Working with Streams](/docs/client/streams)
+- [Working with Entries](/docs/client/entries)
+- [Middleware](/docs/client/middleware)

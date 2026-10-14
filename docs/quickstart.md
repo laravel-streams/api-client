@@ -1,12 +1,13 @@
 ---
-sort_order: 2
 title: Quick Start
-description: 'Get started with the Streams API Client in minutes'
-category: getting-started
-status: published
+nav_title: Quick Start
+description: Get started with the Streams API Client in minutes
+section: packages
+package: client
+order: 30
+tags: [client, quickstart]
+status: ready
 ---
-
-# Quick Start
 
 Get up and running with the Streams API Client in just a few minutes.
 
@@ -200,7 +201,7 @@ await createPost({
 
 ## Next Steps
 
-- [Client Configuration](client) - Learn about all configuration options
-- [Criteria Query Builder](criteria) - Master the query builder
-- [Middleware](middleware) - Extend functionality with middleware
-- [Examples](examples) - See more real-world examples
+- [Client Configuration](/docs/client/client) - Learn about all configuration options
+- [Criteria Query Builder](/docs/client/criteria) - Master the query builder
+- [Middleware](/docs/client/middleware) - Extend functionality with middleware
+- [Examples](/docs/client/examples) - See more real-world examples
