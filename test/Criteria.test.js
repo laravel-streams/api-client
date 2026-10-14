@@ -171,7 +171,7 @@ describe('Criteria', () => {
             
             assert.ok(typeof standardized === 'object');
             assert.ok(standardized.where);
-            assert.ok(standardized.orderBy);
+            assert.ok(standardized.order_by);
             assert.strictEqual(standardized.limit, 10);
         });
     });
@@ -182,7 +182,7 @@ describe('Criteria', () => {
                 .where('category', 'technology')
                 .where('published_at', '>=', '2024-01-01')
                 .where('views', '>', 500)
-                .orWhere('featured', true)
+                .where('featured', true)
                 .orderBy('views', 'desc')
                 .orderBy('published_at', 'desc')
                 .paginate(50, 1);

@@ -156,14 +156,35 @@ export class Criteria {
      * Return standardized parameters
      */
     standardizeParameters() {
-        return this.parameters
-            .map(kv => [kv['name'], kv['value']])
-            .reduce((obj, [k, v], i, data) => {
-                if (Array.isArray(v)) {
-                    data.slice().filter(kv => kv['name'] === k);
+        const result = {};
+        const filters = new Map();
+        for (const { name, value } of this.parameters) {
+            if (name === 'where') {
+                const [field, operator, operand, boolean] = value;
+                if (boolean && boolean !== 'and') {
+                    throw new Error('GET criteria do not support OR or nested filters; use the API query endpoint');
                 }
-                return { ...obj, [k]: v };
-            }, {});
+                const conditions = filters.get(field) || new Map();
+                const apiOperator = operator === '==' ? '=' : operator.toLowerCase();
+                if (conditions.has(apiOperator)) {
+                    throw new Error(`Duplicate ${field} ${operator} filter; use the API query endpoint`);
+                }
+                conditions.set(apiOperator, operand);
+                filters.set(field, conditions);
+            } else if (name === 'orderBy') {
+                result.order_by ||= {};
+                Object.defineProperty(result.order_by, value[0], { value: value[1], enumerable: true, configurable: true });
+            } else {
+                result[name] = value;
+            }
+        }
+        if (filters.size) {
+            result.where = Object.fromEntries(Array.from(filters, ([field, conditions]) => [
+                field, conditions.size === 1 && conditions.has('=') && !Array.isArray(conditions.get('='))
+                    && conditions.get('=') !== null ? conditions.get('=') : Object.fromEntries(conditions),
+            ]));
+        }
+        return result;
     }
 
     /**

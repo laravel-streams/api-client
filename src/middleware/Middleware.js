@@ -43,7 +43,7 @@ export class Middleware {
      */
     static getDefaultOptions(t, options = {}) {
         if (isObject(t.defaultOptions)) {
-            options = mergeObjects(t.defaultOptions, options);
+            options = mergeObjects({}, t.defaultOptions, options);
         }
         let parent = Object.getPrototypeOf(t);
         if (parent && isObject(parent.defaultOptions)) {
@@ -60,9 +60,9 @@ export class Middleware {
         kind = kind !== undefined && kinds.includes(kind?.toString()) ? kind : false;
 
         if (!kind) {
-            kinds.forEach(kind => this.options[kind] = priority);
+            kinds.forEach(kind => this.options.priority[kind] = priority);
         } else {
-            this.options[kind] = priority;
+            this.options.priority[kind] = priority;
         }
         return this;
     }

@@ -41,7 +41,9 @@ export class FetchRequest extends Request {
         // Add body if present
         if (this.body) {
             options.body = this.body;
+            options.duplex = 'half';
         }
+        options.signal = this.signal;
         
         const response = await fetch(this.url, options);
         

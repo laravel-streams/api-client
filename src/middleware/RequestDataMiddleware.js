@@ -8,9 +8,16 @@ export class RequestDataMiddleware extends Middleware {
     static defaultOptions = {};
 
     async request(request, client) {
-        if (request.data) {
+        if (request.data !== undefined) {
+            if (!request.headers.has('Content-Type')) {
+                request.headers.contentType('application/json');
+            }
             request = new FetchRequest(request, {
-                body: JSON.stringify(request.data)
+                body: JSON.stringify(request.data),
+                headers: request.headers,
+                responseType: request.responseType,
+                query: request.query.toObject(),
+                criteria: request.criteria,
             });
         }
         return request;
