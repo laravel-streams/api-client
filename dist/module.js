@@ -124,13 +124,22 @@ class $4e671f1a527ffd7a$export$8ee3a38db681f49d extends (0, $3d19956470823652$ex
         return this.client.request('get', `/streams/${stream}`, config);
     }
     async post(data, config = {}) {
-        return this.client.request('post', '/streams', config);
+        return this.client.request('post', '/streams', {
+            ...config,
+            data: data
+        });
     }
-    async patch(config = {}) {
-        return this.client.request('patch', '/streams', config);
+    async patch(stream, data, config = {}) {
+        return this.client.request('patch', `/streams/${stream}`, {
+            ...config,
+            data: data
+        });
     }
-    async put(config = {}) {
-        return this.client.request('put', '/streams', config);
+    async put(stream, data, config = {}) {
+        return this.client.request('put', `/streams/${stream}`, {
+            ...config,
+            data: data
+        });
     }
     async delete(stream, config = {}) {
         return this.client.request('delete', `/streams/${stream}`, config);
@@ -293,7 +302,7 @@ class $b66054862766a59c$export$7dc23e3ab61f5f49 {
     /**
      * Get default options with inheritance
      */ static getDefaultOptions(t, options = {}) {
-        if ((0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(t.defaultOptions)) options = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)(t.defaultOptions, options);
+        if ((0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(t.defaultOptions)) options = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)({}, t.defaultOptions, options);
         let parent = Object.getPrototypeOf(t);
         if (parent && (0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(parent.defaultOptions)) options = this.getDefaultOptions(parent, options);
         return options;
@@ -356,13 +365,75 @@ class $d3134a7939a75d13$export$b79367ae2b118768 extends (0, $b66054862766a59c$ex
 
 
 class $86b82e06a87407d7$export$faa9a44a513b92c4 extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
-    static defaultOptions = {};
+    static defaultOptions = {
+        priority: {
+            request: 90,
+            response: 10
+        }
+    };
+    constructor(options = {}){
+        super(options);
+        this.caches = new WeakMap();
+    }
+    cache(client) {
+        let cache = this.caches.get(client);
+        if (!cache) {
+            cache = new Map();
+            this.caches.set(client, cache);
+        }
+        return cache;
+    }
+    key(request) {
+        const headers = Array.from(request.headers.entries()).filter(([name])=>name.toLowerCase() !== 'if-none-match').sort(([left], [right])=>left.localeCompare(right));
+        return JSON.stringify([
+            request.url,
+            request.credentials,
+            request.responseType,
+            headers
+        ]);
+    }
     async request(request, client) {
-        // ETag support can be added here
+        if (request.method === 'GET' && request.cache !== 'no-store') {
+            const cached = this.cache(client).get(this.key(request));
+            if (cached && !request.headers.has('If-None-Match')) request.headers.ifNoneMatch(cached.etag);
+        }
         return request;
     }
     async response(response, client) {
-        // ETag support can be added here
+        const request = response.request;
+        const cache = this.cache(client);
+        if (request.method !== 'GET') {
+            if (request.method !== 'HEAD' && response.ok) cache.clear();
+            return response;
+        }
+        if (request.cache === 'no-store') return response;
+        const key = this.key(request);
+        const cached = cache.get(key);
+        if (response.status === 304 && cached && request.headers.get('If-None-Match') === cached.etag) {
+            const headers = new Headers(cached.response.headers);
+            response.headers.forEach((value, name)=>{
+                if (name.toLowerCase() === 'content-length') return;
+                headers.set(name, value);
+            });
+            const replay = new Response(cached.response.clone().body, {
+                status: cached.response.status,
+                statusText: cached.response.statusText,
+                headers: headers
+            });
+            replay.request = request;
+            replay.revalidated = true;
+            // Persist updated validators and cache directives from revalidation.
+            response = replay;
+        }
+        if (response.ok) {
+            const etag = response.headers.get('ETag');
+            const control = response.headers.get('Cache-Control') || '';
+            if (etag && !/\bno-store\b/i.test(control) && response.headers.get('Vary') !== '*') cache.set(key, {
+                etag: etag,
+                response: response.clone()
+            });
+            else cache.delete(key);
+        }
         return response;
     }
 }
@@ -393,9 +464,18 @@ class $d889f0a51d8c2aa1$export$a74cfeef44e69e22 extends (0, $b66054862766a59c$ex
 class $b41a23ef233577d1$export$81bc91ba859dba8e extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
     static defaultOptions = {};
     async request(request, client) {
-        if (request.data) request = new (0, $4eff35de4434c113$export$319b96fe59834522)(request, {
-            body: JSON.stringify(request.data)
-        });
+        if (request.data !== undefined) {
+            if (!request.headers.has('Content-Type')) request.headers.contentType('application/json');
+            const query = request.query && typeof request.query.toObject === 'function' ? request.query.toObject() : request.query || {};
+            request = new (0, $4eff35de4434c113$export$319b96fe59834522)(request, {
+                body: JSON.stringify(request.data),
+                headers: request.headers.toObject(),
+                responseType: request.responseType,
+                query: query,
+                criteria: request.criteria,
+                data: request.data
+            });
+        }
         return request;
     }
 }
@@ -406,6 +486,10 @@ class $a0b7011eda0626b0$export$60dea4b97ea2ef30 extends (0, $b66054862766a59c$ex
     static defaultOptions = {};
     async response(response, client) {
         const request = response.request;
+        if (response.status === 304) {
+            response.data = null;
+            return response;
+        }
         if (request.isResponseType('arraybuffer')) response.data = await response.arrayBuffer();
         else if (request.isResponseType('blob')) response.data = await response.blob();
         else if (request.isResponseType('document')) response.data = await response.formData();
@@ -455,13 +539,14 @@ class $b7042f052a98e3f2$export$1f2bb630327ac4b6 {
      * Make an HTTP request
      */ async request(method, uri, config = {}) {
         let url = (0, $f3ad94c9f84f4d57$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $f3ad94c9f84f4d57$export$ed61451db706e904).stripLeft(uri, '/');
-        config.method = method;
-        config = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)(this.options.request, config);
+        config = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)({}, this.options.request, config);
+        config.method = String(method).toUpperCase();
         let request = new (0, $4eff35de4434c113$export$319b96fe59834522)(url, config);
         request = await (0, $b66054862766a59c$export$7dc23e3ab61f5f49).run(this, request, 'request');
         return request.fetch().then(async (request)=>{
+            // 304 is not ok. Run response hooks first so ETag can replay a stored body.
+            if (request.response.ok || request.response.status === 304) request.response = await (0, $b66054862766a59c$export$7dc23e3ab61f5f49).run(this, request.response, 'response');
             if (!request.response.ok) throw new (0, $827b4d16e4856d30$export$26e841bcf1aeb894)(request);
-            request.response = await (0, $b66054862766a59c$export$7dc23e3ab61f5f49).run(this, request.response, 'response');
             return request.response;
         }).catch(async (error)=>{
             error = await (0, $b66054862766a59c$export$7dc23e3ab61f5f49).run(this, error, 'error');
