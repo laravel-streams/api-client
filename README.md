@@ -10,7 +10,7 @@ A simplified JavaScript client for interacting with the [Laravel Streams API](ht
 🎯 **PHP Laravel-style Criteria** - Familiar query builder interface  
 🔌 **Middleware System** - Extensible request/response pipeline  
 📦 **Tiny Bundle** - ~22KB CommonJS, ~21KB ESM  
-🧪 **Fully Tested** - 70 tests, 100% passing  
+🧪 **Fully Tested** - 140 tests, 100% passing  
 ⚡ **Modern JS** - ES6+ with both ESM and CommonJS builds
 
 ## Installation
@@ -98,6 +98,24 @@ const client = new Client({
     baseURL: 'http://localhost/api',
     middlewares: [auth]
 });
+```
+
+`OrganizationMiddleware` adds `X-Organization-ID`. Pass `{ organization: false }` on a request to opt out.
+
+`AuthorizationMiddleware` sends the session token from memory or a storage adapter (`MemoryTokenStorage`, `WebStorageTokenStorage`, or `secureStorageAdapter`). It calls `onUnauthorized` once when an authenticated request receives HTTP 401. `Auth` performs the identity calls: magic-link claim and activate, password login, logout, revoke-all, `me`, and organizations. Logged-out calls opt out of both the bearer token and the organization header.
+
+```javascript
+import { Client, OrganizationMiddleware } from '@laravel-streams/api-client';
+
+const client = new Client({
+    baseURL: 'http://localhost/api',
+    middlewares: [
+        new OrganizationMiddleware({ organizationId: 'org-123' })
+    ]
+});
+
+await client.get('/entries');
+await client.get('/organizations', { organization: false });
 ```
 
 ## API Reference

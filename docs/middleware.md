@@ -15,22 +15,78 @@ The middleware system allows you to intercept and modify requests and responses.
 
 ### AuthorizationMiddleware
 
-Adds Bearer token authentication to requests.
+Sends the session token, stores it through an adapter, and reports an expired session.
 
 ```javascript
-import { Client, AuthorizationMiddleware } from '@laravel-streams/api-client';
+import { Client, Auth, AuthorizationMiddleware, MemoryTokenStorage } from '@laravel-streams/api-client';
+
+const storage = new MemoryTokenStorage();
+const authorization = new AuthorizationMiddleware({
+    storage,
+    onUnauthorized(error, client) {
+        // The session was rejected. Send the person to sign in again.
+        // `error` is still thrown after this hook. It runs once until setToken.
+    }
+});
+
+const client = new Client({
+    baseURL: 'https://api.example.com/api',
+    middlewares: [authorization]
+});
+
+const auth = new Auth(client);
+await auth.claim({ email: 'person@example.com' });
+await auth.activate({ token: linkToken });
+```
+
+**What it does:**
+- Adds `Authorization: Bearer {token}` from memory, or from the storage adapter on the first request
+- `setToken(token, type)` updates memory and the adapter. `clearToken()` removes both
+- Skips the header for one request when `authorization` is `false`
+- Calls `onUnauthorized(error, client)` once when a request that sent the header receives HTTP 401. A logged-out call does not fire the hook
+- Runs at request priority 60, after the default middleware rebuilds the request
+
+`WebStorageTokenStorage` accepts `localStorage` or `sessionStorage`. `secureStorageAdapter(plugin, key)` wraps a Capacitor-style plugin with `get({ key })`, `set({ key, value })`, and `remove({ key })`. `createTokenStorage(source)` picks one of those shapes.
+
+### Auth helpers
+
+`Auth` is the identity lifecycle. Sign-in is a magic link, with password as the fallback. `claim` / `requestMagicLink` posts `{ email }` to `auth/magic-link`. `activate` / `consumeMagicLink` posts the single-use link token to `auth/magic-link/consume` and stores the session token from the JSON body field `data.token`. These are the claim and activate steps. The client does not send a 6-digit code, and it does not call `register/verify-otp`, `register/resend-otp`, or `register/complete`.
+
+Logged-out calls (`login`, `claim`, `activate`) send neither `Authorization` nor `X-Organization-ID`. `organizations()` sends the session and opts out of the organization header. `me()` sends both unless the caller passes `{ organization: false }`. `logout()` and `revokeAll()` clear the stored session even when the request fails.
+
+Pass `paths` to point the helpers at a different route map. The link token and the session token are different values. `activate({ token })` sends the link token. The session token is taken from the response and is not returned as a separate copy.
+
+### OrganizationMiddleware
+
+Sends the current organization on each request, with a per-request opt-out.
+
+```javascript
+import { Client, OrganizationMiddleware } from '@laravel-streams/api-client';
 
 const client = new Client({
     baseURL: 'https://api.example.com',
     middlewares: [
-        new AuthorizationMiddleware({ token: 'your-api-token' })
+        new OrganizationMiddleware({ organizationId: 'org-123' })
     ]
 });
+
+// X-Organization-ID: org-123
+await client.get('/entries');
+
+// This request does not send X-Organization-ID
+await client.get('/organizations', { organization: false });
+
+// This request sends a different organization
+await client.get('/entries', { organization: 'org-456' });
 ```
 
 **What it does:**
-- Adds `Authorization: Bearer {token}` header to all requests
-- Enables authenticated API access
+- Adds `X-Organization-ID` from the middleware `organizationId`, or from `client.options.organizationId` when the middleware has none
+- Overrides that id for one request when `organization` is a string or number
+- Opts out when `organization` is `false`, `null`, or `''`, and removes a header already on that request
+- Leaves the header unset when no organization id is configured
+
+`setOrganization(id)` changes the id later. `setOrganization(null)` clears it.
 
 ### CriteriaMiddleware
 
