@@ -226,24 +226,26 @@ class $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c extends Headers {
 class $1db99460b351f96f$export$319b96fe59834522 extends Request {
     constructor(input, init = {}){
         super(input, init);
-        this.responseType = init.responseType || 'json';
-        this.query = (0, $4559ecf940edc78d$export$f81ea438226eca0a)(init.query || {});
-        this.criteria = init.criteria;
-        this.data = init.data;
+        const source = input instanceof $1db99460b351f96f$export$319b96fe59834522 ? input : {};
+        this.responseType = init.responseType ?? source.responseType ?? 'json';
+        const query = init.query ?? source.query ?? {};
+        this.query = (0, $4559ecf940edc78d$export$f81ea438226eca0a)(query instanceof Map ? Object.fromEntries(query) : query);
+        this.criteria = init.criteria ?? source.criteria;
+        this.data = init.data ?? source.data;
         this.response = null;
         // RequestDataMiddleware and QueryMiddleware rebuild the request.
         // Keep a per-request organization override or opt-out on the new instance.
         this.organization = Object.prototype.hasOwnProperty.call(init, 'organization') ? init.organization : input instanceof $1db99460b351f96f$export$319b96fe59834522 ? input.organization : undefined;
         // Create custom headers
         Object.defineProperty(this, 'headers', {
-            value: new (0, $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c)(init.headers),
+            value: new (0, $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c)(init.headers ?? (input instanceof Request ? input.headers : undefined)),
             writable: false
         });
     }
     isResponseType(responseType) {
         return this.responseType === responseType;
     }
-    async fetch() {
+    async fetch(signal = this.signal) {
         // Build fetch options from this request
         const options = {
             method: this.method,
@@ -253,10 +255,15 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
             cache: this.cache,
             redirect: this.redirect,
             referrer: this.referrer,
-            integrity: this.integrity
+            integrity: this.integrity,
+            signal: signal
         };
         // Add body if present
-        if (this.body) options.body = this.body;
+        if (this.body) {
+            // Keep the prepared body readable for a subsequent retry.
+            options.body = this.clone().body;
+            options.duplex = 'half';
+        }
         const response = await fetch(this.url, options);
         this.response = response;
         response.request = this;
@@ -277,13 +284,127 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
  */ class $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894 extends Error {
     constructor(request){
         super(`HTTP ${request.response.status} error:\n ${request.response.statusText}`);
+        this.name = 'FetchError';
         this.request = request;
         this.status = request.response.status;
         this.statusText = request.response.statusText;
         this.url = request.response.url;
+        this.errors = {};
+    }
+    async mapValidationErrors() {
+        if (this.status !== 422) return this;
+        try {
+            // Preserve the original body for error middleware and callers.
+            const data = await this.response.clone().json();
+            this.data = data;
+            if (typeof data?.message === 'string') this.message = data.message;
+            if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) this.errors = data.errors;
+        } catch  {
+        // Non-JSON validation responses remain ordinary HTTP errors.
+        }
+        return this;
     }
     get response() {
         return this.request.response;
+    }
+}
+
+
+const $c896c9eafe70e87c$var$retryableStatuses = new Set([
+    408,
+    429,
+    500,
+    502,
+    503,
+    504
+]);
+const $c896c9eafe70e87c$var$idempotentMethods = new Set([
+    'GET',
+    'HEAD',
+    'OPTIONS',
+    'PUT',
+    'DELETE'
+]);
+const $c896c9eafe70e87c$var$maxTimerDelay = 2147483647;
+function $c896c9eafe70e87c$export$5f16de5030553b0b(config) {
+    const retries = config.retries ?? 0;
+    const retryDelay = config.retryDelay ?? 250;
+    const maxRetryDelay = config.maxRetryDelay ?? 30000;
+    const timeout = config.timeout ?? 0;
+    if (!Number.isInteger(retries) || retries < 0 || retries > 10) throw new RangeError('retries must be an integer between 0 and 10');
+    for (const [name, value] of Object.entries({
+        retryDelay: retryDelay,
+        maxRetryDelay: maxRetryDelay,
+        timeout: timeout
+    })){
+        if (!Number.isFinite(value) || value < 0 || value > $c896c9eafe70e87c$var$maxTimerDelay) throw new RangeError(`${name} must be between 0 and ${$c896c9eafe70e87c$var$maxTimerDelay} milliseconds`);
+    }
+    if (config.idempotencyKey !== undefined && (typeof config.idempotencyKey !== 'string' || !config.idempotencyKey.trim())) throw new TypeError('idempotencyKey must be a nonempty string');
+    return {
+        retries: retries,
+        retryDelay: retryDelay,
+        maxRetryDelay: maxRetryDelay,
+        timeout: timeout
+    };
+}
+function $c896c9eafe70e87c$export$6c7cf2cb7d75fad3(request, response) {
+    const safe = $c896c9eafe70e87c$var$idempotentMethods.has(request.method) || Boolean(request.headers.get('Idempotency-Key')?.trim());
+    return safe && (!response || $c896c9eafe70e87c$var$retryableStatuses.has(response.status));
+}
+function $c896c9eafe70e87c$export$5a1c93015a826e4(policy, attempt, response) {
+    const header = response?.headers.get('Retry-After');
+    let delay = policy.retryDelay * 2 ** attempt;
+    if (header !== null && header !== undefined) {
+        const seconds = /^\d+(\.\d+)?$/.test(header.trim()) ? Number(header) : NaN;
+        const requested = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(header) - Date.now();
+        if (Number.isFinite(requested)) delay = Math.max(delay, requested);
+    }
+    return Math.min(policy.maxRetryDelay, Math.max(0, delay));
+}
+function $c896c9eafe70e87c$export$5e51032b9f27710e(signal, timeout) {
+    const controller = new AbortController();
+    const abort = ()=>controller.abort(signal.reason);
+    if (signal?.aborted) abort();
+    else signal?.addEventListener('abort', abort, {
+        once: true
+    });
+    const timer = timeout > 0 ? setTimeout(()=>{
+        controller.abort(new DOMException(`Request timed out after ${timeout}ms`, 'TimeoutError'));
+    }, timeout) : undefined;
+    return {
+        signal: controller.signal,
+        dispose () {
+            clearTimeout(timer);
+            signal?.removeEventListener('abort', abort);
+        }
+    };
+}
+async function $c896c9eafe70e87c$export$972370e32542a48f(operation, signal, runWhenAborted = false) {
+    if (!runWhenAborted) signal.throwIfAborted();
+    let abort;
+    try {
+        return await Promise.race([
+            operation(),
+            new Promise((resolve, reject)=>{
+                abort = ()=>reject(signal.reason);
+                signal.addEventListener('abort', abort, {
+                    once: true
+                });
+                if (signal.aborted) abort();
+            })
+        ]);
+    } finally{
+        if (abort) signal.removeEventListener('abort', abort);
+    }
+}
+async function $c896c9eafe70e87c$export$562bc4a862c31607(delay, signal) {
+    let timer;
+    try {
+        await $c896c9eafe70e87c$export$972370e32542a48f(()=>new Promise((resolve)=>{
+                timer = setTimeout(resolve, delay);
+            }), signal);
+    } finally{
+        clearTimeout(timer);
     }
 }
 
@@ -518,7 +639,7 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
             }
         };
         const { middlewares: middlewares, defaultMiddlewares: defaultMiddlewares, ...opts } = options;
-        this.options = (0, $4559ecf940edc78d$export$2321aea138b44780)(this.options, opts);
+        this.options = (0, $4559ecf940edc78d$export$2321aea138b44780)({}, this.options, opts);
         this.middlewares = defaultMiddlewares.concat(middlewares);
         this.streams = new (0, $0c1e8edf525968d2$export$8ee3a38db681f49d)(this);
         this.entries = new (0, $4bb31526c70c167d$export$be81f2ab9a4121eb)(this);
@@ -531,30 +652,54 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
     /**
      * Make an HTTP request
      */ async request(method, uri, config = {}) {
-        let url = (0, $4559ecf940edc78d$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $4559ecf940edc78d$export$ed61451db706e904).stripLeft(uri, '/');
-        // `organization` is per request. Merging it would stick a later opt-out
-        // onto the shared request defaults.
-        const hasOrganization = config != null && Object.prototype.hasOwnProperty.call(config, 'organization');
-        const organization = hasOrganization ? config.organization : undefined;
-        if (hasOrganization) {
-            config = {
-                ...config
-            };
-            delete config.organization;
-        }
-        config.method = method;
-        config = (0, $4559ecf940edc78d$export$2321aea138b44780)(this.options.request, config);
-        let request = new (0, $1db99460b351f96f$export$319b96fe59834522)(url, config);
-        if (hasOrganization) request.organization = organization;
-        request = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, request, 'request');
-        return request.fetch().then(async (request)=>{
-            if (!request.response.ok) throw new (0, $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894)(request);
-            request.response = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, request.response, 'response');
-            return request.response;
-        }).catch(async (error)=>{
-            error = await (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, error, 'error');
-            throw error;
+        const url = (0, $4559ecf940edc78d$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $4559ecf940edc78d$export$ed61451db706e904).stripLeft(uri, '/');
+        const headers = new Headers(this.options.request.headers);
+        new Headers(config.headers).forEach((value, key)=>headers.set(key, value));
+        config = (0, $4559ecf940edc78d$export$2321aea138b44780)({}, this.options.request, config, {
+            method: method,
+            headers: headers
         });
+        const policy = (0, $c896c9eafe70e87c$export$5f16de5030553b0b)(config);
+        const scope = (0, $c896c9eafe70e87c$export$5e51032b9f27710e)(config.signal, policy.timeout);
+        try {
+            let request = new (0, $1db99460b351f96f$export$319b96fe59834522)(url, {
+                ...config,
+                signal: scope.signal
+            });
+            request = await (0, $c896c9eafe70e87c$export$972370e32542a48f)(()=>(0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, request, 'request'), scope.signal);
+            if (config.idempotencyKey !== undefined) request.headers.set('Idempotency-Key', config.idempotencyKey);
+            for(let attempt = 0;; attempt++){
+                let networkError;
+                try {
+                    await (0, $c896c9eafe70e87c$export$972370e32542a48f)(()=>request.fetch(scope.signal), scope.signal);
+                } catch (error) {
+                    scope.signal.throwIfAborted();
+                    if (!(error instanceof TypeError)) throw error;
+                    networkError = error;
+                }
+                const response = networkError ? null : request.response;
+                if (attempt < policy.retries && (0, $c896c9eafe70e87c$export$6c7cf2cb7d75fad3)(request, response) && (networkError || !response.ok)) {
+                    const delay = (0, $c896c9eafe70e87c$export$5a1c93015a826e4)(policy, attempt, response);
+                    if (response?.body) await (0, $c896c9eafe70e87c$export$972370e32542a48f)(()=>response.body.cancel(), scope.signal);
+                    await (0, $c896c9eafe70e87c$export$562bc4a862c31607)(delay, scope.signal);
+                    continue;
+                }
+                if (networkError) throw networkError;
+                if (!response.ok) {
+                    const error = new (0, $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894)(request);
+                    await (0, $c896c9eafe70e87c$export$972370e32542a48f)(()=>error.mapValidationErrors(), scope.signal);
+                    throw error;
+                }
+                request.response = await (0, $c896c9eafe70e87c$export$972370e32542a48f)(()=>(0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, response, 'response'), scope.signal);
+                return request.response;
+            }
+        } catch (error) {
+            // Notify error middleware even on abort, but never let it hold up cancellation.
+            error = await (0, $c896c9eafe70e87c$export$972370e32542a48f)(()=>(0, $39d6e140d9c03804$export$7dc23e3ab61f5f49).run(this, error, 'error'), scope.signal, true);
+            throw error;
+        } finally{
+            scope.dispose();
+        }
     }
     /**
      * Make a GET request

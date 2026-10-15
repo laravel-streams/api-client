@@ -1,12 +1,13 @@
 ---
-sort_order: 8
-title: Examples
-description: 'Real-world usage patterns and complete examples'
-category: guides
-status: published
+title: 'Client: Examples'
+nav_title: Examples
+description: Real-world usage patterns and complete examples
+section: packages
+package: client
+order: 90
+tags: [client, examples]
+status: ready
 ---
-
-# Examples
 
 Complete examples demonstrating real-world usage patterns.
 
@@ -18,9 +19,9 @@ Complete examples demonstrating real-world usage patterns.
 import { Client, AuthorizationMiddleware, CriteriaMiddleware, Criteria } from '@laravel-streams/api-client';
 
 const client = new Client({
-    baseUrl: 'https://api.example.com',
-    middleware: [
-        new AuthorizationMiddleware('your-api-token'),
+    baseURL: 'https://api.example.com',
+    middlewares: [
+        new AuthorizationMiddleware({ token: 'your-api-token' }),
         new CriteriaMiddleware()
     ]
 });
@@ -599,6 +600,6 @@ const post = await safeApiCall(() => getPost(123));
 
 ## Next Steps
 
-- [Client Configuration](client) - Advanced client setup
-- [Criteria](criteria) - Query building techniques
-- [Middleware](middleware) - Custom middleware patterns
+- [Client Configuration](/docs/client/client) - Advanced client setup
+- [Criteria](/docs/client/criteria) - Query building techniques
+- [Middleware](/docs/client/middleware) - Custom middleware patterns
