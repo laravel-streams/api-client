@@ -15,6 +15,11 @@ export class FetchRequest extends Request {
         this.criteria = init.criteria ?? source.criteria;
         this.data = init.data ?? source.data;
         this.response = null;
+        // RequestDataMiddleware and QueryMiddleware rebuild the request.
+        // Keep a per-request organization override or opt-out on the new instance.
+        this.organization = Object.prototype.hasOwnProperty.call(init, 'organization')
+            ? init.organization
+            : (input instanceof FetchRequest ? input.organization : undefined);
 
         // Create custom headers
         Object.defineProperty(this, 'headers', {

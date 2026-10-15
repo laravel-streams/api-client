@@ -100,6 +100,22 @@ const client = new Client({
 });
 ```
 
+`OrganizationMiddleware` adds `X-Organization-ID`. Pass `{ organization: false }` on a request to opt out.
+
+```javascript
+import { Client, OrganizationMiddleware } from '@laravel-streams/api-client';
+
+const client = new Client({
+    baseURL: 'http://localhost/api',
+    middlewares: [
+        new OrganizationMiddleware({ organizationId: 'org-123' })
+    ]
+});
+
+await client.get('/entries');
+await client.get('/organizations', { organization: false });
+```
+
 ## API Reference
 
 ### Client

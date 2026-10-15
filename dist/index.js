@@ -14,6 +14,7 @@ $parcel$export(module.exports, "Streams", () => $0c1e8edf525968d2$export$8ee3a38
 $parcel$export(module.exports, "AuthorizationMiddleware", () => $cbc2e4173dc2f076$export$6e29424e2d1846ed);
 $parcel$export(module.exports, "CriteriaMiddleware", () => $1b87c2c0b7f5abad$export$b79367ae2b118768);
 $parcel$export(module.exports, "ETagMiddleware", () => $c272e73d90bc0a59$export$faa9a44a513b92c4);
+$parcel$export(module.exports, "OrganizationMiddleware", () => $bd7c22ec2501a222$export$4c5ce066ae8189e1);
 $parcel$export(module.exports, "Middleware", () => $39d6e140d9c03804$export$7dc23e3ab61f5f49);
 $parcel$export(module.exports, "QueryMiddleware", () => $cb618720e3539df9$export$a74cfeef44e69e22);
 $parcel$export(module.exports, "RequestDataMiddleware", () => $db0116cc62677c9f$export$81bc91ba859dba8e);
@@ -81,7 +82,7 @@ const $4559ecf940edc78d$export$a6cdc56e425d0d0a = (item)=>{
 /**
  * Check if object is mergeable
  */ const $4559ecf940edc78d$var$isMergeableObject = (item)=>{
-    return $4559ecf940edc78d$export$a6cdc56e425d0d0a(item) && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null);
+    return $4559ecf940edc78d$export$a6cdc56e425d0d0a(item) && !Array.isArray(item);
 };
 function $4559ecf940edc78d$export$f81ea438226eca0a(obj = {}) {
     const map = new class extends Map {
@@ -232,6 +233,9 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
         this.criteria = init.criteria ?? source.criteria;
         this.data = init.data ?? source.data;
         this.response = null;
+        // RequestDataMiddleware and QueryMiddleware rebuild the request.
+        // Keep a per-request organization override or opt-out on the new instance.
+        this.organization = Object.prototype.hasOwnProperty.call(init, 'organization') ? init.organization : input instanceof $1db99460b351f96f$export$319b96fe59834522 ? input.organization : undefined;
         // Create custom headers
         Object.defineProperty(this, 'headers', {
             value: new (0, $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c)(init.headers ?? (input instanceof Request ? input.headers : undefined)),
@@ -506,6 +510,59 @@ class $c272e73d90bc0a59$export$faa9a44a513b92c4 extends (0, $39d6e140d9c03804$ex
         // ETag support can be added here
         return response;
     }
+}
+
+
+
+class $bd7c22ec2501a222$export$4c5ce066ae8189e1 extends (0, $39d6e140d9c03804$export$7dc23e3ab61f5f49) {
+    static headerName = 'X-Organization-ID';
+    constructor(options = {}){
+        const { priority: priority, organizationId: organizationId, ...rest } = options;
+        super(rest);
+        this.organizationId = organizationId ?? null;
+        // Run after the default request middleware (priority 50), which can
+        // rebuild the FetchRequest and would otherwise drop this header.
+        this.options = {
+            ...this.options,
+            priority: {
+                request: priority?.request ?? 60,
+                response: priority?.response ?? this.options?.priority?.response ?? 50,
+                error: priority?.error ?? this.options?.priority?.error ?? 50
+            }
+        };
+    }
+    /**
+     * Replace the organization id. Null or '' clears it.
+     */ setOrganization(organizationId) {
+        this.organizationId = organizationId ?? null;
+        return this;
+    }
+    async request(request, client) {
+        const headerName = this.constructor.headerName;
+        if ($bd7c22ec2501a222$var$isOptOut(request?.organization)) {
+            request.headers.delete(headerName);
+            return request;
+        }
+        const organizationId = this.resolveOrganizationId(request, client);
+        if (organizationId === null) return request;
+        request.headers.set(headerName, organizationId);
+        return request;
+    }
+    resolveOrganizationId(request, client) {
+        const override = $bd7c22ec2501a222$var$organizationIdValue(request?.organization);
+        if (override !== null) return override;
+        const configured = $bd7c22ec2501a222$var$organizationIdValue(this.organizationId);
+        if (configured !== null) return configured;
+        return $bd7c22ec2501a222$var$organizationIdValue(client?.options?.organizationId);
+    }
+}
+function $bd7c22ec2501a222$var$isOptOut(value) {
+    return value === false || value === null || value === '';
+}
+function $bd7c22ec2501a222$var$organizationIdValue(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+    if (typeof value === 'string' && value !== '') return value;
+    return null;
 }
 
 
@@ -856,6 +913,7 @@ if (typeof window !== 'undefined') window.streams_api = {
     AuthorizationMiddleware: $cbc2e4173dc2f076$export$6e29424e2d1846ed,
     CriteriaMiddleware: $1b87c2c0b7f5abad$export$b79367ae2b118768,
     ETagMiddleware: $c272e73d90bc0a59$export$faa9a44a513b92c4,
+    OrganizationMiddleware: $bd7c22ec2501a222$export$4c5ce066ae8189e1,
     Middleware: $39d6e140d9c03804$export$7dc23e3ab61f5f49,
     QueryMiddleware: $cb618720e3539df9$export$a74cfeef44e69e22,
     RequestDataMiddleware: $db0116cc62677c9f$export$81bc91ba859dba8e,
