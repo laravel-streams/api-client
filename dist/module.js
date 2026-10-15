@@ -61,7 +61,7 @@ const $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a = (item)=>{
 /**
  * Check if object is mergeable
  */ const $f3ad94c9f84f4d57$var$isMergeableObject = (item)=>{
-    return $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a(item) && !Array.isArray(item);
+    return $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a(item) && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null);
 };
 function $f3ad94c9f84f4d57$export$f81ea438226eca0a(obj = {}) {
     const map = new class extends Map {
@@ -105,6 +105,284 @@ function $f3ad94c9f84f4d57$export$fac44ee5b035f737(obj, options = {}) {
         return `${key}=${encode(value)}`;
     }).filter(Boolean).join('&');
 }
+
+
+class $b66054862766a59c$export$7dc23e3ab61f5f49 {
+    static defaultOptions = {
+        priority: {
+            request: 50,
+            response: 50,
+            error: 50
+        }
+    };
+    constructor(options = {}){
+        this.options = this.constructor.getDefaultOptions(this.constructor, options);
+    }
+    /**
+     * Get middlewares for a specific kind sorted by priority
+     */ static get(middlewares, kind) {
+        return middlewares.filter((middleware)=>typeof middleware[kind] === 'function').sort((a, b)=>{
+            return a.options.priority[kind] - b.options.priority[kind];
+        });
+    }
+    /**
+     * Run all middlewares of a specific kind
+     */ static async run(client, target, kind) {
+        const middlewares = $b66054862766a59c$export$7dc23e3ab61f5f49.get(client.middlewares, kind);
+        for (const middleware of middlewares)target = await middleware[kind](target, client);
+        return target;
+    }
+    /**
+     * Get default options with inheritance
+     */ static getDefaultOptions(t, options = {}) {
+        if ((0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(t.defaultOptions)) options = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)(t.defaultOptions, options);
+        let parent = Object.getPrototypeOf(t);
+        if (parent && (0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(parent.defaultOptions)) options = this.getDefaultOptions(parent, options);
+        return options;
+    }
+    /**
+     * Set priority for middleware execution
+     */ priority(priority, kind = false) {
+        let kinds = [
+            'request',
+            'response',
+            'error'
+        ];
+        kind = kind !== undefined && kinds.includes(kind?.toString()) ? kind : false;
+        if (!kind) kinds.forEach((kind)=>this.options[kind] = priority);
+        else this.options[kind] = priority;
+        return this;
+    }
+}
+
+
+class $24f116b90a41a6fb$export$6e29424e2d1846ed extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
+    constructor(options = {}){
+        const { token: token = null, type: type = 'Bearer', storage: storage = null, onUnauthorized: onUnauthorized = null, priority: priority, ...rest } = options;
+        super(rest);
+        this.token = $24f116b90a41a6fb$var$normalizeToken(token);
+        this.type = type || 'Bearer';
+        this.storage = storage;
+        this.onUnauthorized = typeof onUnauthorized === 'function' ? onUnauthorized : null;
+        this.unauthorizedNotified = false;
+        this.hydrated = this.token != null || storage == null;
+        this.epoch = 0;
+        this.hydrating = null;
+        // RequestDataMiddleware and QueryMiddleware rebuild the request at
+        // priority 50. Run after them so the header survives that rebuild.
+        this.options = {
+            ...this.options,
+            priority: {
+                request: priority?.request ?? 60,
+                response: priority?.response ?? this.options?.priority?.response ?? 50,
+                error: priority?.error ?? this.options?.priority?.error ?? 50
+            }
+        };
+    }
+    setOnUnauthorized(handler) {
+        this.onUnauthorized = typeof handler === 'function' ? handler : null;
+        return this;
+    }
+    async setToken(token, type = 'Bearer') {
+        this.type = type || 'Bearer';
+        return this.commit($24f116b90a41a6fb$var$normalizeToken(token));
+    }
+    async clearToken() {
+        return this.commit(null);
+    }
+    async request(request) {
+        if (request?.authorization === false) {
+            request.headers.delete('Authorization');
+            return request;
+        }
+        const token = await this.currentToken();
+        if (token) request.headers.authorization(this.type, token);
+        return request;
+    }
+    async error(error, client) {
+        if (error?.status !== 401) return error;
+        const request = error.request;
+        if (request?.authorization === false) return error;
+        if (!request?.headers?.get?.('Authorization')) return error;
+        if (this.unauthorizedNotified) return error;
+        this.unauthorizedNotified = true;
+        if (this.onUnauthorized) await this.onUnauthorized(error, client);
+        return error;
+    }
+    async currentToken() {
+        if (this.hydrated) return this.token;
+        if (!this.storage) return this.token;
+        const epoch = this.epoch;
+        if (!this.hydrating) {
+            let pending;
+            pending = Promise.resolve().then(()=>this.storage.get()).finally(()=>{
+                if (this.hydrating === pending) this.hydrating = null;
+            });
+            this.hydrating = pending;
+        }
+        let stored;
+        try {
+            stored = await this.hydrating;
+        } catch (error) {
+            if (epoch === this.epoch) this.hydrated = true;
+            throw error;
+        }
+        if (epoch !== this.epoch) return this.token;
+        this.hydrated = true;
+        if (this.token == null && typeof stored === 'string') {
+            const normalized = $24f116b90a41a6fb$var$normalizeToken(stored);
+            if (normalized) this.token = normalized;
+        }
+        return this.token;
+    }
+    async commit(token) {
+        this.epoch += 1;
+        this.token = token;
+        this.hydrated = true;
+        if (token) this.unauthorizedNotified = false;
+        if (!this.storage) return this;
+        if (token) await this.storage.set(token);
+        else await this.storage.clear();
+        return this;
+    }
+}
+function $24f116b90a41a6fb$var$normalizeToken(token) {
+    if (token == null) return null;
+    if (typeof token !== 'string') throw new TypeError('token must be a string');
+    const value = token.trim();
+    return value === '' ? null : value;
+}
+
+
+class $49f0b0f113331487$export$334c29725a78c21d {
+    static defaultPaths = {
+        login: 'auth/login',
+        logout: 'auth/logout',
+        revokeAll: 'auth/revoke-all',
+        me: 'auth/me',
+        organizations: 'auth/organizations',
+        magicLink: 'auth/magic-link',
+        consume: 'auth/magic-link/consume'
+    };
+    constructor(client, options = {}){
+        if (!client || typeof client.post !== 'function' || typeof client.get !== 'function') throw new TypeError('Auth requires a Client');
+        this.client = client;
+        this.authorization = options.authorization ?? client.middlewares?.find((middleware)=>middleware instanceof (0, $24f116b90a41a6fb$export$6e29424e2d1846ed)) ?? null;
+        this.paths = {
+            ...$49f0b0f113331487$export$334c29725a78c21d.defaultPaths,
+            ...options.paths
+        };
+        this.deviceName = options.deviceName ?? 'streams-api-client';
+    }
+    async login({ email: email, password: password, deviceName: deviceName } = {}) {
+        $49f0b0f113331487$var$requireText(email, 'email');
+        $49f0b0f113331487$var$requireText(password, 'password');
+        const response = await this.client.post(this.paths.login, {
+            data: {
+                email: email,
+                password: password,
+                device_name: deviceName ?? this.deviceName
+            },
+            ...$49f0b0f113331487$var$loggedOut
+        });
+        $49f0b0f113331487$var$assertEnvelope(response);
+        await this.storeSession(response);
+        return response;
+    }
+    /**
+     * Ask the server to send a magic link. This is the claim step.
+     */ async requestMagicLink({ email: email } = {}) {
+        $49f0b0f113331487$var$requireText(email, 'email');
+        const response = await this.client.post(this.paths.magicLink, {
+            data: {
+                email: email
+            },
+            ...$49f0b0f113331487$var$loggedOut
+        });
+        $49f0b0f113331487$var$assertEnvelope(response);
+        return response;
+    }
+    claim(input) {
+        return this.requestMagicLink(input);
+    }
+    /**
+     * Exchange the single-use link token for a session. This is the activate step.
+     * The argument is the link token, not the session token returned by the server.
+     */ async consumeMagicLink({ token: token } = {}) {
+        $49f0b0f113331487$var$requireText(token, 'token');
+        const response = await this.client.post(this.paths.consume, {
+            data: {
+                token: token
+            },
+            ...$49f0b0f113331487$var$loggedOut
+        });
+        $49f0b0f113331487$var$assertEnvelope(response);
+        await this.storeSession(response);
+        return response;
+    }
+    activate(input) {
+        return this.consumeMagicLink(input);
+    }
+    async logout() {
+        try {
+            return await this.client.post(this.paths.logout, {
+                data: {}
+            });
+        } finally{
+            if (this.authorization) await this.authorization.clearToken();
+        }
+    }
+    async revokeAll() {
+        try {
+            return await this.client.post(this.paths.revokeAll, {
+                data: {}
+            });
+        } finally{
+            if (this.authorization) await this.authorization.clearToken();
+        }
+    }
+    /**
+     * Current identity. Pass `{ organization: false }` before an organization is selected.
+     */ me(config = {}) {
+        return this.client.get(this.paths.me, config);
+    }
+    /**
+     * Organizations for the signed-in identity. No tenant header.
+     */ organizations() {
+        return this.client.get(this.paths.organizations, {
+            organization: false
+        });
+    }
+    async storeSession(response) {
+        const token = $49f0b0f113331487$var$readSessionToken(response);
+        if (token && this.authorization) await this.authorization.setToken(token);
+        return token;
+    }
+}
+const $49f0b0f113331487$var$loggedOut = {
+    organization: false,
+    authorization: false
+};
+function $49f0b0f113331487$var$requireText(value, name) {
+    if (typeof value !== 'string' || value.trim() === '') throw new TypeError(`${name} is required`);
+}
+function $49f0b0f113331487$var$assertEnvelope(response) {
+    const errors = response?.data?.errors;
+    if (!Array.isArray(errors) || errors.length === 0) return response;
+    const first = errors[0];
+    const message = typeof first === 'string' ? first : first?.message || 'Request failed';
+    const error = new Error(message);
+    error.response = response;
+    throw error;
+}
+function $49f0b0f113331487$var$readSessionToken(response) {
+    const body = response?.data;
+    if (!body || typeof body !== 'object') return null;
+    if (typeof body.token === 'string' && body.token.trim() !== '') return body.token.trim();
+    if (typeof body.data?.token === 'string' && body.data.token.trim() !== '') return body.data.token.trim();
+    return null;
+}
+
 
 
 /**
@@ -213,8 +491,9 @@ class $4eff35de4434c113$export$319b96fe59834522 extends Request {
         this.data = init.data ?? source.data;
         this.response = null;
         // RequestDataMiddleware and QueryMiddleware rebuild the request.
-        // Keep a per-request organization override or opt-out on the new instance.
-        this.organization = Object.prototype.hasOwnProperty.call(init, 'organization') ? init.organization : input instanceof $4eff35de4434c113$export$319b96fe59834522 ? input.organization : undefined;
+        // Keep per-request auth and organization flags on the new instance.
+        this.organization = $4eff35de4434c113$var$carried(init, input, 'organization');
+        this.authorization = $4eff35de4434c113$var$carried(init, input, 'authorization');
         // Create custom headers
         Object.defineProperty(this, 'headers', {
             value: new (0, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c)(init.headers ?? (input instanceof Request ? input.headers : undefined)),
@@ -255,6 +534,11 @@ class $4eff35de4434c113$export$319b96fe59834522 extends Request {
         });
         return this;
     }
+}
+function $4eff35de4434c113$var$carried(init, input, key) {
+    if (init && Object.prototype.hasOwnProperty.call(init, key)) return init[key];
+    if (input instanceof $4eff35de4434c113$export$319b96fe59834522) return input[key];
+    return undefined;
 }
 
 
@@ -388,77 +672,6 @@ async function $e75d1a7ecab40161$export$562bc4a862c31607(delay, signal) {
 }
 
 
-
-class $b66054862766a59c$export$7dc23e3ab61f5f49 {
-    static defaultOptions = {
-        priority: {
-            request: 50,
-            response: 50,
-            error: 50
-        }
-    };
-    constructor(options = {}){
-        this.options = this.constructor.getDefaultOptions(this.constructor, options);
-    }
-    /**
-     * Get middlewares for a specific kind sorted by priority
-     */ static get(middlewares, kind) {
-        return middlewares.filter((middleware)=>typeof middleware[kind] === 'function').sort((a, b)=>{
-            return a.options.priority[kind] - b.options.priority[kind];
-        });
-    }
-    /**
-     * Run all middlewares of a specific kind
-     */ static async run(client, target, kind) {
-        const middlewares = $b66054862766a59c$export$7dc23e3ab61f5f49.get(client.middlewares, kind);
-        for (const middleware of middlewares)target = await middleware[kind](target, client);
-        return target;
-    }
-    /**
-     * Get default options with inheritance
-     */ static getDefaultOptions(t, options = {}) {
-        if ((0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(t.defaultOptions)) options = (0, $f3ad94c9f84f4d57$export$2321aea138b44780)(t.defaultOptions, options);
-        let parent = Object.getPrototypeOf(t);
-        if (parent && (0, $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a)(parent.defaultOptions)) options = this.getDefaultOptions(parent, options);
-        return options;
-    }
-    /**
-     * Set priority for middleware execution
-     */ priority(priority, kind = false) {
-        let kinds = [
-            'request',
-            'response',
-            'error'
-        ];
-        kind = kind !== undefined && kinds.includes(kind?.toString()) ? kind : false;
-        if (!kind) kinds.forEach((kind)=>this.options[kind] = priority);
-        else this.options[kind] = priority;
-        return this;
-    }
-}
-
-
-
-class $24f116b90a41a6fb$export$6e29424e2d1846ed extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
-    constructor(options = {}){
-        super(options);
-        this.token = options.token || null;
-        this.type = options.type || 'Bearer';
-    }
-    async request(request, client) {
-        if (this.token) {
-            console.log('AuthorizationMiddleware: Setting token', this.type, this.token);
-            request.headers.authorization(this.type, this.token);
-            console.log('AuthorizationMiddleware: Header set, checking...', request.headers.get('Authorization'));
-        }
-        return request;
-    }
-    setToken(token, type = 'Bearer') {
-        this.token = token;
-        this.type = type;
-        return this;
-    }
-}
 
 
 
@@ -878,9 +1091,113 @@ class $1aded8984edd6d2b$export$9bcb229a699e7da1 {
 
 
 
+/**
+ * Pluggable session-token storage.
+ *
+ * Adapters implement get(), set(token), and clear(). Use memory in Node and
+ * tests, Web Storage in a browser, or secureStorageAdapter for a Capacitor
+ * plugin with get/set/remove. The adapter stores whatever string the app
+ * gives it. This module never writes a token of its own.
+ */ class $c47ba6c5703879fa$export$3eea21c5b25eb11d {
+    constructor(token = null){
+        this.token = $c47ba6c5703879fa$var$normalizeStoredToken(token);
+    }
+    async get() {
+        return this.token;
+    }
+    async set(token) {
+        this.token = $c47ba6c5703879fa$var$normalizeStoredToken(token);
+    }
+    async clear() {
+        this.token = null;
+    }
+}
+class $c47ba6c5703879fa$export$621255c1835a0665 {
+    constructor(storage, key = 'streams.auth.token'){
+        if (!storage || typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function' || typeof storage.removeItem !== 'function') throw new TypeError('WebStorageTokenStorage requires getItem, setItem, and removeItem');
+        if (typeof key !== 'string' || key.trim() === '') throw new TypeError('WebStorageTokenStorage requires a storage key');
+        this.storage = storage;
+        this.key = key;
+    }
+    async get() {
+        return this.storage.getItem(this.key);
+    }
+    async set(token) {
+        const value = $c47ba6c5703879fa$var$normalizeStoredToken(token);
+        if (value == null) {
+            this.storage.removeItem(this.key);
+            return;
+        }
+        this.storage.setItem(this.key, value);
+    }
+    async clear() {
+        this.storage.removeItem(this.key);
+    }
+}
+function $c47ba6c5703879fa$export$ec8b0aa9e541d550(plugin, key = 'streams.auth.token') {
+    if (!plugin || typeof plugin.get !== 'function' || typeof plugin.set !== 'function' || typeof plugin.remove !== 'function') throw new TypeError('secureStorageAdapter requires get, set, and remove');
+    if (typeof key !== 'string' || key.trim() === '') throw new TypeError('secureStorageAdapter requires a storage key');
+    return {
+        async get () {
+            try {
+                const result = await plugin.get({
+                    key: key
+                });
+                if (result == null) return null;
+                if (typeof result === 'string') return result === '' ? null : result;
+                if (typeof result.value !== 'string' || result.value === '') return null;
+                return result.value;
+            } catch (error) {
+                if ($c47ba6c5703879fa$var$isMissingKey(error)) return null;
+                throw error;
+            }
+        },
+        async set (token) {
+            const value = $c47ba6c5703879fa$var$normalizeStoredToken(token);
+            if (value == null) {
+                await this.clear();
+                return;
+            }
+            await plugin.set({
+                key: key,
+                value: value
+            });
+        },
+        async clear () {
+            try {
+                await plugin.remove({
+                    key: key
+                });
+            } catch (error) {
+                if ($c47ba6c5703879fa$var$isMissingKey(error)) return;
+                throw error;
+            }
+        }
+    };
+}
+function $c47ba6c5703879fa$export$b40ecb0ca14d8c82(source, options = {}) {
+    if (source == null) return new $c47ba6c5703879fa$export$3eea21c5b25eb11d(options.token ?? null);
+    if (typeof source.get === 'function' && typeof source.set === 'function' && typeof source.clear === 'function') return source;
+    if (typeof source.getItem === 'function' && typeof source.setItem === 'function' && typeof source.removeItem === 'function') return new $c47ba6c5703879fa$export$621255c1835a0665(source, options.key);
+    if (typeof source.get === 'function' && typeof source.set === 'function' && typeof source.remove === 'function') return $c47ba6c5703879fa$export$ec8b0aa9e541d550(source, options.key);
+    throw new TypeError('Token storage must implement get/set/clear, Web Storage, or get/set/remove');
+}
+function $c47ba6c5703879fa$var$normalizeStoredToken(token) {
+    if (token == null) return null;
+    if (typeof token !== 'string') throw new TypeError('token must be a string');
+    const value = token.trim();
+    return value === '' ? null : value;
+}
+function $c47ba6c5703879fa$var$isMissingKey(error) {
+    const message = String(error?.message || error || '');
+    return /not found|does not exist|item not found|no value/i.test(message);
+}
+
+
 
 // Make available globally if in browser
 if (typeof window !== 'undefined') window.streams_api = {
+    Auth: $49f0b0f113331487$export$334c29725a78c21d,
     Client: $b7042f052a98e3f2$export$1f2bb630327ac4b6,
     Criteria: $1aded8984edd6d2b$export$9bcb229a699e7da1,
     Entries: $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb,
@@ -889,6 +1206,10 @@ if (typeof window !== 'undefined') window.streams_api = {
     FetchRequest: $4eff35de4434c113$export$319b96fe59834522,
     Resource: $3d19956470823652$export$39a853cfb5a94a63,
     Streams: $4e671f1a527ffd7a$export$8ee3a38db681f49d,
+    MemoryTokenStorage: $c47ba6c5703879fa$export$3eea21c5b25eb11d,
+    WebStorageTokenStorage: $c47ba6c5703879fa$export$621255c1835a0665,
+    createTokenStorage: $c47ba6c5703879fa$export$b40ecb0ca14d8c82,
+    secureStorageAdapter: $c47ba6c5703879fa$export$ec8b0aa9e541d550,
     AuthorizationMiddleware: $24f116b90a41a6fb$export$6e29424e2d1846ed,
     CriteriaMiddleware: $d3134a7939a75d13$export$b79367ae2b118768,
     ETagMiddleware: $86b82e06a87407d7$export$faa9a44a513b92c4,
@@ -900,5 +1221,5 @@ if (typeof window !== 'undefined') window.streams_api = {
 };
 
 
-export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $f449a45e87a78f07$export$4c5ce066ae8189e1 as OrganizationMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
+export {$49f0b0f113331487$export$334c29725a78c21d as Auth, $b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $c47ba6c5703879fa$export$3eea21c5b25eb11d as MemoryTokenStorage, $c47ba6c5703879fa$export$621255c1835a0665 as WebStorageTokenStorage, $c47ba6c5703879fa$export$b40ecb0ca14d8c82 as createTokenStorage, $c47ba6c5703879fa$export$ec8b0aa9e541d550 as secureStorageAdapter, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $f449a45e87a78f07$export$4c5ce066ae8189e1 as OrganizationMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
 //# sourceMappingURL=module.js.map

@@ -16,10 +16,9 @@ export class FetchRequest extends Request {
         this.data = init.data ?? source.data;
         this.response = null;
         // RequestDataMiddleware and QueryMiddleware rebuild the request.
-        // Keep a per-request organization override or opt-out on the new instance.
-        this.organization = Object.prototype.hasOwnProperty.call(init, 'organization')
-            ? init.organization
-            : (input instanceof FetchRequest ? input.organization : undefined);
+        // Keep per-request auth and organization flags on the new instance.
+        this.organization = carried(init, input, 'organization');
+        this.authorization = carried(init, input, 'authorization');
 
         // Create custom headers
         Object.defineProperty(this, 'headers', {
@@ -64,4 +63,10 @@ export class FetchRequest extends Request {
         Object.defineProperty(this, 'url', { value: url, writable: false });
         return this;
     }
+}
+
+function carried(init, input, key) {
+    if (init && Object.prototype.hasOwnProperty.call(init, key)) return init[key];
+    if (input instanceof FetchRequest) return input[key];
+    return undefined;
 }
