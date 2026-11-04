@@ -1,0 +1,22 @@
+{
+    "name": "Applications",
+    "type": "object",
+    "properties": {
+        "handle": {
+            "title": "Handle",
+            "type": "string"
+        },
+        "match": {
+            "title": "Match",
+            "description": "An array of URL patterns that match this application.",
+            "type": "array",
+            "nullable": true
+        },
+        "config": {
+            "title": "Config",
+            "description": "An array of configuration to be merged into existing app config.",
+            "type": "array",
+            "nullable": true
+        }
+    }
+}

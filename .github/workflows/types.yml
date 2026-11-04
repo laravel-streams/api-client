@@ -1,0 +1,43 @@
+name: TypeScript types
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+
+jobs:
+  types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: sqlite, mbstring
+          coverage: none
+
+      - name: Install schema fixture dependencies
+        working-directory: schemas/fixture
+        run: composer install --no-interaction --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install package dependencies
+        run: npm install
+
+      - name: Regenerate schemas with streams:schema
+        run: npm run types:schema
+
+      - name: Regenerate types and fail on drift
+        run: npm run types:check
+
+      - name: Type-check the declaration files
+        run: npx -p typescript tsc --noEmit -p test/types/tsconfig.json
+
+      - name: Run unit tests
+        run: npm test

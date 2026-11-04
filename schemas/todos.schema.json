@@ -1,0 +1,32 @@
+{
+    "name": "Todos",
+    "type": "object",
+    "required": [
+        "id",
+        "created_at",
+        "description"
+    ],
+    "properties": {
+        "id": {
+            "title": "Id",
+            "default": "94d7b5bb-22f7-418a-8a22-ac033da00449",
+            "format": "uuid",
+            "type": "string"
+        },
+        "created_at": {
+            "title": "Created At",
+            "default": "2026-11-04T01:25:08.093703Z",
+            "format": "date-time",
+            "type": "string"
+        },
+        "description": {
+            "title": "Description",
+            "type": "string"
+        },
+        "completed": {
+            "title": "Completed",
+            "default": false,
+            "type": "boolean"
+        }
+    }
+}

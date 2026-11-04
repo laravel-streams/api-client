@@ -140,6 +140,39 @@ npm run test:watch
 npm run clean
 ```
 
+## TypeScript
+
+This package ships TypeScript declarations (`src/index.d.ts`) alongside the plain-JS runtime. It targets **`streams/api` `^1.0`** (the fixture schemas in [`schemas/`](schemas/) are generated from `streams/api` `1.0.x-dev` via Laravel's `streams:schema` command; see [`schemas/README.md`](schemas/README.md)).
+
+The declarations cover the full public surface — `Client`, `Streams`, `Entries`, `Criteria`, `FetchError` and every exported middleware — and re-export per-stream entry interfaces generated from `streams:schema` JSON:
+
+```typescript
+import { Client, type TodosEntry } from '@laravel-streams/api-client';
+
+const client = new Client({ baseURL: 'https://api.example.com' });
+
+// entries.get('todos') resolves to a list of TodosEntry
+const { data } = await client.entries.get('todos');
+const first: TodosEntry | undefined = data?.data?.[0];
+
+// typed by stream id, so a typo like entries.get('todo') fails to compile
+```
+
+Regenerate and verify:
+
+```bash
+# Regenerate entry types from the committed streams:schema JSON
+npm run types:generate
+
+# Regenerate schemas from the Laravel fixture and rebuild entry types
+npm run types:sync
+
+# CI drift check: regenerate types and exit non-zero on any diff
+npm run types:check
+```
+
+CI ([`.github/workflows/types.yml`](.github/workflows/types.yml)) runs `streams:schema` against the fixture, regenerates the types, and fails a PR if the committed `types/` drift from the schema output.
+
 ## Migration from 2.x
 
 If you're upgrading from version 2.x (TypeScript), see the [Migration Guide](MIGRATION.md) for details on changes and how to upgrade.

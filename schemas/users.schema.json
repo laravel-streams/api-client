@@ -1,0 +1,42 @@
+{
+    "name": "Users",
+    "type": "object",
+    "required": [
+        "id",
+        "name",
+        "email",
+        "password"
+    ],
+    "properties": {
+        "id": {
+            "title": "Id",
+            "default": 1,
+            "type": "integer",
+            "nullable": true
+        },
+        "name": {
+            "title": "Name",
+            "type": "string"
+        },
+        "email": {
+            "title": "Email",
+            "format": "email",
+            "type": "string"
+        },
+        "password": {
+            "title": "Password",
+            "format": "password",
+            "type": "string",
+            "minLength": 8
+        },
+        "email_verified_at": {
+            "title": "Email Verified At",
+            "format": "date-time",
+            "type": "string"
+        },
+        "remember_token": {
+            "title": "Remember Token",
+            "type": "string"
+        }
+    }
+}

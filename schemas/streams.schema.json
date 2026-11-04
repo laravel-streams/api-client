@@ -1,0 +1,134 @@
+{
+    "name": "Streams",
+    "description": "Model definitions for the application.",
+    "externalDocs": {
+        "url": "https://streams.dev/docs/core/streams"
+    },
+    "type": "object",
+    "required": [
+        "id"
+    ],
+    "properties": {
+        "id": {
+            "title": "Id",
+            "type": "string",
+            "pattern": "/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/"
+        },
+        "name": {
+            "title": "Name",
+            "type": "string",
+            "maxLength": 50
+        },
+        "description": {
+            "title": "Description",
+            "type": "string"
+        },
+        "config": {
+            "title": "Config",
+            "type": "object",
+            "properties": {
+                "source": {
+                    "title": "Source",
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "title": "Type",
+                            "description": "The source type for stream data.",
+                            "enum": [
+                                "filebase",
+                                "file",
+                                "database",
+                                "eloquent",
+                                "self"
+                            ],
+                            "type": "string",
+                            "nullable": true
+                        }
+                    }
+                },
+                "schema": {
+                    "title": "Schema",
+                    "description": "The schema generation class to use.",
+                    "type": "string"
+                },
+                "abstract": {
+                    "title": "Abstract",
+                    "description": "The entry abstract class to use.",
+                    "type": "string"
+                },
+                "criteria": {
+                    "title": "Criteria",
+                    "description": "The entry criteria class to use.",
+                    "type": "string"
+                },
+                "factory": {
+                    "title": "Factory",
+                    "description": "The entry factory class to use.",
+                    "type": "string"
+                },
+                "repository": {
+                    "title": "Repository",
+                    "description": "The repository class to use.",
+                    "type": "string"
+                }
+            }
+        },
+        "routes": {
+            "title": "Routes",
+            "type": "array",
+            "items": {
+                "anyOf": {
+                    "view": {
+                        "type": "string"
+                    },
+                    "uses": {
+                        "type": "string"
+                    },
+                    "csrf": {
+                        "type": "boolean"
+                    },
+                    "verb": {
+                        "enum": [
+                            "any",
+                            "get",
+                            "put",
+                            "post",
+                            "patch",
+                            "delete"
+                        ],
+                        "type": "string"
+                    },
+                    "middleware": {
+                        "type": "array"
+                    },
+                    "constraints": {
+                        "type": "array"
+                    }
+                }
+            },
+            "nullable": true
+        },
+        "fields": {
+            "title": "Fields",
+            "type": "array",
+            "items": {
+                "anyOf": {
+                    "handle": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "filebase",
+                            "file",
+                            "database",
+                            "eloquent",
+                            "self"
+                        ],
+                        "type": "string"
+                    }
+                }
+            },
+            "nullable": true
+        }
+    }
+}
