@@ -1,5 +1,6 @@
 tests
 src
+!src/index.d.ts
 node_modules
 vendor
 test
