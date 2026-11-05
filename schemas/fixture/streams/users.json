@@ -1,0 +1,47 @@
+{
+    "id": "users",
+    "config": {
+        "source": {
+            "type": "eloquent",
+            "model": "App\\Models\\User"
+        }
+    },
+    "fields": [
+        {
+            "handle": "id",
+            "type": "integer",
+            "required": true,
+            "unique": true,
+            "config": {
+                "default": "increment"
+            }
+        },
+        {
+            "handle": "name",
+            "type": "string",
+            "required": true
+        },
+        {
+            "handle": "email",
+            "type": "email",
+            "required": true,
+            "unique": true
+        },
+        {
+            "handle": "password",
+            "type": "hash",
+            "required": true,
+            "rules": [
+                "min:8"
+            ]
+        },
+        {
+            "handle": "email_verified_at",
+            "type": "datetime"
+        },
+        {
+            "handle": "remember_token",
+            "type": "string"
+        }
+    ]
+}

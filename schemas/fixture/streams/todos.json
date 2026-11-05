@@ -1,0 +1,53 @@
+{
+    "id": "todos",
+    "config": {
+        "source": {
+            "type": "self"
+        }
+    },
+    "fields": [
+        {
+            "handle": "id",
+            "type": "uuid",
+            "required": true,
+            "unique": true,
+            "config": {
+                "default": true
+            }
+        },
+        {
+            "handle": "created_at",
+            "type": "datetime",
+            "required": true,
+            "config": {
+                "default": "now"
+            }
+        },
+        {
+            "handle": "description",
+            "type": "string",
+            "required": true
+        },
+        {
+            "handle": "completed",
+            "type": "boolean",
+            "config": {
+                "default": false
+            }
+        }
+    ],
+    "data": {
+        "7ce8c8ad-d78b-4301-8827-cddd704fe74f": {
+            "id": "7ce8c8ad-d78b-4301-8827-cddd704fe74f",
+            "created_at": "2025-04-16 17:13:49",
+            "description": "Buy groceries",
+            "completed": false
+        },
+        "670c33a0-89dd-4088-81aa-0e15475f048a": {
+            "id": "670c33a0-89dd-4088-81aa-0e15475f048a",
+            "created_at": "2025-04-16 17:14:35",
+            "description": "Do something cool",
+            "completed": false
+        }
+    }
+}
