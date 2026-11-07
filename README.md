@@ -132,8 +132,26 @@ const page = await client.endpoint('groups.members').get({ params: { group: 1 } 
 
 Calling `client.endpoint(name)` with a name that was never registered throws a
 clear error naming the endpoint. Types for `register`/`endpoint` live in
-`src/index.d.ts`, so `client.endpoint<T>(name)` resolves to the response type
-you register.
+`src/index.d.ts`. `register` binds the endpoint's response type to its name at
+the type level, so when you capture the client it returns, `endpoint(name)`
+resolves to the registered response type without a type argument:
+
+```typescript
+import { Client } from '@laravel-streams/api-client';
+
+interface GroupMembersResponse {
+    data: { id: string; name: string }[];
+}
+
+const typed = new Client({ baseURL: 'https://api.example.com' })
+    .register<'groups.members', GroupMembersResponse>(
+        'groups.members',
+        { method: 'get', uri: '/groups/{group}/members' },
+    );
+
+// response.data is GroupMembersResponse | undefined.
+const response = await typed.endpoint('groups.members').call({ group: 1 });
+```
 
 ## API Reference
 

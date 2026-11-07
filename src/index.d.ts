@@ -126,7 +126,7 @@ export declare class Entries extends Resource {
     ): Promise<ApiResponse<unknown>>;
 }
 
-export declare class Client {
+export declare class Client<TEndpoints extends object = {}> {
     constructor(options?: ClientOptions);
     options: ClientOptions & { baseURL: string; request: RequestConfig };
     middlewares: Middleware[];
@@ -134,8 +134,22 @@ export declare class Client {
     entries: Entries;
     endpoints: Map<string, EndpointDefinition>;
     use(middleware: Middleware): void;
-    register(name: string, definition: EndpointDefinition): this;
-    endpoint<TResponse = unknown>(name: string): Endpoint<TResponse>;
+    /**
+     * Register a named endpoint definition and bind its response type to the
+     * name at the type level. The returned client resolves endpoint(name) to
+     * the registered type, so capture it: pass the response type explicitly
+     * (or let it default to unknown):
+     *
+     *     const typed = new Client().register<'groups.members', GroupMembersResponse>('groups.members', {...});
+     */
+    register<TName extends string, TResponse = unknown>(
+        name: TName,
+        definition: EndpointDefinition<TResponse>,
+    ): Client<Omit<TEndpoints, TName> & Record<TName, TResponse>>;
+    /** Resolve a registered endpoint; the response type bound by register() is inferred. */
+    endpoint<TName extends keyof TEndpoints>(name: TName): Endpoint<TEndpoints[TName]>;
+    /** A name that was never registered is untyped (the runtime throws). */
+    endpoint(name: string): Endpoint<unknown>;
     request(method: string, uri: string, config?: RequestConfig): Promise<ApiResponse>;
     get(uri: string, config?: RequestConfig): Promise<ApiResponse>;
     post(uri: string, config?: RequestConfig): Promise<ApiResponse>;
