@@ -25,6 +25,13 @@ export interface RequestConfig extends RequestInit {
     retryDelay?: number;
     maxRetryDelay?: number;
     idempotencyKey?: string;
+    /**
+     * X-Organization-ID control for OrganizationMiddleware: `false` (or null / '')
+     * omits the header for this request; a string or number overrides the id.
+     */
+    organization?: false | null | string | number;
+    /** Pass `false` to skip the Authorization header for this request. */
+    authorization?: false;
 }
 
 /** A fetch Response with the parsed `.data` attached by ResponseDataMiddleware. */
@@ -50,6 +57,8 @@ export interface ClientOptions {
     middlewares?: Middleware[];
     defaultMiddlewares?: Middleware[];
     request?: RequestConfig;
+    /** Default X-Organization-ID used by OrganizationMiddleware. */
+    organizationId?: string | number;
 }
 
 export declare class Resource {
@@ -205,12 +214,117 @@ export declare class Middleware {
     error?(error: unknown, client: Client): unknown | Promise<unknown>;
 }
 
+export type UnauthorizedHandler = (error: unknown, client: Client) => unknown | Promise<unknown>;
+
+export interface AuthorizationMiddlewareOptions extends MiddlewareOptions {
+    token?: string | null;
+    type?: string;
+    storage?: TokenStorage | null;
+    onUnauthorized?: UnauthorizedHandler | null;
+}
+
 export declare class AuthorizationMiddleware extends Middleware {
-    constructor(options?: MiddlewareOptions & { token?: string; type?: string });
+    constructor(options?: AuthorizationMiddlewareOptions);
     token: string | null;
     type: string;
+    storage: TokenStorage | null;
+    onUnauthorized: UnauthorizedHandler | null;
+    setOnUnauthorized(handler: UnauthorizedHandler | null): this;
+    setToken(token: string | null, type?: string): Promise<this>;
+    clearToken(): Promise<this>;
+    currentToken(): Promise<string | null>;
+    request(request: FetchRequest): Promise<FetchRequest>;
+    error(error: unknown, client: Client): Promise<unknown>;
+}
+
+export interface OrganizationMiddlewareOptions extends MiddlewareOptions {
+    organizationId?: string | number | null;
+}
+
+export declare class OrganizationMiddleware extends Middleware {
+    static headerName: string;
+    constructor(options?: OrganizationMiddlewareOptions);
+    organizationId: string | number | null;
+    setOrganization(organizationId: string | number | null | undefined): this;
     request(request: FetchRequest, client: Client): Promise<FetchRequest>;
-    setToken(token: string, type?: string): this;
+    resolveOrganizationId(request: FetchRequest, client: Client): string | null;
+}
+
+export interface TokenStorage {
+    get(): Promise<string | null> | string | null;
+    set(token: string): Promise<void> | void;
+    clear(): Promise<void> | void;
+}
+
+export declare class MemoryTokenStorage implements TokenStorage {
+    constructor(token?: string | null);
+    token: string | null;
+    get(): Promise<string | null>;
+    set(token: string | null | undefined): Promise<void>;
+    clear(): Promise<void>;
+}
+
+export interface WebStorageLike {
+    getItem(key: string): string | null;
+    setItem(key: string, value: string): void;
+    removeItem(key: string): void;
+}
+
+export declare class WebStorageTokenStorage implements TokenStorage {
+    constructor(storage: WebStorageLike, key?: string);
+    storage: WebStorageLike;
+    key: string;
+    get(): Promise<string | null>;
+    set(token: string | null | undefined): Promise<void>;
+    clear(): Promise<void>;
+}
+
+export interface SecureStoragePlugin {
+    get(options: { key: string }): Promise<string | { value?: string } | null | undefined>;
+    set(options: { key: string; value: string }): Promise<unknown>;
+    remove(options: { key: string }): Promise<unknown>;
+}
+
+export declare function secureStorageAdapter(plugin: SecureStoragePlugin, key?: string): TokenStorage;
+
+export declare function createTokenStorage(
+    source?: TokenStorage | WebStorageLike | SecureStoragePlugin | null,
+    options?: { token?: string | null; key?: string },
+): TokenStorage;
+
+export interface AuthPaths {
+    login: string;
+    logout: string;
+    revokeAll: string;
+    me: string;
+    organizations: string;
+    magicLink: string;
+    consume: string;
+}
+
+export interface AuthOptions {
+    authorization?: AuthorizationMiddleware | null;
+    paths?: Partial<AuthPaths>;
+    deviceName?: string;
+}
+
+export declare class Auth {
+    static defaultPaths: AuthPaths;
+    constructor(client: Client, options?: AuthOptions);
+    client: Client;
+    authorization: AuthorizationMiddleware | null;
+    paths: AuthPaths;
+    deviceName: string;
+    login(input: { email: string; password: string; deviceName?: string }): Promise<ApiResponse>;
+    requestMagicLink(input: { email: string }): Promise<ApiResponse>;
+    claim(input: { email: string }): Promise<ApiResponse>;
+    consumeMagicLink(input: { token: string }): Promise<ApiResponse>;
+    activate(input: { token: string }): Promise<ApiResponse>;
+    logout(): Promise<ApiResponse>;
+    revokeAll(): Promise<ApiResponse>;
+    me(config?: RequestConfig): Promise<ApiResponse>;
+    organizations(): Promise<ApiResponse>;
+    storeSession(response: ApiResponse): Promise<string | null>;
 }
 
 export declare class CriteriaMiddleware extends Middleware {

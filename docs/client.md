@@ -97,17 +97,24 @@ const client = new Client({
 You can add middleware after client creation:
 
 ```javascript
+import { Client, AuthorizationMiddleware, createTokenStorage } from '@laravel-streams/api-client';
+
 const client = new Client({
     baseURL: 'http://localhost/api'
 });
 
-// Add authentication later
-const auth = new AuthorizationMiddleware({
-    token: getUserToken()
+// Add authentication later. In Node, pass a memory or secure-storage adapter.
+const authorization = new AuthorizationMiddleware({
+    storage: createTokenStorage(globalThis.localStorage)
+});
+authorization.setOnUnauthorized((error, client) => {
+    // Expired session. The request still rejects with this error.
 });
 
-client.use(auth);
+client.use(authorization);
 ```
+
+`Auth` wraps the identity routes on that client. `claim({ email })` requests a magic link. `activate({ token })` exchanges the link token and stores the session. `login({ email, password })` is the password fallback. See [Middleware](/docs/client/middleware).
 
 ## Environment-Based Configuration
 
