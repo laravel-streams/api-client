@@ -4,6 +4,7 @@
 import {
     Client,
     Criteria,
+    Endpoint,
     Entries,
     Streams,
     FetchError,
@@ -19,6 +20,8 @@ import {
     type StreamId,
     type TodosEntry,
     type UsersEntry,
+    type EndpointDefinition,
+    type Method,
 } from '@laravel-streams/api-client';
 
 const client = new Client({
@@ -79,6 +82,49 @@ const criteria = new Criteria()
     .paginate(25, 1);
 
 const compiled: string = criteria.compile();
+
+// --- Custom endpoint registry (task 215) ---
+
+interface GroupMember {
+    id: string;
+    name: string;
+    role: string;
+}
+
+interface GroupMembersResponse {
+    data: GroupMember[];
+}
+
+// register accepts a named definition with an HTTP method and URI template.
+client.register('groups.members', { method: 'get', uri: '/groups/{group}/members' });
+client.register('group.member', { method: 'get', uri: '/groups/{group}/members/{member}' });
+client.register('group.member.notes', { method: 'post', uri: '/groups/{group}/members/{member}/notes' });
+
+// The registered definition is a typed EndpointDefinition.
+const definition: EndpointDefinition = { method: 'get', uri: '/groups/{group}/members' };
+client.register('typed.definition', definition);
+
+const method: Method = 'get';
+
+// endpoint resolves to the registered response type.
+const groupMembers: Endpoint<GroupMembersResponse> = client.endpoint('groups.members');
+const membersResponse = await groupMembers.call({ group: '1' }, { query: { page: 1 } });
+const members: GroupMembersResponse | undefined = membersResponse.data;
+const memberRows: GroupMember[] | undefined = membersResponse.data?.data;
+
+// Verb methods return the same registered response type.
+const memberResponse = await groupMembers.get({ group: '1' });
+const memberList: GroupMembersResponse | undefined = memberResponse.data;
+
+const member: Endpoint<GroupMember> = client.endpoint<GroupMember>('group.member');
+const found = await member.call({ group: '1', member: 'a1' });
+const foundMember: GroupMember | undefined = found.data;
+
+const notes: Endpoint<{ id: string; body: string }> = client.endpoint('group.member.notes');
+const created = await notes.post({ group: '1', member: 'a1' }, { data: { body: 'Hello' } });
+const createdNote: { id: string; body: string } | undefined = created.data;
+
+void [method, members, memberRows, memberList, foundMember, createdNote, groupMembers, member, notes];
 
 async function catchValidation(): Promise<void> {
     try {

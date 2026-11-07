@@ -57,6 +57,32 @@ export declare class Resource {
     client: Client;
 }
 
+export type Method = 'get' | 'post' | 'patch' | 'put' | 'delete';
+
+export interface EndpointDefinition<TResponse = unknown> {
+    method: Method;
+    /** URI template with {param} placeholders substituted from path params. */
+    uri: string;
+    responseType?: ResponseType;
+}
+
+/**
+ * Callable resource bound to a registered endpoint. Calls go through
+ * Client.request with {param} placeholders in the URI substituted.
+ */
+export declare class Endpoint<TResponse = unknown> extends Resource {
+    name: string;
+    method: Method;
+    uri: string;
+    responseType?: ResponseType;
+    call(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    get(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    post(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    patch(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    put(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    delete(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+}
+
 export declare class Streams extends Resource {
     get(config?: RequestConfig): Promise<ApiResponse>;
     find(stream: string, config?: RequestConfig): Promise<ApiResponse>;
@@ -106,7 +132,10 @@ export declare class Client {
     middlewares: Middleware[];
     streams: Streams;
     entries: Entries;
+    endpoints: Map<string, EndpointDefinition>;
     use(middleware: Middleware): void;
+    register(name: string, definition: EndpointDefinition): this;
+    endpoint<TResponse = unknown>(name: string): Endpoint<TResponse>;
     request(method: string, uri: string, config?: RequestConfig): Promise<ApiResponse>;
     get(uri: string, config?: RequestConfig): Promise<ApiResponse>;
     post(uri: string, config?: RequestConfig): Promise<ApiResponse>;
