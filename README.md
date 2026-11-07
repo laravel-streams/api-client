@@ -100,6 +100,59 @@ const client = new Client({
 });
 ```
 
+## Custom Endpoint Registry
+
+Beside `streams` and `entries`, the client can register named endpoints and
+resolve them into callable resources. `register(name, { method, uri })` stores
+a definition whose URI template accepts `{param}` path placeholders, and
+`endpoint(name)` returns a resource that routes calls through
+`Client.request` with those placeholders substituted — so the middleware stack
+and request policy (retry, abort, timeout) apply exactly like any other call.
+
+```javascript
+const client = new Client({ baseURL: 'https://api.example.com' });
+
+client.register('groups.members', { method: 'get', uri: '/groups/{group}/members' });
+client.register('group.member.notes', { method: 'post', uri: '/groups/{group}/members/{member}/notes' });
+
+// Resolve the registered endpoint and call it with path params.
+const members = await client.endpoint('groups.members').call({ group: 1 });
+// GET /groups/1/members
+
+// Verb methods work too; query/data config passes straight through.
+const notes = await client.endpoint('group.member.notes').post(
+    { group: 1, member: 42 },
+    { data: { body: 'Hello' } },
+);
+// POST /groups/1/members/42/notes
+
+// Path params can also come from config.params.
+const page = await client.endpoint('groups.members').get({ params: { group: 1 } });
+```
+
+Calling `client.endpoint(name)` with a name that was never registered throws a
+clear error naming the endpoint. Types for `register`/`endpoint` live in
+`src/index.d.ts`. `register` binds the endpoint's response type to its name at
+the type level, so when you capture the client it returns, `endpoint(name)`
+resolves to the registered response type without a type argument:
+
+```typescript
+import { Client } from '@laravel-streams/api-client';
+
+interface GroupMembersResponse {
+    data: { id: string; name: string }[];
+}
+
+const typed = new Client({ baseURL: 'https://api.example.com' })
+    .register<'groups.members', GroupMembersResponse>(
+        'groups.members',
+        { method: 'get', uri: '/groups/{group}/members' },
+    );
+
+// response.data is GroupMembersResponse | undefined.
+const response = await typed.endpoint('groups.members').call({ group: 1 });
+```
+
 ## API Reference
 
 ### Client
@@ -111,6 +164,8 @@ const client = new Client({
 - `client.entries.post(stream, data)` - Create an entry
 - `client.entries.patch(stream, id, data)` - Update an entry
 - `client.entries.delete(stream, id)` - Delete an entry
+- `client.register(name, { method, uri })` - Register a named endpoint
+- `client.endpoint(name)` - Resolve a registered endpoint into a callable resource
 
 ### Criteria
 

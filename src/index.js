@@ -1,5 +1,6 @@
 import { Client } from './Client.js';
 import { Criteria } from './Criteria.js';
+import { Endpoint } from './Endpoint.js';
 import { Entries } from './Entries.js';
 import { FetchError } from './FetchError.js';
 import { FetchHeaders } from './FetchHeaders.js';
@@ -20,6 +21,7 @@ import {
 export {
     Client,
     Criteria,
+    Endpoint,
     Entries,
     FetchError,
     FetchHeaders,
@@ -40,6 +42,7 @@ if (typeof window !== 'undefined') {
     window.streams_api = {
         Client,
         Criteria,
+        Endpoint,
         Entries,
         FetchError,
         FetchHeaders,

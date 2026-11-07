@@ -57,6 +57,32 @@ export declare class Resource {
     client: Client;
 }
 
+export type Method = 'get' | 'post' | 'patch' | 'put' | 'delete';
+
+export interface EndpointDefinition<TResponse = unknown> {
+    method: Method;
+    /** URI template with {param} placeholders substituted from path params. */
+    uri: string;
+    responseType?: ResponseType;
+}
+
+/**
+ * Callable resource bound to a registered endpoint. Calls go through
+ * Client.request with {param} placeholders in the URI substituted.
+ */
+export declare class Endpoint<TResponse = unknown> extends Resource {
+    name: string;
+    method: Method;
+    uri: string;
+    responseType?: ResponseType;
+    call(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    get(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    post(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    patch(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    put(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+    delete(params?: Record<string, unknown>, config?: RequestConfig): Promise<ApiResponse<TResponse>>;
+}
+
 export declare class Streams extends Resource {
     get(config?: RequestConfig): Promise<ApiResponse>;
     find(stream: string, config?: RequestConfig): Promise<ApiResponse>;
@@ -100,13 +126,30 @@ export declare class Entries extends Resource {
     ): Promise<ApiResponse<unknown>>;
 }
 
-export declare class Client {
+export declare class Client<TEndpoints extends object = {}> {
     constructor(options?: ClientOptions);
     options: ClientOptions & { baseURL: string; request: RequestConfig };
     middlewares: Middleware[];
     streams: Streams;
     entries: Entries;
+    endpoints: Map<string, EndpointDefinition>;
     use(middleware: Middleware): void;
+    /**
+     * Register a named endpoint definition and bind its response type to the
+     * name at the type level. The returned client resolves endpoint(name) to
+     * the registered type, so capture it: pass the response type explicitly
+     * (or let it default to unknown):
+     *
+     *     const typed = new Client().register<'groups.members', GroupMembersResponse>('groups.members', {...});
+     */
+    register<TName extends string, TResponse = unknown>(
+        name: TName,
+        definition: EndpointDefinition<TResponse>,
+    ): Client<Omit<TEndpoints, TName> & Record<TName, TResponse>>;
+    /** Resolve a registered endpoint; the response type bound by register() is inferred. */
+    endpoint<TName extends keyof TEndpoints>(name: TName): Endpoint<TEndpoints[TName]>;
+    /** A name that was never registered is untyped (the runtime throws). */
+    endpoint(name: string): Endpoint<unknown>;
     request(method: string, uri: string, config?: RequestConfig): Promise<ApiResponse>;
     get(uri: string, config?: RequestConfig): Promise<ApiResponse>;
     post(uri: string, config?: RequestConfig): Promise<ApiResponse>;

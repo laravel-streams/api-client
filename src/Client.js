@@ -1,6 +1,7 @@
 import { mergeObjects, Str } from './utils.js';
 import { Streams } from './Streams.js';
 import { Entries } from './Entries.js';
+import { Endpoint } from './Endpoint.js';
 import { FetchRequest } from './FetchRequest.js';
 import { FetchError } from './FetchError.js';
 import { requestPolicy, requestScope, canRetry, retryDelay, withSignal, backoff } from './RequestPolicy.js';
@@ -43,6 +44,7 @@ export class Client {
         this.middlewares = defaultMiddlewares.concat(middlewares);
         this.streams = new Streams(this);
         this.entries = new Entries(this);
+        this.endpoints = new Map();
     }
 
     /**
@@ -50,6 +52,43 @@ export class Client {
      */
     use(middleware) {
         this.middlewares.push(middleware);
+    }
+
+    /**
+     * Register a named endpoint definition.
+     *
+     * @param {string} name - Endpoint name, e.g. "groups.members".
+     * @param {{ method: string, uri: string }} definition - HTTP method and URI template.
+     * @returns {this}
+     */
+    register(name, definition) {
+        if (typeof name !== 'string' || name.length === 0) {
+            throw new Error('Endpoint name must be a non-empty string.');
+        }
+        if (!definition || typeof definition !== 'object') {
+            throw new Error(`Endpoint "${name}" definition must be an object with a method and uri.`);
+        }
+        if (typeof definition.method !== 'string' || typeof definition.uri !== 'string') {
+            throw new Error(`Endpoint "${name}" requires a method and a uri string.`);
+        }
+        this.endpoints.set(name, { name, ...definition });
+        return this;
+    }
+
+    /**
+     * Resolve a registered endpoint into a callable resource.
+     *
+     * @param {string} name - Endpoint name previously passed to register().
+     * @returns {Endpoint}
+     */
+    endpoint(name) {
+        const definition = this.endpoints.get(name);
+        if (!definition) {
+            throw new Error(
+                `Endpoint "${name}" is not registered. Call client.register("${name}", { method, uri }) first.`
+            );
+        }
+        return new Endpoint(this, definition);
     }
 
     /**

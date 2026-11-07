@@ -165,6 +165,64 @@ class $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb extends (0, $3d19956470823652$ex
 
 
 
+/**
+ * HTTP verbs an endpoint resource can issue.
+ */ const $d31d467627957238$var$VERBS = [
+    'get',
+    'post',
+    'patch',
+    'put',
+    'delete'
+];
+/**
+ * Substitute {param} placeholders in a URI template with the given values.
+ *
+ * @param {string} uri - URI template containing {param} placeholders.
+ * @param {string} name - Endpoint name, used in error messages.
+ * @param {Record<string, unknown>} params - Values to substitute.
+ * @returns {string} The resolved URI.
+ * @throws {Error} When a placeholder has no matching path parameter.
+ */ function $d31d467627957238$var$substitute(uri, name, params) {
+    return uri.replace(/\{([^}]+)\}/g, (match, key)=>{
+        const value = params[key];
+        if (value === undefined || value === null) throw new Error(`Missing path parameter "${key}" for endpoint "${name}". ` + `Pass it as { ${key}: value } or via config.params.`);
+        return encodeURIComponent(value);
+    });
+}
+class $d31d467627957238$export$ca3bb03eef24f110 extends (0, $3d19956470823652$export$39a853cfb5a94a63) {
+    constructor(client, definition){
+        super(client);
+        this.name = definition.name;
+        this.method = String(definition.method).toLowerCase();
+        this.uri = definition.uri;
+        this.responseType = definition.responseType;
+    }
+    /**
+     * Make the request using the endpoint's registered HTTP method.
+     *
+     * @param {Record<string, unknown>} [params] - Path parameters to substitute.
+     * @param {object} [config] - Request config (data, query, signal, retries, ...).
+     */ async call(params = {}, config = {}) {
+        return this._request(this.method, params, config);
+    }
+    /**
+     * Issue a request against the endpoint URI with path params substituted.
+     */ _request(method, params = {}, config = {}) {
+        const uri = $d31d467627957238$var$substitute(this.uri, this.name, {
+            ...config.params || {},
+            ...params
+        });
+        const { params: _unused, ...rest } = config;
+        return this.client.request(method, uri, rest);
+    }
+}
+// Expose each HTTP verb as a convenience method on the endpoint resource.
+for (const verb of $d31d467627957238$var$VERBS)$d31d467627957238$export$ca3bb03eef24f110.prototype[verb] = function(params = {}, config = {}) {
+    return this._request(verb, params, config);
+};
+
+
+
 class $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c extends Headers {
     constructor(init){
         super(init && init instanceof $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c ? init.toObject() : init);
@@ -566,11 +624,38 @@ class $b7042f052a98e3f2$export$1f2bb630327ac4b6 {
         this.middlewares = defaultMiddlewares.concat(middlewares);
         this.streams = new (0, $4e671f1a527ffd7a$export$8ee3a38db681f49d)(this);
         this.entries = new (0, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb)(this);
+        this.endpoints = new Map();
     }
     /**
      * Add a middleware to the client
      */ use(middleware) {
         this.middlewares.push(middleware);
+    }
+    /**
+     * Register a named endpoint definition.
+     *
+     * @param {string} name - Endpoint name, e.g. "groups.members".
+     * @param {{ method: string, uri: string }} definition - HTTP method and URI template.
+     * @returns {this}
+     */ register(name, definition) {
+        if (typeof name !== 'string' || name.length === 0) throw new Error('Endpoint name must be a non-empty string.');
+        if (!definition || typeof definition !== 'object') throw new Error(`Endpoint "${name}" definition must be an object with a method and uri.`);
+        if (typeof definition.method !== 'string' || typeof definition.uri !== 'string') throw new Error(`Endpoint "${name}" requires a method and a uri string.`);
+        this.endpoints.set(name, {
+            name: name,
+            ...definition
+        });
+        return this;
+    }
+    /**
+     * Resolve a registered endpoint into a callable resource.
+     *
+     * @param {string} name - Endpoint name previously passed to register().
+     * @returns {Endpoint}
+     */ endpoint(name) {
+        const definition = this.endpoints.get(name);
+        if (!definition) throw new Error(`Endpoint "${name}" is not registered. Call client.register("${name}", { method, uri }) first.`);
+        return new (0, $d31d467627957238$export$ca3bb03eef24f110)(this, definition);
     }
     /**
      * Make an HTTP request
@@ -823,10 +908,12 @@ class $1aded8984edd6d2b$export$9bcb229a699e7da1 {
 
 
 
+
 // Make available globally if in browser
 if (typeof window !== 'undefined') window.streams_api = {
     Client: $b7042f052a98e3f2$export$1f2bb630327ac4b6,
     Criteria: $1aded8984edd6d2b$export$9bcb229a699e7da1,
+    Endpoint: $d31d467627957238$export$ca3bb03eef24f110,
     Entries: $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb,
     FetchError: $827b4d16e4856d30$export$26e841bcf1aeb894,
     FetchHeaders: $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c,
@@ -843,5 +930,5 @@ if (typeof window !== 'undefined') window.streams_api = {
 };
 
 
-export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
+export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $d31d467627957238$export$ca3bb03eef24f110 as Endpoint, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
 //# sourceMappingURL=module.js.map
