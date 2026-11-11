@@ -16,6 +16,7 @@ import {
     QueryMiddleware,
     RequestDataMiddleware,
     ResponseDataMiddleware,
+    CsrfMiddleware,
 } from './middleware/index.js';
 
 export {
@@ -35,6 +36,7 @@ export {
     QueryMiddleware,
     RequestDataMiddleware,
     ResponseDataMiddleware,
+    CsrfMiddleware,
 };
 
 // Make available globally if in browser
@@ -56,5 +58,6 @@ if (typeof window !== 'undefined') {
         QueryMiddleware,
         RequestDataMiddleware,
         ResponseDataMiddleware,
+        CsrfMiddleware,
     };
 }

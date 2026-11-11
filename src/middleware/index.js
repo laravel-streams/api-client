@@ -5,3 +5,4 @@ export { ETagMiddleware } from './ETagMiddleware.js';
 export { QueryMiddleware } from './QueryMiddleware.js';
 export { RequestDataMiddleware } from './RequestDataMiddleware.js';
 export { ResponseDataMiddleware } from './ResponseDataMiddleware.js';
+export { CsrfMiddleware } from './CsrfMiddleware.js';

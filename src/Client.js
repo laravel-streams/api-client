@@ -32,7 +32,7 @@ export class Client {
         this.options = {
             baseURL: '',
             request: {
-                mode: 'cors',
+                mode: 'same-origin',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
