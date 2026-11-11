@@ -10,7 +10,8 @@ export class RequestDataMiddleware extends Middleware {
     async request(request, client) {
         if (request.data) {
             request = new FetchRequest(request, {
-                body: JSON.stringify(request.data)
+                body: JSON.stringify(request.data),
+                headers: request.headers.contentType('application/json'),
             });
         }
         return request;

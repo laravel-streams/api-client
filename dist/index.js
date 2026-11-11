@@ -316,9 +316,14 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
         };
         // Add body if present
         if (this.body) {
-            // Keep the prepared body readable for a subsequent retry.
-            options.body = this.clone().body;
-            options.duplex = 'half';
+            // Re-serialize from data when possible so retries work without
+            // reusing a consumed ReadableStream (clone().body fails in browsers).
+            if (this.data !== undefined) options.body = JSON.stringify(this.data);
+            else if (typeof this.body === 'string') options.body = this.body;
+            else {
+                options.body = this.clone().body;
+                options.duplex = 'half';
+            }
         }
         const response = await fetch(this.url, options);
         this.response = response;
@@ -595,7 +600,8 @@ class $db0116cc62677c9f$export$81bc91ba859dba8e extends (0, $39d6e140d9c03804$ex
     static defaultOptions = {};
     async request(request, client) {
         if (request.data) request = new (0, $1db99460b351f96f$export$319b96fe59834522)(request, {
-            body: JSON.stringify(request.data)
+            body: JSON.stringify(request.data),
+            headers: request.headers.contentType('application/json')
         });
         return request;
     }
@@ -623,20 +629,26 @@ class $b89011fee03e840d$export$93f62bdc0330ea5e extends (0, $39d6e140d9c03804$ex
     async request(request) {
         const method = (request.method || 'GET').toUpperCase();
         if (method === 'GET' || method === 'HEAD') return request;
-        const token = this.token();
-        if (token) request.headers.set('X-XSRF-TOKEN', token);
+        const meta = this.metaToken();
+        if (meta) {
+            request.headers.set('X-CSRF-TOKEN', meta);
+            return request;
+        }
+        const cookie = this.cookieToken();
+        if (cookie) request.headers.set('X-XSRF-TOKEN', cookie);
         return request;
     }
-    token() {
-        if (typeof document !== 'undefined') {
-            const meta = document.querySelector('meta[name="csrf-token"]');
-            if (meta && meta.content) return meta.content;
-        }
-        if (typeof document !== 'undefined' && document.cookie) {
-            const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
-            if (match) return decodeURIComponent(match[1]);
-        }
+    metaToken() {
+        if (typeof document === 'undefined') return null;
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta?.content) return meta.content;
         return null;
+    }
+    cookieToken() {
+        if (typeof document === 'undefined' || !document.cookie) return null;
+        const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+        if (!match) return null;
+        return decodeURIComponent(match[1]);
     }
 }
 
@@ -705,6 +717,7 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
     /**
      * Make an HTTP request
      */ async request(method, uri, config = {}) {
+        method = method.toUpperCase();
         const url = (0, $4559ecf940edc78d$export$ed61451db706e904).ensureRight(this.options.baseURL, '/') + (0, $4559ecf940edc78d$export$ed61451db706e904).stripLeft(uri, '/');
         const headers = new Headers(this.options.request.headers);
         new Headers(config.headers).forEach((value, key)=>headers.set(key, value));

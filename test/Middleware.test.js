@@ -7,10 +7,12 @@ import {
     Middleware,
     AuthorizationMiddleware,
     CriteriaMiddleware,
+    CsrfMiddleware,
     QueryMiddleware,
     RequestDataMiddleware,
     ResponseDataMiddleware
 } from '../src/index.js';
+import { FetchRequest } from '../src/index.js';
 import { Client } from '../src/index.js';
 import { Criteria } from '../src/index.js';
 import assert from 'assert';
@@ -84,6 +86,56 @@ describe('Middleware', () => {
         it('should have response method', () => {
             const middleware = new ResponseDataMiddleware();
             assert.strictEqual(typeof middleware.response, 'function');
+        });
+    });
+
+    describe('CsrfMiddleware', () => {
+        it('should set X-CSRF-TOKEN from meta on mutating requests', async () => {
+            const middleware = new CsrfMiddleware();
+            const request = new FetchRequest('https://example.test/api', { method: 'POST' });
+
+            globalThis.document = {
+                querySelector: () => ({ content: 'plain-token' }),
+                cookie: '',
+            };
+
+            const next = await middleware.request(request);
+            assert.strictEqual(next.headers.get('X-CSRF-TOKEN'), 'plain-token');
+            assert.strictEqual(next.headers.get('X-XSRF-TOKEN'), null);
+
+            delete globalThis.document;
+        });
+
+        it('should set X-XSRF-TOKEN from cookie when meta is absent', async () => {
+            const middleware = new CsrfMiddleware();
+            const request = new FetchRequest('https://example.test/api', { method: 'PATCH' });
+
+            globalThis.document = {
+                querySelector: () => null,
+                cookie: 'XSRF-TOKEN=encrypted%3Dvalue',
+            };
+
+            const next = await middleware.request(request);
+            assert.strictEqual(next.headers.get('X-XSRF-TOKEN'), 'encrypted=value');
+            assert.strictEqual(next.headers.get('X-CSRF-TOKEN'), null);
+
+            delete globalThis.document;
+        });
+
+        it('should not attach headers on GET requests', async () => {
+            const middleware = new CsrfMiddleware();
+            const request = new FetchRequest('https://example.test/api', { method: 'GET' });
+
+            globalThis.document = {
+                querySelector: () => ({ content: 'plain-token' }),
+                cookie: '',
+            };
+
+            const next = await middleware.request(request);
+            assert.strictEqual(next.headers.get('X-CSRF-TOKEN'), null);
+            assert.strictEqual(next.headers.get('X-XSRF-TOKEN'), null);
+
+            delete globalThis.document;
         });
     });
 

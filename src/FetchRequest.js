@@ -43,9 +43,16 @@ export class FetchRequest extends Request {
         
         // Add body if present
         if (this.body) {
-            // Keep the prepared body readable for a subsequent retry.
-            options.body = this.clone().body;
-            options.duplex = 'half';
+            // Re-serialize from data when possible so retries work without
+            // reusing a consumed ReadableStream (clone().body fails in browsers).
+            if (this.data !== undefined) {
+                options.body = JSON.stringify(this.data);
+            } else if (typeof this.body === 'string') {
+                options.body = this.body;
+            } else {
+                options.body = this.clone().body;
+                options.duplex = 'half';
+            }
         }
         
         const response = await fetch(this.url, options);

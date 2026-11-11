@@ -95,6 +95,7 @@ export class Client {
      * Make an HTTP request
      */
     async request(method, uri, config = {}) {
+        method = method.toUpperCase();
         const url = Str.ensureRight(this.options.baseURL, '/') + Str.stripLeft(uri, '/');
         const headers = new Headers(this.options.request.headers);
         new Headers(config.headers).forEach((value, key) => headers.set(key, value));
