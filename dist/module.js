@@ -61,7 +61,7 @@ const $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a = (item)=>{
 /**
  * Check if object is mergeable
  */ const $f3ad94c9f84f4d57$var$isMergeableObject = (item)=>{
-    return $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a(item) && !Array.isArray(item);
+    return $f3ad94c9f84f4d57$export$a6cdc56e425d0d0a(item) && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null);
 };
 function $f3ad94c9f84f4d57$export$f81ea438226eca0a(obj = {}) {
     const map = new class extends Map {
@@ -263,21 +263,23 @@ class $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c extends Headers {
 class $4eff35de4434c113$export$319b96fe59834522 extends Request {
     constructor(input, init = {}){
         super(input, init);
-        this.responseType = init.responseType || 'json';
-        this.query = (0, $f3ad94c9f84f4d57$export$f81ea438226eca0a)(init.query || {});
-        this.criteria = init.criteria;
-        this.data = init.data;
+        const source = input instanceof $4eff35de4434c113$export$319b96fe59834522 ? input : {};
+        this.responseType = init.responseType ?? source.responseType ?? 'json';
+        const query = init.query ?? source.query ?? {};
+        this.query = (0, $f3ad94c9f84f4d57$export$f81ea438226eca0a)(query instanceof Map ? Object.fromEntries(query) : query);
+        this.criteria = init.criteria ?? source.criteria;
+        this.data = init.data ?? source.data;
         this.response = null;
         // Create custom headers
         Object.defineProperty(this, 'headers', {
-            value: new (0, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c)(init.headers),
+            value: new (0, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c)(init.headers ?? (input instanceof Request ? input.headers : undefined)),
             writable: false
         });
     }
     isResponseType(responseType) {
         return this.responseType === responseType;
     }
-    async fetch() {
+    async fetch(signal = this.signal) {
         // Build fetch options from this request
         const options = {
             method: this.method,
@@ -287,10 +289,15 @@ class $4eff35de4434c113$export$319b96fe59834522 extends Request {
             cache: this.cache,
             redirect: this.redirect,
             referrer: this.referrer,
-            integrity: this.integrity
+            integrity: this.integrity,
+            signal: signal
         };
         // Add body if present
-        if (this.body) options.body = this.body;
+        if (this.body) {
+            // Keep the prepared body readable for a subsequent retry.
+            options.body = this.clone().body;
+            options.duplex = 'half';
+        }
         const response = await fetch(this.url, options);
         this.response = response;
         response.request = this;
@@ -311,10 +318,25 @@ class $4eff35de4434c113$export$319b96fe59834522 extends Request {
  */ class $827b4d16e4856d30$export$26e841bcf1aeb894 extends Error {
     constructor(request){
         super(`HTTP ${request.response.status} error:\n ${request.response.statusText}`);
+        this.name = 'FetchError';
         this.request = request;
         this.status = request.response.status;
         this.statusText = request.response.statusText;
         this.url = request.response.url;
+        this.errors = {};
+    }
+    async mapValidationErrors() {
+        if (this.status !== 422) return this;
+        try {
+            // Preserve the original body for error middleware and callers.
+            const data = await this.response.clone().json();
+            this.data = data;
+            if (typeof data?.message === 'string') this.message = data.message;
+            if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) this.errors = data.errors;
+        } catch  {
+        // Non-JSON validation responses remain ordinary HTTP errors.
+        }
+        return this;
     }
     get response() {
         return this.request.response;
@@ -570,6 +592,29 @@ class $a0b7011eda0626b0$export$60dea4b97ea2ef30 extends (0, $b66054862766a59c$ex
         else if (request.isResponseType('stream')) response.data = await response.body;
         else if (request.isResponseType('text')) response.data = await response.text();
         return response;
+    }
+}
+
+
+
+class $5c73de9e082a5eca$export$93f62bdc0330ea5e extends (0, $b66054862766a59c$export$7dc23e3ab61f5f49) {
+    async request(request) {
+        const method = (request.method || 'GET').toUpperCase();
+        if (method === 'GET' || method === 'HEAD') return request;
+        const token = this.token();
+        if (token) request.headers.set('X-XSRF-TOKEN', token);
+        return request;
+    }
+    token() {
+        if (typeof document !== 'undefined') {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta && meta.content) return meta.content;
+        }
+        if (typeof document !== 'undefined' && document.cookie) {
+            const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+            if (match) return decodeURIComponent(match[1]);
+        }
+        return null;
     }
 }
 
@@ -886,10 +931,12 @@ class $1aded8984edd6d2b$export$9bcb229a699e7da1 {
 
 
 
+
 // Make available globally if in browser
 if (typeof window !== 'undefined') window.streams_api = {
     Client: $b7042f052a98e3f2$export$1f2bb630327ac4b6,
     Criteria: $1aded8984edd6d2b$export$9bcb229a699e7da1,
+    Endpoint: $d31d467627957238$export$ca3bb03eef24f110,
     Entries: $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb,
     FetchError: $827b4d16e4856d30$export$26e841bcf1aeb894,
     FetchHeaders: $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c,
@@ -902,9 +949,10 @@ if (typeof window !== 'undefined') window.streams_api = {
     Middleware: $b66054862766a59c$export$7dc23e3ab61f5f49,
     QueryMiddleware: $d889f0a51d8c2aa1$export$a74cfeef44e69e22,
     RequestDataMiddleware: $b41a23ef233577d1$export$81bc91ba859dba8e,
-    ResponseDataMiddleware: $a0b7011eda0626b0$export$60dea4b97ea2ef30
+    ResponseDataMiddleware: $a0b7011eda0626b0$export$60dea4b97ea2ef30,
+    CsrfMiddleware: $5c73de9e082a5eca$export$93f62bdc0330ea5e
 };
 
 
-export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware};
+export {$b7042f052a98e3f2$export$1f2bb630327ac4b6 as Client, $1aded8984edd6d2b$export$9bcb229a699e7da1 as Criteria, $d31d467627957238$export$ca3bb03eef24f110 as Endpoint, $dfa8fc46f40c0bbf$export$be81f2ab9a4121eb as Entries, $827b4d16e4856d30$export$26e841bcf1aeb894 as FetchError, $c0e96e2b2fbcb8a5$export$b0074bfbbf5cfe5c as FetchHeaders, $4eff35de4434c113$export$319b96fe59834522 as FetchRequest, $3d19956470823652$export$39a853cfb5a94a63 as Resource, $4e671f1a527ffd7a$export$8ee3a38db681f49d as Streams, $24f116b90a41a6fb$export$6e29424e2d1846ed as AuthorizationMiddleware, $d3134a7939a75d13$export$b79367ae2b118768 as CriteriaMiddleware, $86b82e06a87407d7$export$faa9a44a513b92c4 as ETagMiddleware, $b66054862766a59c$export$7dc23e3ab61f5f49 as Middleware, $d889f0a51d8c2aa1$export$a74cfeef44e69e22 as QueryMiddleware, $b41a23ef233577d1$export$81bc91ba859dba8e as RequestDataMiddleware, $a0b7011eda0626b0$export$60dea4b97ea2ef30 as ResponseDataMiddleware, $5c73de9e082a5eca$export$93f62bdc0330ea5e as CsrfMiddleware};
 //# sourceMappingURL=module.js.map
