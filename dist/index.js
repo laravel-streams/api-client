@@ -5,7 +5,6 @@ function $parcel$export(e, n, v, s) {
 
 $parcel$export(module.exports, "Client", () => $8921af6a8136d8e3$export$1f2bb630327ac4b6);
 $parcel$export(module.exports, "Criteria", () => $67738b032127bbc4$export$9bcb229a699e7da1);
-$parcel$export(module.exports, "Endpoint", () => $9b0d3bd593b3f8d4$export$ca3bb03eef24f110);
 $parcel$export(module.exports, "Entries", () => $4bb31526c70c167d$export$be81f2ab9a4121eb);
 $parcel$export(module.exports, "FetchError", () => $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894);
 $parcel$export(module.exports, "FetchHeaders", () => $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c);
@@ -82,7 +81,7 @@ const $4559ecf940edc78d$export$a6cdc56e425d0d0a = (item)=>{
 /**
  * Check if object is mergeable
  */ const $4559ecf940edc78d$var$isMergeableObject = (item)=>{
-    return $4559ecf940edc78d$export$a6cdc56e425d0d0a(item) && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null);
+    return $4559ecf940edc78d$export$a6cdc56e425d0d0a(item) && !Array.isArray(item);
 };
 function $4559ecf940edc78d$export$f81ea438226eca0a(obj = {}) {
     const map = new class extends Map {
@@ -284,23 +283,21 @@ class $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c extends Headers {
 class $1db99460b351f96f$export$319b96fe59834522 extends Request {
     constructor(input, init = {}){
         super(input, init);
-        const source = input instanceof $1db99460b351f96f$export$319b96fe59834522 ? input : {};
-        this.responseType = init.responseType ?? source.responseType ?? 'json';
-        const query = init.query ?? source.query ?? {};
-        this.query = (0, $4559ecf940edc78d$export$f81ea438226eca0a)(query instanceof Map ? Object.fromEntries(query) : query);
-        this.criteria = init.criteria ?? source.criteria;
-        this.data = init.data ?? source.data;
+        this.responseType = init.responseType || 'json';
+        this.query = (0, $4559ecf940edc78d$export$f81ea438226eca0a)(init.query || {});
+        this.criteria = init.criteria;
+        this.data = init.data;
         this.response = null;
         // Create custom headers
         Object.defineProperty(this, 'headers', {
-            value: new (0, $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c)(init.headers ?? (input instanceof Request ? input.headers : undefined)),
+            value: new (0, $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c)(init.headers),
             writable: false
         });
     }
     isResponseType(responseType) {
         return this.responseType === responseType;
     }
-    async fetch(signal = this.signal) {
+    async fetch() {
         // Build fetch options from this request
         const options = {
             method: this.method,
@@ -310,15 +307,10 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
             cache: this.cache,
             redirect: this.redirect,
             referrer: this.referrer,
-            integrity: this.integrity,
-            signal: signal
+            integrity: this.integrity
         };
         // Add body if present
-        if (this.body) {
-            // Keep the prepared body readable for a subsequent retry.
-            options.body = this.clone().body;
-            options.duplex = 'half';
-        }
+        if (this.body) options.body = this.body;
         const response = await fetch(this.url, options);
         this.response = response;
         response.request = this;
@@ -339,25 +331,10 @@ class $1db99460b351f96f$export$319b96fe59834522 extends Request {
  */ class $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894 extends Error {
     constructor(request){
         super(`HTTP ${request.response.status} error:\n ${request.response.statusText}`);
-        this.name = 'FetchError';
         this.request = request;
         this.status = request.response.status;
         this.statusText = request.response.statusText;
         this.url = request.response.url;
-        this.errors = {};
-    }
-    async mapValidationErrors() {
-        if (this.status !== 422) return this;
-        try {
-            // Preserve the original body for error middleware and callers.
-            const data = await this.response.clone().json();
-            this.data = data;
-            if (typeof data?.message === 'string') this.message = data.message;
-            if (data?.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) this.errors = data.errors;
-        } catch  {
-        // Non-JSON validation responses remain ordinary HTTP errors.
-        }
-        return this;
     }
     get response() {
         return this.request.response;
@@ -634,7 +611,7 @@ class $8921af6a8136d8e3$export$1f2bb630327ac4b6 {
         this.options = {
             baseURL: '',
             request: {
-                mode: 'cors',
+                mode: 'same-origin',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -929,12 +906,10 @@ class $67738b032127bbc4$export$9bcb229a699e7da1 {
 
 
 
-
 // Make available globally if in browser
 if (typeof window !== 'undefined') window.streams_api = {
     Client: $8921af6a8136d8e3$export$1f2bb630327ac4b6,
     Criteria: $67738b032127bbc4$export$9bcb229a699e7da1,
-    Endpoint: $9b0d3bd593b3f8d4$export$ca3bb03eef24f110,
     Entries: $4bb31526c70c167d$export$be81f2ab9a4121eb,
     FetchError: $c2f1aeaaba3e9a7d$export$26e841bcf1aeb894,
     FetchHeaders: $98e2fd03a3ce98b4$export$b0074bfbbf5cfe5c,
